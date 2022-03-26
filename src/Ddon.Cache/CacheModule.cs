@@ -21,15 +21,12 @@ namespace Ddon.Cache
                     }
                 });
 
-                // 替换之前的注入
-                //services.Replace(ServiceDescriptor.Singleton<IDistributedCache, StackExchangeRedisCache>());
-
-                services.AddSingleton<ICache, StackExchangeRedisCache>();
+                services.AddSingleton<ICache, Cache>();
             }
             else
             {
-                services.AddMemoryCache();
-                services.AddSingleton<ICache, MemoryCache>();
+                services.AddDistributedMemoryCache();
+                services.AddSingleton<ICache, Cache>();
             }
         }
     }

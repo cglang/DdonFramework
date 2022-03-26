@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Ddon.Localizer
 {
@@ -28,7 +29,7 @@ namespace Ddon.Localizer
 
         #region Private Fields
 
-        private readonly JsonSerializer _serializer = new JsonSerializer();
+        private readonly JsonSerializer _serializer = new();
 
         #endregion
 
@@ -63,7 +64,9 @@ namespace Ddon.Localizer
         {
             get
             {
-                var value = GetString(name);
+                var task = GetStringAsync(name);
+                task.Wait();
+                var value = task.Result;
                 return new LocalizedString(name, value ?? $"[{name}]", value == null);
             }
         }
@@ -99,20 +102,18 @@ namespace Ddon.Localizer
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
             var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
-            using (var str = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var sReader = new StreamReader(str))
-            using (var reader = new JsonTextReader(sReader))
+            using var str = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var sReader = new StreamReader(str);
+            using var reader = new JsonTextReader(sReader);
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    if (reader.TokenType != JsonToken.PropertyName)
-                        continue;
+                if (reader.TokenType != JsonToken.PropertyName)
+                    continue;
 
-                    var key = (string)reader.Value;
-                    reader.Read();
-                    var value = _serializer.Deserialize<string>(reader);
-                    yield return new LocalizedString(key, value, false);
-                }
+                var key = (string)reader.Value;
+                reader.Read();
+                var value = _serializer.Deserialize<string>(reader);
+                yield return new LocalizedString(key, value, false);
             }
         }
 
@@ -135,7 +136,7 @@ namespace Ddon.Localizer
 
         #region Private Helper Methods
 
-        private string? GetString(string key)
+        private async Task<string?> GetStringAsync(string key)
         {
             //var relativeFilePath = $"{_options.Value.ResourcesPath}/{CultureInfo.CurrentCulture.Name}.json";
             var fullFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
@@ -144,12 +145,12 @@ namespace Ddon.Localizer
             if (File.Exists(fullFilePath))
             {
                 var cacheKey = $"{_options.Value.CacheKeyPrefix}_{key}";
-                var cacheValue = _cache.Get<string>(cacheKey);
+                var cacheValue = await _cache.GetAsync<string>(cacheKey);
                 if (!string.IsNullOrEmpty(cacheValue)) return cacheValue;
 
                 var result = PullDeserialize<string>(key, fullFilePath);
                 if (!string.IsNullOrEmpty(result))
-                    _cache.Set(cacheKey, result);
+                    await _cache.SetAsync(cacheKey, result);
 
                 return result;
             }
@@ -163,23 +164,21 @@ namespace Ddon.Localizer
             //var sourceFilePath = $"{_options.Value.ResourcesPath}/{sourceCulture.Name}.json";
             var sourceFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{sourceCulture.Name}.json");
 
-            using (var str = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var outStream = File.Create(fullFilePath))
-            using (var sWriter = new StreamWriter(outStream))
-            using (var writer = new JsonTextWriter(sWriter))
-            using (var sReader = new StreamReader(str))
-            using (var reader = new JsonTextReader(sReader))
+            using var str = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var outStream = File.Create(fullFilePath);
+            using var sWriter = new StreamWriter(outStream);
+            using var writer = new JsonTextWriter(sWriter);
+            using var sReader = new StreamReader(str);
+            using var reader = new JsonTextReader(sReader);
+            writer.Formatting = Formatting.Indented;
+            var jobj = JObject.Load(reader);
+            writer.WriteStartObject();
+            foreach (var property in jobj.Properties())
             {
-                writer.Formatting = Formatting.Indented;
-                var jobj = JObject.Load(reader);
-                writer.WriteStartObject();
-                foreach (var property in jobj.Properties())
-                {
-                    writer.WritePropertyName(property.Name);
-                    writer.WriteNull();
-                }
-                writer.WriteEndObject();
+                writer.WritePropertyName(property.Name);
+                writer.WriteNull();
             }
+            writer.WriteEndObject();
         }
 
         /// <summary>
@@ -200,21 +199,19 @@ namespace Ddon.Localizer
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
-            using (var str = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var sReader = new StreamReader(str))
-            using (var reader = new JsonTextReader(sReader))
+            using var str = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var sReader = new StreamReader(str);
+            using var reader = new JsonTextReader(sReader);
+            while (reader.Read())
             {
-                while (reader.Read())
+                if (reader.TokenType == JsonToken.PropertyName
+                    && (string)reader.Value == propertyName)
                 {
-                    if (reader.TokenType == JsonToken.PropertyName
-                        && (string)reader.Value == propertyName)
-                    {
-                        reader.Read();
-                        return _serializer.Deserialize<T>(reader);
-                    }
+                    reader.Read();
+                    return _serializer.Deserialize<T>(reader);
                 }
-                return default;
             }
+            return default;
         }
 
         #endregion

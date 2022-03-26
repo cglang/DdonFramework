@@ -4,6 +4,7 @@ using Ddon.Core.JwtBearer;
 using Ddon.Core.Models;
 using Ddon.Identity.Entities;
 using Ddon.Identity.Manager.Dtos;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -59,7 +60,11 @@ namespace Ddon.Identity.Jwt
         {
             var tokens = GenerateTokens(user);
 
-            _cache.Set($"{CacheKey.RefreshTokenKey}{tokens.RefreshToken.Token}", tokens.RefreshToken, _jwtSettings.TokenCacheExpiration);
+            DistributedCacheEntryOptions distributedCacheEntryOptions = new()
+            {
+                SlidingExpiration = _jwtSettings.TokenCacheExpiration
+            };
+            await _cache.SetAsync($"{CacheKey.RefreshTokenKey}{tokens.RefreshToken.Token}", tokens.RefreshToken, distributedCacheEntryOptions);
 
             await Task.CompletedTask;
             return new TokenDto()

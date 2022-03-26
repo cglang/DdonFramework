@@ -1,29 +1,20 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Primitives;
-using System;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using System.Threading.Tasks;
 
 namespace Ddon.Cache
 {
     public interface ICache
     {
-        object? Get(object key);
+        Task<TItem?> GetAsync<TItem>(string key);
 
-        TItem? Get<TItem>(object key);
+        Task SetAsync<TItem>(string key, TItem value);
 
-        TItem Set<TItem>(object key, TItem value);
+        Task SetAsync<TItem>(string key, TItem value, DistributedCacheEntryOptions options);
 
-        TItem Set<TItem>(object key, TItem value, MemoryCacheEntryOptions options);
+        Task<bool> ContainsKeyAsync(string key);
 
-        TItem Set<TItem>(object key, TItem value, IChangeToken expirationToken);
+        Task RemoveAsync(string key);
 
-        TItem Set<TItem>(object key, TItem value, DateTimeOffset absoluteExpiration);
-
-        TItem Set<TItem>(object key, TItem value, TimeSpan absoluteExpirationRelativeToNow);
-
-        bool ContainsKey(object key);
-
-        void Remove(object key);
-
-        void Remove(object[] keys);
+        Task RemoveAsync(string[] keys);
     }
 }

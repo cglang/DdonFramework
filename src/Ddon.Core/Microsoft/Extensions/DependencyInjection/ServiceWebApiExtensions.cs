@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configuration"></param>
-        public static void AddWebApi(this IServiceCollection services, IConfiguration configuration)
+        public static void AddWebApi(this IServiceCollection services, IConfiguration _)
         {
             services.AddControllers(options =>
             {

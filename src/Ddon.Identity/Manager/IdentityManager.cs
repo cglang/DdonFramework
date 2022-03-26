@@ -112,7 +112,7 @@ namespace Ddon.Identity.Manager
 
             var jti = claimsPrincipal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
 
-            var storedRefreshToken = _cache.Get<RefreshToken<TKey>>($"{CacheKey.RefreshTokenKey}{input.RefreshToken}");
+            var storedRefreshToken = await _cache.GetAsync<RefreshToken<TKey>>($"{CacheKey.RefreshTokenKey}{input.RefreshToken}");
             if (storedRefreshToken == null)
             {
                 return new TokenDto()
@@ -139,7 +139,7 @@ namespace Ddon.Identity.Manager
 
             if (storedRefreshToken.Used)
             {
-                _cache.Remove(storedRefreshToken.Token);
+                await _cache.RemoveAsync(storedRefreshToken.Token);
             }
 
             if (storedRefreshToken.JwtId != jti)
@@ -337,18 +337,18 @@ namespace Ddon.Identity.Manager
 
             foreach (var role in roles)
             {
-                bool decide = _cache.Get($"{CacheKey.RoleClaimsKey}{role.RoleId}") is not null;
+                bool decide = await _cache.ContainsKeyAsync($"{CacheKey.RoleClaimsKey}{role.RoleId}");
                 if (decide)
                 {
                     roleClaims.AddRange(await RoleClaims.Where(x => x.RoleId.Equals(role.RoleId)).ToListAsync());
-                    _cache.Set($"{CacheKey.RoleClaimsKey}{role.RoleId}", roleClaims.Select(x => x.ClaimType));
+                    await _cache.SetAsync($"{CacheKey.RoleClaimsKey}{role.RoleId}", roleClaims.Select(x => x.ClaimType));
                 }
             }
 
             var claims = new List<string>();
             claims.AddRange(userClaims.Select(x => x.ClaimType));
             claims.AddRange(roleClaims.Select(x => x.ClaimType));
-            _cache.Set($"{CacheKey.UserClaimsKey}{user.Id}", claims);
+            await _cache.SetAsync($"{CacheKey.UserClaimsKey}{user.Id}", claims);
         }
 
         /// <summary>
@@ -356,12 +356,12 @@ namespace Ddon.Identity.Manager
         /// </summary>
         private async Task CacheTenantInfo(User<TKey> existingUser)
         {
-            var tenant = _cache.Get<Tenant<TKey>>($"{CacheKey.TenantKey}{existingUser.Id}");
+            var tenant = await _cache.GetAsync<Tenant<TKey>>($"{CacheKey.TenantKey}{existingUser.Id}");
 
             if (tenant is null)
             {
                 tenant = await GetUserTenantByClaimsAsync(existingUser.Id);
-                _cache.Set($"{CacheKey.TenantKey}{existingUser.Id}", tenant);
+                await _cache.SetAsync($"{CacheKey.TenantKey}{existingUser.Id}", tenant);
             }
         }
     }

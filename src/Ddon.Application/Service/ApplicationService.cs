@@ -92,7 +92,7 @@ namespace Ddon.Application.Service
             var user = await IdentityManager.GetUserByClaimsAsync(userClaims);
             if (user is null) throw new UnauthorizedException("没有这个用户!");
 
-            if (!CheckPermission(user, permissionName))
+            if (!await CheckPermissionAsync(user, permissionName))
             {
                 throw new UnauthorizedException($"用户没有权限:{permissionName}");
             }
@@ -104,7 +104,7 @@ namespace Ddon.Application.Service
         /// <param name="user"></param>
         /// <param name="permissionName"></param>
         /// <returns></returns>
-        private bool CheckPermission(User<TKey>? user, string permissionName)
+        private async Task<bool> CheckPermissionAsync(User<TKey>? user, string permissionName)
         {
             if (user is null)
             {
@@ -118,7 +118,7 @@ namespace Ddon.Application.Service
                 return true;
             }
 
-            var userClaims = Cache.Get<List<string>>($"{CacheKey.UserKey}{user.Id}") ?? new();
+            var userClaims = await Cache.GetAsync<List<string>>($"{CacheKey.UserKey}{user.Id}") ?? new();
 
             return userClaims.Any(x => x == permissionName);
         }

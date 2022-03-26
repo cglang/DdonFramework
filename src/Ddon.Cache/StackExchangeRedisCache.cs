@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using System;
+using System.Threading.Tasks;
 
 namespace Ddon.Cache
 {
@@ -16,52 +15,32 @@ namespace Ddon.Cache
             _distributedCache = distributedCache;
         }
 
-        public bool ContainsKey(object key)
+        public Task<bool> ContainsKeyAsync(string key)
         {
             throw new NotImplementedException();
         }
 
-        public object Get(object key)
+        public Task<TItem?> GetAsync<TItem>(string key)
         {
             throw new NotImplementedException();
         }
 
-        public TItem? Get<TItem>(object key)
+        public Task RemoveAsync(string key)
         {
             throw new NotImplementedException();
         }
 
-        public void Remove(object key)
+        public Task RemoveAsync(string[] keys)
         {
             throw new NotImplementedException();
         }
 
-        public void Remove(object[] keys)
+        public Task SetAsync<TItem>(string key, TItem value)
         {
             throw new NotImplementedException();
         }
 
-        public TItem Set<TItem>(object key, TItem value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TItem Set<TItem>(object key, TItem value, MemoryCacheEntryOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TItem Set<TItem>(object key, TItem value, IChangeToken expirationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TItem Set<TItem>(object key, TItem value, DateTimeOffset absoluteExpiration)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TItem Set<TItem>(object key, TItem value, TimeSpan absoluteExpirationRelativeToNow)
+        public Task SetAsync<TItem>(string key, TItem value, DistributedCacheEntryOptions options)
         {
             throw new NotImplementedException();
         }

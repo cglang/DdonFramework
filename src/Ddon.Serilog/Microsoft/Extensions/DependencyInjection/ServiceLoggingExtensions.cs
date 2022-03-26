@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class ServiceLoggingExtensions
     {
-        public static void AddLogging(this IServiceCollection services, IConfiguration configuration)
+        public static void AddLogging(this IServiceCollection services, IConfiguration _)
         {
             services.AddLogging(loggerBuilder =>
             {
@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
 
-        private static ILogger CreateSeriLogLogger(IServiceProvider provider)
+        private static ILogger CreateSeriLogLogger(IServiceProvider _)
         {
             var loggerConfiguration = new LoggerConfiguration().Enrich.FromLogContext();
 
