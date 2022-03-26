@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Core", "src\Ddon.Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Serilog", "src\Ddon.Serilog\Ddon.Serilog.csproj", "{176D1595-A4D3-471A-B71F-34934106B1AD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Socket", "src\Ddon.Socket\Ddon.Socket.csproj", "{08C1BC56-518A-4992-9953-62BB075E810C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{176D1595-A4D3-471A-B71F-34934106B1AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{176D1595-A4D3-471A-B71F-34934106B1AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{176D1595-A4D3-471A-B71F-34934106B1AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08C1BC56-518A-4992-9953-62BB075E810C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08C1BC56-518A-4992-9953-62BB075E810C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08C1BC56-518A-4992-9953-62BB075E810C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08C1BC56-518A-4992-9953-62BB075E810C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +94,7 @@ Global
 		{381745B2-5779-4A3B-962C-5CB09F8AAEE2} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{E6ED9214-F228-47C6-BF6C-761193E11333} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{176D1595-A4D3-471A-B71F-34934106B1AD} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
+		{08C1BC56-518A-4992-9953-62BB075E810C} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}
