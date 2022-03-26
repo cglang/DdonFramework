@@ -2,8 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
-using System;
-using System.IO;
 using ILogger = Serilog.ILogger;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -28,13 +26,13 @@ namespace Microsoft.Extensions.DependencyInjection
             var loggerConfiguration = new LoggerConfiguration().Enrich.FromLogContext();
 
             loggerConfiguration.WriteTo.File(
-                            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log.log"),
-                            fileSizeLimitBytes: 1_000_000,
-                            rollOnFileSizeLimit: true,
-                            shared: true,
-                            flushToDiskInterval: TimeSpan.FromSeconds(1),
-                            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Properties:j} {Message:lj}{NewLine}{Exception}")
-                        .MinimumLevel.Verbose();
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log.log"),
+                fileSizeLimitBytes: 1_000_000,
+                rollOnFileSizeLimit: true,
+                shared: true,
+                flushToDiskInterval: TimeSpan.FromSeconds(1),
+                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Properties:j} {Message:lj}{NewLine}{Exception}")
+                .MinimumLevel.Verbose();
 
             return loggerConfiguration.CreateLogger();
         }
