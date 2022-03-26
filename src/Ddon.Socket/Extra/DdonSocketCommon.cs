@@ -2,15 +2,16 @@
 {
     public class DdonSocketCommon
     {
-        public static byte[] GetHeadBytes(int code, DdonSocketDataType type, int length, Guid clientId, Guid sendClientId = default, Guid sendGroupId = default)
+        public static byte[] GetHeadBytes(int opCode, DdonSocketDataType type, int length, Guid clientId, Guid groupId, Guid sendClientId = default, Guid sendGroupId = default)
         {
             DdonSocketHeadDto head = new()
             {
-                Opcode = code,
+                OpCode = opCode,
                 Type = type,
                 Length = length,
                 ClientId = clientId,
-                SendClientId = sendClientId,
+                GroupId = groupId,
+                SendClient = sendClientId,
                 SendGroup = sendGroupId
             };
 

@@ -22,6 +22,11 @@
             return Pairs.ContainsKey(clientId) ? Pairs[clientId] : null;
         }
 
+        public IEnumerable<DdonSocketClient<TDdonSocketHandler>>? GetClients(Guid groupId)
+        {
+            return Pairs.Values.Where(x => x.GroupId == groupId);
+        }
+
         public void Add(DdonSocketClient<TDdonSocketHandler> client)
         {
             Pairs.Add(client.ClientId, client);

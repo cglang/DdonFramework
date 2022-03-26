@@ -2,13 +2,13 @@
 {
     public class DdonSocketPackageInfo<TData>
     {
-        public IServiceProvider? ServiceProvider { get; set; }
+        public IServiceProvider ServiceProvider { get; set; }
 
         public DdonSocketHeadDto Head { get; }
 
         public TData Data { get; set; }
 
-        public DdonSocketPackageInfo(IServiceProvider? serviceProvider,
+        public DdonSocketPackageInfo(IServiceProvider serviceProvider,
             DdonSocketHeadDto headDto,
             TData data)
         {

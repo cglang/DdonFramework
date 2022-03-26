@@ -21,6 +21,11 @@ namespace Ddon.Socket
         public Guid ClientId { get; set; } = Guid.NewGuid();
 
         /// <summary>
+        /// 组别Id
+        /// </summary>
+        public Guid GroupId { get; set; }
+
+        /// <summary>
         /// Tcp客户端
         /// </summary>
         protected TcpClient TcpClient { get; set; }
@@ -50,10 +55,20 @@ namespace Ddon.Socket
             _logger = serviceProvider.GetRequiredService<ILogger<DdonSocketClient<TDdonSocketHandler>>>();
         }
 
-        public async Task<int> SendStringAsync(string data, Guid sendClientId = default)
+        public async Task<int> SendStringAsync(int opCode, string data, Guid sendClientId = default, Guid sendGroupId = default)
         {
             var dataBytes = Encoding.UTF8.GetBytes(data);
-            var headBytes = DdonSocketCommon.GetHeadBytes(200, DdonSocketDataType.String, dataBytes.Length, ClientId, sendClientId, default);
+            var headBytes = DdonSocketCommon.GetHeadBytes(opCode, DdonSocketDataType.String, dataBytes.Length, ClientId, GroupId, sendClientId, sendGroupId);
+            byte[] contentBytes = DdonSocketCommon.MergeArrays(headBytes, dataBytes);
+
+            await Stream.WriteAsync(contentBytes);
+            return dataBytes.Length;
+        }
+
+        public async Task<int> SendAuthenticationInfoAsync(Guid GroupId)
+        {
+            var dataBytes = Array.Empty<byte>();
+            var headBytes = DdonSocketCommon.GetHeadBytes(DdonSocketOpcode.Authentication, DdonSocketDataType.String, dataBytes.Length, ClientId, GroupId);
             byte[] contentBytes = DdonSocketCommon.MergeArrays(headBytes, dataBytes);
 
             await Stream.WriteAsync(contentBytes);

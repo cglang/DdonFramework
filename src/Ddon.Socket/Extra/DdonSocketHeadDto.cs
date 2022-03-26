@@ -8,7 +8,7 @@ namespace Ddon.Socket.Extra
         /// <summary>
         /// 操作码
         /// </summary>
-        public int Opcode { get; set; }
+        public int OpCode { get; set; }
 
         /// <summary>
         /// 模式
@@ -31,9 +31,14 @@ namespace Ddon.Socket.Extra
         public Guid ClientId { get; set; }
 
         /// <summary>
+        /// 组别Id
+        /// </summary>
+        public Guid GroupId { get; set; }
+
+        /// <summary>
         /// 发送到指定客户
         /// </summary>
-        public Guid SendClientId { get; set; }
+        public Guid SendClient { get; set; }
 
         /// <summary>
         /// 发送到组
