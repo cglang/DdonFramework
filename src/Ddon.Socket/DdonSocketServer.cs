@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Sockets;
 
-namespace DdonSocket
+namespace Ddon.Socket
 {
     public class DdonSocketServer<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerCore, new()
     {

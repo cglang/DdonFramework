@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace DdonSocket
+namespace Ddon.Socket
 {
     public class DdonSocketConnection<TDdonSocketHandler> : DdonSocketClient<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerCore, new()
     {

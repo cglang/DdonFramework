@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace DdonSocket.Extra
+﻿namespace Ddon.Socket.Extra
 {
     public class DdonSocketPackageInfo<TData>
     {

@@ -1,6 +1,6 @@
-﻿using DdonSocket.Extra;
+﻿using Ddon.Socket.Extra;
 
-namespace DdonSocket
+namespace Ddon.Socket
 {
     public class DdonSocketHandler<TDdonSocketHandler> : DdonSocketHandlerCore where TDdonSocketHandler : DdonSocketHandlerCore, new()
     {

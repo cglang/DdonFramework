@@ -1,11 +1,11 @@
-﻿using DdonSocket.Extra;
+﻿using Ddon.Socket.Extra;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
-namespace DdonSocket
+namespace Ddon.Socket
 {
     public class DdonSocketClient<TDdonSocketHandler> : DdonSocketHandler<TDdonSocketHandler>, IDisposable where TDdonSocketHandler : DdonSocketHandlerCore, new()
     {

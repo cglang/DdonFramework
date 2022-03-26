@@ -1,4 +1,4 @@
-﻿using DdonSocket;
+﻿using Ddon.Socket;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection

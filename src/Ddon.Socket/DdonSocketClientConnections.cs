@@ -1,4 +1,4 @@
-﻿namespace DdonSocket
+﻿namespace Ddon.Socket
 {
     public class DdonSocketClientConnections<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerCore, new()
     {
