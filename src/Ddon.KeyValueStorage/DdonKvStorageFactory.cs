@@ -2,13 +2,13 @@
 
 namespace Ddon.KeyValueStorage
 {
-    public class DdonKvStorageFactory<TKey, TValue> where TKey : struct
+    public class DdonKvStorageFactory<TValue>
     {
-        private static readonly Dictionary<string, IDdonKeyValueManager<TKey, TValue>> _manager = new();
+        private static readonly Dictionary<string, IDdonKeyValueManager<TValue>> _manager = new();
 
         private static readonly object _lock = new();
 
-        public static IDdonKeyValueManager<TKey, TValue> GetInstance(DdonKvOptions? option = default, string slice = DdonKeyValueStorageConst.DefaultSlice)
+        public static IDdonKeyValueManager<TValue> GetInstance(DdonKvOptions? option = default, string slice = DdonKeyValueStorageConst.DefaultSlice)
         {
             if (!_manager.ContainsKey(slice))
             {
@@ -16,7 +16,7 @@ namespace Ddon.KeyValueStorage
                 {
                     if (!_manager.ContainsKey(slice))
                     {
-                        _manager[slice] = DdonKeyValueManager<TKey, TValue>.CreateObject(option, slice);
+                        _manager[slice] = DdonKeyValueManager<TValue>.CreateObject(option, slice);
                     }
                 }
             }

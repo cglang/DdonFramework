@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Ddon.KeyValueStorage
 {
-    public class DdonKeyValueManager<TKey, TValue> : IDdonKeyValueManager<TKey, TValue> where TKey : struct
+    public class DdonKeyValueManager<TValue> : IDdonKeyValueManager<TValue>
     {
-        private readonly DdonDictionary<TKey, TValue?> _storage;
+        private readonly DdonDictionary<TValue?> _storage;
 
         /// <summary>
         /// 配置文件位置
@@ -47,9 +47,9 @@ namespace Ddon.KeyValueStorage
         /// 创建对象
         /// </summary>
         /// <returns></returns>
-        public static DdonKeyValueManager<TKey, TValue> CreateObject(DdonKvOptions? option = default, string slice = DdonKeyValueStorageConst.DefaultSlice)
+        public static DdonKeyValueManager<TValue> CreateObject(DdonKvOptions? option = default, string slice = DdonKeyValueStorageConst.DefaultSlice)
         {
-            return new DdonKeyValueManager<TKey, TValue>(option, slice);
+            return new DdonKeyValueManager<TValue>(option, slice);
         }
 
         public async Task<bool> SaveAsync(string slice = DdonKeyValueStorageConst.DefaultSlice)
@@ -57,7 +57,12 @@ namespace Ddon.KeyValueStorage
             return await _storage.SaveAsync();
         }
 
-        public async Task<TValue?> GetValueAsync(TKey key)
+        public async Task<TValue?> GetValueAsync(object key)
+        {
+            return await GetValueAsync(key.ToString() ?? throw new Exception("不允许此类型的Key"));
+        }
+
+        public async Task<TValue?> GetValueAsync(string key)
         {
             try
             {
@@ -83,7 +88,7 @@ namespace Ddon.KeyValueStorage
             }
         }
 
-        public async Task<IEnumerable<TKey>> GetAllKeyAsync()
+        public async Task<IEnumerable<string>> GetAllKeyAsync()
         {
             try
             {
@@ -92,17 +97,22 @@ namespace Ddon.KeyValueStorage
             }
             catch
             {
-                return new List<TKey>();
+                return new List<string>();
             }
         }
 
-        public async Task<Dictionary<TKey, TValue?>> GetAllKeyValueAsync()
+        public async Task<Dictionary<string, TValue?>> GetAllKeyValueAsync()
         {
             await Task.CompletedTask;
             return _storage;
         }
 
-        public async Task<bool> SetValueAsync(TKey key, TValue value)
+        public async Task<bool> SetValueAsync(object key, TValue value)
+        {
+            return await SetValueAsync(key.ToString() ?? throw new Exception("不允许此类型的Key"), value);
+        }
+
+        public async Task<bool> SetValueAsync(string key, TValue value)
         {
             try
             {
@@ -116,7 +126,7 @@ namespace Ddon.KeyValueStorage
             }
         }
 
-        public async Task<bool> DeleteValueAsync(TKey key)
+        public async Task<bool> DeleteValueAsync(string key)
         {
             try
             {

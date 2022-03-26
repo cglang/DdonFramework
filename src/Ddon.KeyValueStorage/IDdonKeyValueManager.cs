@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.KeyValueStorage
 {
-    public interface IDdonKeyValueManager<TKey, TValue> where TKey : notnull
+    public interface IDdonKeyValueManager<TValue>
     {
         /// <summary>
         /// 保存修改
@@ -16,9 +16,8 @@ namespace Ddon.KeyValueStorage
         /// 获取指定键的值
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="slice"></param>
         /// <returns></returns>
-        Task<TValue?> GetValueAsync(TKey key);
+        Task<TValue?> GetValueAsync(object key);
 
         /// <summary>
         /// 更改指定键的值 没有则添加
@@ -27,13 +26,29 @@ namespace Ddon.KeyValueStorage
         /// <param name="value"></param>
         /// <param name="slice"></param>
         /// <returns></returns>
-        Task<bool> SetValueAsync(TKey key, TValue value);
+        Task<bool> SetValueAsync(object key, TValue value);
+
+        /// <summary>
+        /// 获取指定键的值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        Task<TValue?> GetValueAsync(string key);
+
+        /// <summary>
+        /// 更改指定键的值 没有则添加
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="slice"></param>
+        /// <returns></returns>
+        Task<bool> SetValueAsync(string key, TValue value);
 
         /// <summary>
         /// 获取所有的键
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<TKey>> GetAllKeyAsync();
+        Task<IEnumerable<string>> GetAllKeyAsync();
 
         /// <summary>
         /// 获取所有的键
@@ -45,47 +60,13 @@ namespace Ddon.KeyValueStorage
         /// 获取所有的键/值
         /// </summary>
         /// <returns></returns>
-        Task<Dictionary<TKey, TValue?>> GetAllKeyValueAsync();
+        Task<Dictionary<string, TValue?>> GetAllKeyValueAsync();
 
         /// <summary>
         /// 删除指定键值
         /// </summary>
         /// <param name="key"></param>
         /// <param name="slice"></param>
-        Task<bool> DeleteValueAsync(TKey key);
-    }
-
-
-    public interface IDdonKeyValueStorages<TValue> : IDdonKeyValueManager<string, TValue>
-    {
-        /// <summary>
-        /// 获取指定键的值
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="slice"></param>
-        /// <returns></returns>
-        new Task<TValue?> GetValueAsync(string key);
-
-        /// <summary>
-        /// 更改指定键的值 没有则添加
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <param name="slice"></param>
-        /// <returns></returns>
-        new Task<bool> SetValueAsync(string key, TValue value);
-
-        /// <summary>
-        /// 获取所有的键
-        /// </summary>
-        /// <returns></returns>
-        new Task<IEnumerable<string?>> GetAllKeyAsync();
-
-        /// <summary>
-        /// 删除指定键值
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="slice"></param>
-        new Task<bool> DeleteValueAsync(string key);
+        Task<bool> DeleteValueAsync(string key);
     }
 }

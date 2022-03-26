@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.KeyValueStorage
 {
-    public class DdonDictionary<TKey, TValue> : Dictionary<TKey, TValue?> where TKey : struct
+    public class DdonDictionary<TValue> : Dictionary<string, TValue?>
     {
         private readonly JsonSerializerOptions jsonSerializerOptions = new() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
 
@@ -56,12 +56,10 @@ namespace Ddon.KeyValueStorage
             while ((text = await stream.ReadLineAsync()) is not null)
             {
                 var kv = text.Split("\t");
-                var keyType = JsonSerializer.Deserialize<KeyType>($"{{\"Key\":\"{kv[0]}\"}}");
                 var value = JsonSerializer.Deserialize<TValue>(kv[1]);
-                Add(keyType!.Key, value);
+                Add(kv[0], value);
             }
             stream.Close();
         }
-        class KeyType { public TKey Key { get; set; } }
     }
 }
