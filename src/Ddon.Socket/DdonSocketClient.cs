@@ -11,7 +11,7 @@ namespace Ddon.Socket
     {
         protected const int GuidLength = 16;
 
-        private readonly IServiceProvider? _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
         private readonly ILogger<DdonSocketClient<TDdonSocketHandler>> _logger;
 
@@ -30,15 +30,15 @@ namespace Ddon.Socket
         /// </summary>
         protected Stream Stream => TcpClient.GetStream();
 
-        public DdonSocketClient(string host, int port,
-            ILogger<DdonSocketClient<TDdonSocketHandler>> logger)
+        public DdonSocketClient(string host, int port, IServiceProvider serviceProvider)
         {
             TcpClient = new TcpClient(host, port);
             var dataTask = ReadStreamAsync(GuidLength);
             dataTask.Wait();
             ClientId = new Guid(dataTask.Result);
 
-            _logger = logger;
+            _serviceProvider = serviceProvider;
+            _logger = serviceProvider.GetRequiredService<ILogger<DdonSocketClient<TDdonSocketHandler>>>();
         }
 
         protected DdonSocketClient(TcpClient tcpClient, IServiceProvider serviceProvider)
