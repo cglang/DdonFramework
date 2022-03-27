@@ -3,9 +3,8 @@ using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Ddon.Identity.Extensions
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// 添加
