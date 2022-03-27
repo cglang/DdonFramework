@@ -6,10 +6,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AutoMapper" Version="10.1.1" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />

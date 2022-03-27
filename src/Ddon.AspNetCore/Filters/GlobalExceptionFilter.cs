@@ -5,9 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace Ddon.Core.Filters
+namespace Ddon.AspNetCore.Filters
 {
     /// <summary>
     /// 全局异常捕获

@@ -1,4 +1,4 @@
-﻿using Ddon.Core.Filters;
+﻿using Ddon.AspNetCore.Filters;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection

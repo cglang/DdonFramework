@@ -1,5 +1,5 @@
 using Ddon.Core.Logging;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Extensions.Logging;
 using System.Runtime.ExceptionServices;
 
 namespace System

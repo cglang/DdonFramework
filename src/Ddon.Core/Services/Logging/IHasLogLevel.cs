@@ -1,4 +1,4 @@
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Extensions.Logging;
 
 namespace Ddon.Core.Logging
 {
