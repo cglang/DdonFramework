@@ -1,8 +1,8 @@
 ﻿using Ddon.Socket.Extra;
 
-namespace Ddon.Socket
+namespace Ddon.Socket.Handler
 {
-    public abstract class DdonSocketHandlerCore
+    public abstract class DdonSocketHandlerBase
     {
         /// <summary>
         /// 文本流处理器

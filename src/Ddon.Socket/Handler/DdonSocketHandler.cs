@@ -1,8 +1,8 @@
 ﻿using Ddon.Socket.Extra;
 
-namespace Ddon.Socket
+namespace Ddon.Socket.Handler
 {
-    public class DdonSocketHandler<TDdonSocketHandler> : DdonSocketHandlerCore where TDdonSocketHandler : DdonSocketHandlerCore, new()
+    public class DdonSocketHandler<TDdonSocketHandler> : DdonSocketHandlerBase where TDdonSocketHandler : DdonSocketHandlerBase, new()
     {
         private readonly Action<DdonSocketPackageInfo<string>> _stringHandler;
         public override Action<DdonSocketPackageInfo<string>> StringHandler => _stringHandler;

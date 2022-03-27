@@ -1,6 +1,6 @@
 ﻿namespace Ddon.Socket.Extra
 {
-    public struct DdonSocketOpcode
+    public struct DdonSocketOpCode
     {
         /// <summary>
         /// 认证

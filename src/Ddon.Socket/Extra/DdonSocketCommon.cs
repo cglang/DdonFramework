@@ -7,7 +7,7 @@
             DdonSocketHeadDto head = new()
             {
                 OpCode = opCode,
-                Type = type,
+                DataType = type,
                 Length = length,
                 ClientId = clientId,
                 GroupId = groupId,

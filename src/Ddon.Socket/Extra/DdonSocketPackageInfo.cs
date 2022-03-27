@@ -1,18 +1,15 @@
-﻿namespace Ddon.Socket.Extra
+﻿using Ddon.Socket.Handler;
+
+namespace Ddon.Socket.Extra
 {
     public class DdonSocketPackageInfo<TData>
     {
-        public IServiceProvider ServiceProvider { get; set; }
-
         public DdonSocketHeadDto Head { get; }
 
         public TData Data { get; set; }
 
-        public DdonSocketPackageInfo(IServiceProvider serviceProvider,
-            DdonSocketHeadDto headDto,
-            TData data)
+        public DdonSocketPackageInfo(DdonSocketHeadDto headDto, TData data)
         {
-            ServiceProvider = serviceProvider;
             Head = headDto;
             Data = data;
         }

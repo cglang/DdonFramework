@@ -6,11 +6,6 @@ namespace Ddon.Socket.Extra
     public class DdonSocketHeadDto
     {
         /// <summary>
-        /// 操作码
-        /// </summary>
-        public int OpCode { get; set; }
-
-        /// <summary>
         /// 模式
         /// </summary>
         public Mode Mode { get; set; }
@@ -18,12 +13,17 @@ namespace Ddon.Socket.Extra
         /// <summary>
         /// 传输的数据类型
         /// </summary>
-        public DdonSocketDataType Type { get; set; }
+        public DdonSocketDataType DataType { get; set; }
+
+        /// <summary>
+        /// 操作码
+        /// </summary>
+        public int OpCode { get; set; }
 
         /// <summary>
         /// 数据长度
         /// </summary>
-        public long Length { get; set; }
+        public int Length { get; set; }
 
         /// <summary>
         /// 客户端Id
@@ -64,11 +64,11 @@ namespace Ddon.Socket.Extra
         /// <summary>
         /// 发送模式
         /// </summary>
-        Send,
+        Normal = 1,
         /// <summary>
         /// 请求响应模式
         /// </summary>
-        RequestResponse
+        RandQ = 2,
     }
 
     /// <summary>
