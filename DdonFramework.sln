@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.KeyValueStorage", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestKeyValueStorageConsole", "test\TestKeyValueStorageConsole\TestKeyValueStorageConsole.csproj", "{7ED8E641-F778-4F1F-913E-D747117AC16C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Uow", "src\Ddon.Uow\Ddon.Uow.csproj", "{428A2015-6233-4C5E-A265-0BAAC693CF51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{7ED8E641-F778-4F1F-913E-D747117AC16C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7ED8E641-F778-4F1F-913E-D747117AC16C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7ED8E641-F778-4F1F-913E-D747117AC16C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{428A2015-6233-4C5E-A265-0BAAC693CF51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{428A2015-6233-4C5E-A265-0BAAC693CF51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{428A2015-6233-4C5E-A265-0BAAC693CF51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{428A2015-6233-4C5E-A265-0BAAC693CF51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{08C1BC56-518A-4992-9953-62BB075E810C} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{FF78B681-4252-48E6-9869-2607A8B7FE3F} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{7ED8E641-F778-4F1F-913E-D747117AC16C} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
+		{428A2015-6233-4C5E-A265-0BAAC693CF51} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}

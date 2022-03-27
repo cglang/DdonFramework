@@ -12,6 +12,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
+		<ProjectReference Include="..\Ddon.Uow\Ddon.Uow.csproj" />
 	</ItemGroup>
 
 </Project>
