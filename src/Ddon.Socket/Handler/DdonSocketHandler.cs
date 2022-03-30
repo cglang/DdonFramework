@@ -2,27 +2,31 @@
 
 namespace Ddon.Socket.Handler
 {
-    public class DdonSocketHandler<TDdonSocketHandler> : DdonSocketHandlerBase where TDdonSocketHandler : DdonSocketHandlerBase, new()
+    public abstract class DdonSocketHandler
     {
-        private readonly Action<DdonSocketPackageInfo<string>> _stringHandler;
-        public override Action<DdonSocketPackageInfo<string>> StringHandler => _stringHandler;
+        /// <summary>
+        /// 文本流处理器
+        /// </summary>
+        public abstract Action<DdonSocketPackageInfo<string>> StringHandler { get; }
 
-        private readonly Action<DdonSocketPackageInfo<byte[]>> _fileByteHandler;
-        public override Action<DdonSocketPackageInfo<byte[]>> FileByteHandler => _fileByteHandler;
+        /// <summary>
+        /// 文件流处理器
+        /// </summary>
+        public abstract Action<DdonSocketPackageInfo<byte[]>> FileByteHandler { get; }
 
-        private readonly Action<DdonSocketPackageInfo<Stream>> _streamHandler;
-        public override Action<DdonSocketPackageInfo<Stream>> StreamHandler => _streamHandler;
+        /// <summary>
+        /// Byte 流处理器
+        /// </summary>
+        public abstract Action<DdonSocketPackageInfo<Stream>> StreamHandler { get; }
 
-        private readonly Action<Exception> _connDisconnecHandler;
-        public override Action<Exception> ExceptionHandler => _connDisconnecHandler;
+        /// <summary>
+        /// 请求相应模式处理器
+        /// </summary>
+        public abstract Func<DdonSocketPackageInfo<string>, Task<object>> RandQHandler { get; }
 
-        public DdonSocketHandler()
-        {
-            var handler = new TDdonSocketHandler();
-            _stringHandler = handler.StringHandler;
-            _fileByteHandler = handler.FileByteHandler;
-            _streamHandler = handler.StreamHandler;
-            _connDisconnecHandler = handler.ExceptionHandler;
-        }
+        /// <summary>
+        /// 发生异常处理器
+        /// </summary>
+        public abstract Action<Exception> ExceptionHandler { get; }
     }
 }

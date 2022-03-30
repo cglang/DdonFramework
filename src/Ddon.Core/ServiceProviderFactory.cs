@@ -8,7 +8,7 @@ namespace Ddon.Core
 
         private static ServiceProviderFactory? serviceProviderFactory;
 
-        private static object _lock = new();
+        private static readonly object _lock = new();
 
         private ServiceProviderFactory() { }
 

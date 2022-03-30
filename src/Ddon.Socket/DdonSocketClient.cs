@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketClient<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerBase, new()
+    public class DdonSocketClient<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandler, new()
     {
         [AllowNull]
         private static DdonSocketConnectionClient<TDdonSocketHandler> _clientConnection;

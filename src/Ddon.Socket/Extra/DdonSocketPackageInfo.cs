@@ -1,4 +1,5 @@
-﻿using Ddon.Socket.Handler;
+﻿using Ddon.Socket.Connection;
+using Ddon.Socket.Handler;
 
 namespace Ddon.Socket.Extra
 {
@@ -8,8 +9,11 @@ namespace Ddon.Socket.Extra
 
         public TData Data { get; set; }
 
-        public DdonSocketPackageInfo(DdonSocketHeadDto headDto, TData data)
+        public DdonSocketConnectionBase Connection { get; set; }
+
+        public DdonSocketPackageInfo(DdonSocketConnectionBase connection, DdonSocketHeadDto headDto, TData data)
         {
+            Connection = connection;
             Head = headDto;
             Data = data;
         }

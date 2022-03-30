@@ -6,7 +6,7 @@ using System.Net.Sockets;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketServer<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerBase, new()
+    public class DdonSocketServer<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandler, new()
     {
         private readonly TcpListener _listener;
 

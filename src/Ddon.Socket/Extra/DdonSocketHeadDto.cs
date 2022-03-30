@@ -5,10 +5,17 @@ namespace Ddon.Socket.Extra
 {
     public class DdonSocketHeadDto
     {
+        public Guid Id { get; set; }
+
         /// <summary>
         /// 模式
         /// </summary>
         public Mode Mode { get; set; }
+
+        /// <summary>
+        /// 响应码
+        /// </summary>
+        public ResponseCode Code { get; set; }
 
         /// <summary>
         /// 传输的数据类型
@@ -24,26 +31,6 @@ namespace Ddon.Socket.Extra
         /// 数据长度
         /// </summary>
         public int Length { get; set; }
-
-        /// <summary>
-        /// 客户端Id
-        /// </summary>
-        public Guid ClientId { get; set; }
-
-        /// <summary>
-        /// 组别Id
-        /// </summary>
-        public Guid GroupId { get; set; }
-
-        /// <summary>
-        /// 发送到指定客户
-        /// </summary>
-        public Guid SendClient { get; set; }
-
-        /// <summary>
-        /// 发送到组
-        /// </summary>
-        public Guid SendGroup { get; set; }
 
         public byte[] GetBytes()
         {
@@ -66,9 +53,13 @@ namespace Ddon.Socket.Extra
         /// </summary>
         Normal = 1,
         /// <summary>
-        /// 请求响应模式
+        /// 请求模式
         /// </summary>
-        RandQ = 2,
+        Request = 2,
+        /// <summary>
+        /// 响应模式
+        /// </summary>
+        Response = 3
     }
 
     /// <summary>
@@ -88,5 +79,14 @@ namespace Ddon.Socket.Extra
         /// 大文件流
         /// </summary>
         Byte
+    }
+
+    /// <summary>
+    /// 响应码
+    /// </summary>
+    public enum ResponseCode
+    {
+        OK = 200,
+        Error = 500
     }
 }

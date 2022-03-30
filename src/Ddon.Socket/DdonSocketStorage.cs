@@ -3,7 +3,7 @@ using Ddon.Socket.Handler;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketStorage<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerBase, new()
+    public class DdonSocketStorage<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandler, new()
     {
         private static readonly object _lock = new();
 
