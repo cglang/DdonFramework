@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace Ddon.Socket.Connection
 {
-    // TODO 应该再加个有service版的
+    // TODO 应该再加个有servicePrivider版的
     public class DdonSocketConnectionServer<TDdonSocketHandler> : DdonSocketConnectionBase<TDdonSocketHandler>
         where TDdonSocketHandler : DdonSocketHandlerBase, new()
     {

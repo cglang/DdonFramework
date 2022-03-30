@@ -13,12 +13,16 @@ namespace Ddon.Socket.Handler
         private readonly Action<DdonSocketPackageInfo<Stream>> _streamHandler;
         public override Action<DdonSocketPackageInfo<Stream>> StreamHandler => _streamHandler;
 
+        private readonly Action<Exception> _connDisconnecHandler;
+        public override Action<Exception> ExceptionHandler => _connDisconnecHandler;
+
         public DdonSocketHandler()
         {
             var handler = new TDdonSocketHandler();
             _stringHandler = handler.StringHandler;
             _fileByteHandler = handler.FileByteHandler;
             _streamHandler = handler.StreamHandler;
+            _connDisconnecHandler = handler.ExceptionHandler;
         }
     }
 }

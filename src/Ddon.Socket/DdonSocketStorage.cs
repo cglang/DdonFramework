@@ -13,7 +13,7 @@ namespace Ddon.Socket
 
         public IEnumerable<DdonSocketConnectionServer<TDdonSocketHandler>> Clients => Pairs.Values;
 
-        public static DdonSocketStorage<TDdonSocketHandler> GetInstance()
+        internal static DdonSocketStorage<TDdonSocketHandler> GetInstance()
         {
             if (ddonSocketClientConnection != null) return ddonSocketClientConnection;
 

@@ -1,5 +1,4 @@
-﻿using Ddon.Socket.Exceptions;
-using Ddon.Socket.Extensions;
+﻿using Ddon.Socket.Extensions;
 using Ddon.Socket.Extra;
 using Ddon.Socket.Handler;
 using System.Net.Sockets;
@@ -18,7 +17,7 @@ namespace Ddon.Socket.Connection
         protected TcpClient TcpClient { get; set; }
 
         /// <summary>
-        /// 客户端Id
+        /// SocketId
         /// </summary>
         public Guid SocketId { get; set; }
 
@@ -44,44 +43,37 @@ namespace Ddon.Socket.Connection
         /// <exception cref="DdonSocketDisconnectException">Socket连接断开异常 携带断开连接Id</exception>
         public async Task ConsecutiveReadStreamAsync()
         {
-            try
-            {
-                await Task.Run(InitialStreamHandler);
-            }
-            catch
-            {
-                throw new DdonSocketDisconnectException(SocketId);
-            }
-        }
-
-        private async Task InitialStreamHandler()
-        {
             while (true)
             {
-                var head = await ReadHeadAsync();
+                try
+                {
+                    var head = await ReadHeadAsync();
 
-                if (head.Mode is Mode.Normal) { }
-                else if (head.Mode is Mode.RandQ) { }
-                else { } // 不支持的模式
+                    if (head.Mode is Mode.Normal) { }
+                    else if (head.Mode is Mode.RandQ) { }
+                    else { } // 不支持的模式
 
-                if (head.DataType is DdonSocketDataType.File)
-                {
-                    var bytes = await Stream.ReadByteAsync(head.Length);
-                    FileByteHandler?.Invoke(new DdonSocketPackageInfo<byte[]>(head, bytes));
+                    if (head.DataType is DdonSocketDataType.File)
+                    {
+                        var bytes = await Stream.ReadByteAsync(head.Length);
+                        FileByteHandler?.Invoke(new DdonSocketPackageInfo<byte[]>(head, bytes));
+                    }
+                    else if (head.DataType is DdonSocketDataType.Byte)
+                    {
+                        base.StreamHandler?.Invoke(new DdonSocketPackageInfo<Stream>(head, Stream));
+                    }
+                    else if (head.DataType is DdonSocketDataType.String)
+                    {
+                        var content = await Stream.ReadStringAsync(head.Length);
+                        StringHandler?.Invoke(new DdonSocketPackageInfo<string>(head, content));
+                    }
+                    else
+                    {
+                        // 不支持的类型
+                    }
                 }
-                else if (head.DataType is DdonSocketDataType.Byte)
-                {
-                    base.StreamHandler?.Invoke(new DdonSocketPackageInfo<Stream>(head, Stream));
-                }
-                else if (head.DataType is DdonSocketDataType.String)
-                {
-                    var content = await Stream.ReadStringAsync(head.Length);
-                    StringHandler?.Invoke(new DdonSocketPackageInfo<string>(head, content));
-                }
-                else
-                {
-                    // 不支持的类型
-                }
+                catch (IOException ex) { throw ex; }
+                catch (Exception ex) { ExceptionHandler.Invoke(ex); }
             }
         }
 

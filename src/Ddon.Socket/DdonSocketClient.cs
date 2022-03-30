@@ -4,24 +4,24 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketClientFactory<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerBase, new()
+    public class DdonSocketClient<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandlerBase, new()
     {
         [AllowNull]
         private static DdonSocketConnectionClient<TDdonSocketHandler> _clientConnection;
 
-        private DdonSocketClientFactory(string host, int post)
+        private DdonSocketClient(string host, int post)
         {
             _clientConnection = new DdonSocketConnectionClient<TDdonSocketHandler>(host, post);
         }
 
-        public static DdonSocketClientFactory<TDdonSocketHandler> CreateClient(string host, int post)
+        public static DdonSocketClient<TDdonSocketHandler> CreateClient(string host, int post)
         {
-            return new DdonSocketClientFactory<TDdonSocketHandler>(host, post);
+            return new DdonSocketClient<TDdonSocketHandler>(host, post);
         }
 
         public DdonSocketConnectionClient<TDdonSocketHandler> Start()
         {
-            _ = _clientConnection.ConsecutiveReadStreamAsync();
+            Task.Run(() => _clientConnection.ConsecutiveReadStreamAsync());
             return _clientConnection;
         }
     }

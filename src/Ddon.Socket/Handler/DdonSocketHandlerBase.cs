@@ -18,5 +18,10 @@ namespace Ddon.Socket.Handler
         /// Byte 流处理器
         /// </summary>
         public abstract Action<DdonSocketPackageInfo<Stream>> StreamHandler { get; }
+
+        /// <summary>
+        /// 发生异常处理器
+        /// </summary>
+        public abstract Action<Exception> ExceptionHandler { get; }
     }
 }
