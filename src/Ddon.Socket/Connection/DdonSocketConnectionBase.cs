@@ -1,4 +1,5 @@
-﻿using Ddon.Socket.Extensions;
+﻿using Ddon.Socket.Exceptions;
+using Ddon.Socket.Extensions;
 using Ddon.Socket.Extra;
 using Ddon.Socket.Handler;
 using System.Net.Sockets;
@@ -72,7 +73,7 @@ namespace Ddon.Socket.Connection
                         // 不支持的类型
                     }
                 }
-                catch (IOException ex) { throw ex; }
+                catch (IOException ex) { throw new DdonSocketDisconnectException(ex, SocketId); }
                 catch (Exception ex) { ExceptionHandler.Invoke(ex); }
             }
         }

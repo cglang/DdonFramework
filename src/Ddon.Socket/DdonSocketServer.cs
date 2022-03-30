@@ -1,4 +1,5 @@
 ﻿using Ddon.Socket.Connection;
+using Ddon.Socket.Exceptions;
 using Ddon.Socket.Handler;
 using System.Net;
 using System.Net.Sockets;
@@ -30,9 +31,18 @@ namespace Ddon.Socket
                 var client = _listener.AcceptTcpClient();
                 var connection = new DdonSocketConnectionServer<TDdonSocketHandler>(client);
                 SocketStorage.Add(connection);
-                Console.WriteLine($"客户端接入{connection.SocketId}");
 
-                Task.Run(async () => await connection.ConsecutiveReadStreamAsync());
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        await connection.ConsecutiveReadStreamAsync();
+                    }
+                    catch (DdonSocketDisconnectException ex)
+                    {
+                        SocketStorage.Remove(ex.SocketId);
+                    }
+                });
             }
         }
     }
