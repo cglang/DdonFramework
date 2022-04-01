@@ -5,7 +5,7 @@ namespace System.Collections.Generic
     /// <summary> 
     /// Extension methods for <see cref="IEnumerable{T}"/>.
     /// </summary>
-    public static class AbpEnumerableExtensions
+    public static class EnumerableExtensions
     {
         /// <summary>
         /// Concatenates the members of a constructed <see cref="IEnumerable{T}"/> collection of type System.String, using the specified separator between each member.

@@ -1,4 +1,4 @@
-﻿namespace Ddon.ConvenientSocket.Extra
+﻿namespace Ddon.Socket.Extra
 {
     public class DdonSocketConst
     {

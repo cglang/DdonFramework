@@ -6,7 +6,7 @@ namespace System.Collections.Generic
     /// <summary>
     /// Extension methods for <see cref="IList{T}"/>.
     /// </summary>
-    public static class AbpListExtensions
+    public static class ListExtensions
     {
         public static void InsertRange<T>(this IList<T> source, int index, IEnumerable<T> items)
         {

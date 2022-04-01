@@ -5,7 +5,7 @@ namespace System.Collections.Generic
     /// <summary>
     /// Extension methods for Dictionary.
     /// </summary>
-    public static class AbpDictionaryExtensions
+    public static class DictionaryExtensions
     {
         /// <summary>
         /// This method is used to try to get a value in a dictionary if it does exists.

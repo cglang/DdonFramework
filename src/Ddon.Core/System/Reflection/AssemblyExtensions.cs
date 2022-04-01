@@ -2,7 +2,7 @@
 
 namespace System.Reflection
 {
-    public static class AbpAssemblyExtensions
+    public static class AssemblyExtensions
     {
         public static string? GetFileVersion(this Assembly assembly)
         {

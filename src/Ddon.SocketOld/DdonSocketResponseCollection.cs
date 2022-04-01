@@ -1,8 +1,16 @@
-﻿using Ddon.ConvenientSocket.Extra;
+﻿using Ddon.Socket.Extra;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using STimer = System.Timers.Timer;
 
-namespace Ddon.ConvenientSocket
+namespace Ddon.Socket
 {
+    /*
+     * 再往里添加的时候
+     */
+
     /// <summary>
     /// 响应集合
     /// </summary>
@@ -88,5 +96,10 @@ namespace Ddon.ConvenientSocket
         {
             ExceptionThen = action;
         }
+    }
+
+    public class ResponseContent
+    {
+        public Action<string> Action;
     }
 }

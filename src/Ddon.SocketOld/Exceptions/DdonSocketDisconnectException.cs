@@ -1,4 +1,4 @@
-﻿namespace Ddon.ConvenientSocket.Exceptions
+﻿namespace Ddon.Socket.Exceptions
 {
     public class DdonSocketDisconnectException : Exception
     {

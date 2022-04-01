@@ -1,38 +1,37 @@
 ﻿using Ddon.Socket.Connection;
-using Ddon.Socket.Handler;
 
-namespace Ddon.Socket
+namespace Ddon.ConvenientSocket
 {
-    public class DdonSocketStorage<TDdonSocketHandler> where TDdonSocketHandler : DdonSocketHandler, new()
+    public class DdonSocketStorage
     {
         private static readonly object _lock = new();
 
-        private readonly Dictionary<Guid, DdonSocketConnectionServer<TDdonSocketHandler>> Pairs = new();
+        private readonly Dictionary<Guid, DdonSocketConnectionCore> Pairs = new();
 
-        private static DdonSocketStorage<TDdonSocketHandler>? ddonSocketClientConnection;
+        private static DdonSocketStorage? ddonSocketClientConnection;
 
-        public IEnumerable<DdonSocketConnectionServer<TDdonSocketHandler>> Clients => Pairs.Values;
+        public IEnumerable<DdonSocketConnectionCore> Clients => Pairs.Values;
 
-        internal static DdonSocketStorage<TDdonSocketHandler> GetInstance()
+        internal static DdonSocketStorage GetInstance()
         {
             if (ddonSocketClientConnection != null) return ddonSocketClientConnection;
 
-            lock (_lock) ddonSocketClientConnection ??= new DdonSocketStorage<TDdonSocketHandler>();
+            lock (_lock) ddonSocketClientConnection ??= new DdonSocketStorage();
 
             return ddonSocketClientConnection;
         }
 
-        public DdonSocketConnectionServer<TDdonSocketHandler>? GetClient(Guid SocketId)
+        public DdonSocketConnectionCore? GetClient(Guid SocketId)
         {
             return Pairs.ContainsKey(SocketId) ? Pairs[SocketId] : null;
         }
 
-        public IEnumerable<DdonSocketConnectionServer<TDdonSocketHandler>>? GetClients(IEnumerable<Guid> SocketIds)
+        public IEnumerable<DdonSocketConnectionCore>? GetClients(IEnumerable<Guid> SocketIds)
         {
             return Pairs.Values.Where(x => SocketIds.Contains(x.SocketId));
         }
 
-        public void Add(DdonSocketConnectionServer<TDdonSocketHandler> client)
+        public void Add(DdonSocketConnectionCore client)
         {
             if (!Pairs.ContainsKey(client.SocketId))
                 Pairs.Add(client.SocketId, client);

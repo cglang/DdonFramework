@@ -10,7 +10,7 @@ namespace Ddon.Core
 {
     public class DdonInvoke
     {
-        public static async Task<string?> IvnvokeReturnJsonAsync(IServiceProvider services, Type classType, string methodName, string methodParameterText)
+        public static async Task<string> IvnvokeReturnJsonAsync(IServiceProvider services, Type classType, string methodName, string methodParameterText)
         {
             var returnData = await IvnvokeAsync(services, classType, methodName, methodParameterText);
             return JsonSerializer.Serialize(returnData);
