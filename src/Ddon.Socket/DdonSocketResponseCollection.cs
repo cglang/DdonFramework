@@ -21,9 +21,13 @@ namespace Ddon.ConvenientSocket
             {
                 lock (_lock)
                 {
-                    //var removeIds = Pairs.Values.Where(x => x.Time.AddMinutes(5) < DateTime.Now).Select(x => x.Id);
-                    //Parallel.ForEach(removeIds, id => Pairs.Remove(id));
-                    Pairs.RemoveAll(x => x.Value.Time.AddSeconds(5) < DateTime.Now);
+                    var removeIds = Pairs.Values.Where(x => x.Time.AddMinutes(5) < DateTime.Now).Select(x => x.Id);
+                    Parallel.ForEach(removeIds, id =>
+                    {
+                        Pairs[id].ExceptionThen?.Invoke(default);
+                        Pairs.Remove(id);
+                    });
+                    //Pairs.RemoveAll(x => x.Value.Time.AddSeconds(5) < DateTime.Now);
                 }
             };
             timer.Start();
@@ -69,7 +73,7 @@ namespace Ddon.ConvenientSocket
         public DateTime Time { get; set; }
 
         public Action<DdonSocketPackageInfo<string>>? ActionThen;
-        public Action<DdonSocketPackageInfo<string>>? ExceptionThen;
+        public Action<DdonSocketPackageInfo<string>?>? ExceptionThen;
 
         public DdonSocketResponse(Guid id)
         {
@@ -84,9 +88,10 @@ namespace Ddon.ConvenientSocket
             return this;
         }
 
-        public void Exception(Action<DdonSocketPackageInfo<string>> action)
+        public DdonSocketResponse Exception(Action<DdonSocketPackageInfo<string>?> action)
         {
             ExceptionThen = action;
+            return this;
         }
     }
 }

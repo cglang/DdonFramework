@@ -12,7 +12,7 @@ namespace Ddon.ConvenientSocket
 
         public IEnumerable<DdonSocketConnectionCore> Clients => Pairs.Values;
 
-        internal static DdonSocketStorage GetInstance()
+        public static DdonSocketStorage GetInstance()
         {
             if (ddonSocketClientConnection != null) return ddonSocketClientConnection;
 

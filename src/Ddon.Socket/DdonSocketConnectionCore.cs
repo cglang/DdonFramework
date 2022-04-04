@@ -19,7 +19,7 @@ namespace Ddon.Socket.Connection
         /// <summary>
         /// SocketId
         /// </summary>
-        public Guid SocketId { get; set; }
+        public Guid SocketId { get; set; } = Guid.NewGuid();
 
         public DdonSocketConnectionCore(TcpClient tcpClient)
         {
@@ -50,8 +50,8 @@ namespace Ddon.Socket.Connection
         /// <summary>
         /// 发送字符串
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="opCode"></param>
+        /// <param name="data">数据</param>
+        /// <param name="route">路由</param>
         /// <returns></returns>
         public async Task<int> SendStringAsync(string data, string? route = default)
         {
@@ -64,12 +64,23 @@ namespace Ddon.Socket.Connection
         }
 
         /// <summary>
+        /// 发送字符串
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="opCode"></param>
+        /// <returns></returns>
+        public async Task<int> SendStringAsync<TData>(TData data, string? route = default)
+        {
+            return await SendStringAsync(JsonSerializer.Serialize(data), route);
+        }
+
+        /// <summary>
         /// 请求
         /// </summary>
         /// <param name="data"></param>
         /// <param name="route"></param>
         /// <returns></returns>
-        public DdonSocketResponse Request(string data, string? route = default)
+        public DdonSocketResponse Request(string route, string data)
         {
             var id = Guid.NewGuid();
             var dataBytes = Encoding.UTF8.GetBytes(data);
@@ -77,6 +88,18 @@ namespace Ddon.Socket.Connection
             byte[] contentBytes = MergeArrays(headBytes, dataBytes);
             Task.Run(async () => await Stream.WriteAsync(contentBytes));
             return new DdonSocketResponse(id);
+        }
+
+        public DdonSocketPackageInfo<string> RequestWait(string route, string data)
+        {
+            var timeOut = false;
+            DdonSocketPackageInfo<string>? info = null;
+            Request(route, data).Then(inf => { info = inf; }).Exception(inf => { info = inf; });
+            while (info == null)
+            {
+                if (timeOut) throw new Exception("请求超时");
+            }
+            return info!;
         }
 
         /// <summary>
@@ -106,12 +129,12 @@ namespace Ddon.Socket.Connection
             }
             else
             {
-                var tm = DdonSocketRouteMap.Get(head.Route);
+                var route = DdonSocketRouteMap.Get(head.Route);
                 if (head.Mode == Mode.String)
                 {
                     var data = Encoding.UTF8.GetString(bytes);
-                    if (tm is not null)
-                        await DdonInvoke.IvnvokeAsync(_serviceProvider, tm.Value.Item1, tm.Value.Item2, data);
+                    if (route is not null)
+                        await DdonSocketInvoke.IvnvokeAsync(_serviceProvider, route.Value, data, this, head);
                 }
                 else if (head.Mode == Mode.Byte)
                 {
@@ -124,9 +147,9 @@ namespace Ddon.Socket.Connection
                 else if (head.Mode == Mode.Request)
                 {
                     var data = Encoding.UTF8.GetString(bytes);
-                    if (tm is not null)
+                    if (route is not null)
                     {
-                        var resData = await DdonInvoke.IvnvokeReturnJsonAsync(_serviceProvider, tm.Value.Item1, tm.Value.Item2, data);
+                        var resData = await DdonSocketInvoke.IvnvokeReturnJsonAsync(_serviceProvider, route.Value.Item1, route.Value.Item2, data, this, head);
                         var dataBytes = Encoding.UTF8.GetBytes(resData);
                         var headBytes = head.Response(dataBytes.Length).GetBytes();
                         byte[] contentBytes = MergeArrays(headBytes, dataBytes);
