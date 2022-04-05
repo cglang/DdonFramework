@@ -73,7 +73,7 @@ namespace Ddon.ConvenientSocket
         public DateTime Time { get; set; }
 
         public Action<DdonSocketPackageInfo<string>>? ActionThen;
-        public Action<DdonSocketPackageInfo<string>?>? ExceptionThen;
+        public Action<DdonSocketPackageInfo<string>>? ExceptionThen;
 
         public DdonSocketResponse(Guid id)
         {
@@ -88,7 +88,7 @@ namespace Ddon.ConvenientSocket
             return this;
         }
 
-        public DdonSocketResponse Exception(Action<DdonSocketPackageInfo<string>?> action)
+        public DdonSocketResponse Exception(Action<DdonSocketPackageInfo<string>> action)
         {
             ExceptionThen = action;
             return this;

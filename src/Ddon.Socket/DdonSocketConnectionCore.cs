@@ -90,16 +90,21 @@ namespace Ddon.Socket.Connection
             return new DdonSocketResponse(id);
         }
 
-        public DdonSocketPackageInfo<string> RequestWait(string route, string data)
+
+        /// <summary>
+        /// 异步请求等待结果
+        /// </summary>
+        /// <param name="route"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="DdonSocketRequestException">请求超时异样</exception>
+        public async Task<DdonSocketPackageInfo<string>> RequestAsync(string route, string data)
         {
-            var timeOut = false;
-            DdonSocketPackageInfo<string>? info = null;
-            Request(route, data).Then(inf => { info = inf; }).Exception(inf => { info = inf; });
-            while (info == null)
-            {
-                if (timeOut) throw new Exception("请求超时");
-            }
-            return info!;
+            var taskCompletion = new TaskCompletionSource<DdonSocketPackageInfo<string>>();
+            Request(route, data)
+                .Then(inf => { taskCompletion.SetResult(inf); })
+                .Exception(inf => { taskCompletion.SetException(new DdonSocketRequestException()); });
+            return await taskCompletion.Task;
         }
 
         /// <summary>
