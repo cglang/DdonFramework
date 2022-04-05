@@ -53,7 +53,7 @@ namespace Ddon.Socket.Connection
         /// <param name="data">数据</param>
         /// <param name="route">路由</param>
         /// <returns></returns>
-        public async Task<int> SendStringAsync(string data, string? route = default)
+        public async Task<int> SendStringAsync(string route, string data)
         {
             var dataBytes = Encoding.UTF8.GetBytes(data);
             var headBytes = DdonSocketHead.GetHeadBytes(Mode.String, dataBytes.Length, route);
@@ -69,9 +69,9 @@ namespace Ddon.Socket.Connection
         /// <param name="data"></param>
         /// <param name="opCode"></param>
         /// <returns></returns>
-        public async Task<int> SendStringAsync<TData>(TData data, string? route = default)
+        public async Task<int> SendStringAsync<TData>(string route, TData data)
         {
-            return await SendStringAsync(JsonSerializer.Serialize(data), route);
+            return await SendStringAsync(route, JsonSerializer.Serialize(data));
         }
 
         /// <summary>
