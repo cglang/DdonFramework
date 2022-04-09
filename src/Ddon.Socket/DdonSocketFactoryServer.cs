@@ -1,12 +1,13 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core;
 using Ddon.Socket.Connection;
+using Ddon.Socket.Route;
 using System.Net;
 using System.Net.Sockets;
 
 namespace Ddon.ConvenientSocket
 {
-    public class DdonSocketFactoryServer
+    public class DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
         private readonly TcpListener _listener;
 
@@ -17,10 +18,11 @@ namespace Ddon.ConvenientSocket
             _listener = new TcpListener(IPAddress.Parse(host), post);
         }
 
-        public static DdonSocketFactoryServer CreateServer(IServiceProvider serviceProvider, string host, int post)
+        public static DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
         {
-            ServiceProviderFactory.InitServiceProvider(serviceProvider);
-            return new DdonSocketFactoryServer(host, post);
+            ServiceProviderFactory.InitServiceProvider(serviceProvider);            
+            DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
+            return new DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase>(host, post);
         }
 
         public void Start()

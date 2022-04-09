@@ -2,6 +2,7 @@
 using Ddon.ConvenientSocket.Exceptions;
 using Ddon.ConvenientSocket.Extra;
 using Ddon.Core;
+using Ddon.Socket.Route;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -135,15 +136,17 @@ namespace Ddon.Socket.Connection
             else
             {
                 var route = DdonSocketRouteMap.Get(head.Route);
+                if (route is null) return;
+
                 if (head.Mode == Mode.String)
                 {
                     var data = Encoding.UTF8.GetString(bytes);
-                    if (route is not null)
-                        await DdonSocketInvoke.IvnvokeAsync(_serviceProvider, route.Value, data, this, head);
+                    await DdonSocketInvoke.IvnvokeAsync(_serviceProvider, route.Value.Item1, route.Value.Item2, data, this, head);
                 }
                 else if (head.Mode == Mode.Byte)
                 {
                     // 处理Byte -> 依旧保持byte数组
+                    await DdonSocketInvoke.IvnvokeAsync(_serviceProvider, route.Value.Item1, route.Value.Item2, bytes, this, head);
                 }
                 else if (head.Mode == Mode.File)
                 {

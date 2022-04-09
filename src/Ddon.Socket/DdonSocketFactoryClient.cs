@@ -1,10 +1,11 @@
 ﻿using Ddon.Core;
 using Ddon.Socket.Connection;
+using Ddon.Socket.Route;
 using System.Net.Sockets;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketFactoryClient
+    public class DdonSocketFactoryClient<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
         private readonly DdonSocketConnectionCore _clientConnection;
 
@@ -14,10 +15,11 @@ namespace Ddon.Socket
             _clientConnection = new DdonSocketConnectionCore(tcpClient);
         }
 
-        public static DdonSocketFactoryClient CreateClient(IServiceProvider serviceProvider, string host, int post)
+        public static DdonSocketFactoryClient<TDdonSocketRouteMapLoadBase> CreateClient(IServiceProvider serviceProvider, string host, int post)
         {
             ServiceProviderFactory.InitServiceProvider(serviceProvider);
-            return new DdonSocketFactoryClient(host, post);
+            DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
+            return new DdonSocketFactoryClient<TDdonSocketRouteMapLoadBase>(host, post);
         }
 
         public DdonSocketConnectionCore Start()
