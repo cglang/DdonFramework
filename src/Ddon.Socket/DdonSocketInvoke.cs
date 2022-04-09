@@ -37,13 +37,13 @@ namespace Ddon.Socket
             return await DdonInvokeForServiceHelper.InvokeAsync(services, className, methodName, parameter);
         }
 
-        public static async Task<dynamic?> IvnvokeAsync(
+        public static async Task<dynamic?> IvnvokeAsync<T>(
             IServiceProvider services,
             string className,
             string methodName,
-            byte[] parameter,
+            T parameter,
             DdonSocketConnectionCore connection,
-            DdonSocketHead head)
+            DdonSocketHead head) where T : notnull
         {
             Connection = connection;
             Head = head;
