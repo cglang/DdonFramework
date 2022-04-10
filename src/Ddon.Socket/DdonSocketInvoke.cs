@@ -1,17 +1,11 @@
 ﻿using Ddon.ConvenientSocket.Extra;
 using Ddon.Core;
-using Ddon.Socket.Connection;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Ddon.Socket
 {
     public class DdonSocketInvoke
     {
-        private static DdonSocketConnectionCore? Connection;
-        private static DdonSocketHead? Head;
-
         public static async Task<string> IvnvokeReturnJsonAsync(
             IServiceProvider services,
             string className,
@@ -32,9 +26,15 @@ namespace Ddon.Socket
             DdonSocketConnectionCore connection,
             DdonSocketHead head)
         {
-            Connection = connection;
-            Head = head;
-            return await DdonInvokeForServiceHelper.InvokeAsync(services, className, methodName, parameter);
+            var classType = DdonTypeHelper.GetTypeByName(className);
+            var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
+
+            var ddonSocketService = (DdonSocketServiceBase) instance;
+            ddonSocketService.Connection = connection;
+            ddonSocketService.Head = head;
+
+            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
+            return await DdonInvokeHelper.InvokeAsync(instance, method, parameter);
         }
 
         public static async Task<dynamic?> IvnvokeAsync<T>(
@@ -45,9 +45,15 @@ namespace Ddon.Socket
             DdonSocketConnectionCore connection,
             DdonSocketHead head) where T : notnull
         {
-            Connection = connection;
-            Head = head;
-            return await DdonInvokeForServiceHelper.InvokeAsync(services, className, methodName, new object[] { parameter });
+            var classType = DdonTypeHelper.GetTypeByName(className);
+            var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
+
+            var ddonSocketService = (DdonSocketServiceBase)instance;
+            ddonSocketService.Connection = connection;
+            ddonSocketService.Head = head;
+
+            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
+            return await DdonInvokeHelper.InvokeAsync(instance, method, parameter);
         }
     }
 }

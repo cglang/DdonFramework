@@ -1,7 +1,7 @@
 ﻿using Ddon.ConvenientSocket.Extra;
 using STimer = System.Timers.Timer;
 
-namespace Ddon.ConvenientSocket
+namespace Ddon.Socket
 {
     /// <summary>
     /// 响应集合

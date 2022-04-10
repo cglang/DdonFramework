@@ -1,4 +1,4 @@
-﻿using Ddon.Socket.Connection;
+﻿using Ddon.Socket;
 
 namespace Ddon.ConvenientSocket.Extra
 {

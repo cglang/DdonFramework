@@ -1,11 +1,10 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core;
-using Ddon.Socket.Connection;
 using Ddon.Socket.Route;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Ddon.ConvenientSocket
+namespace Ddon.Socket
 {
     public class DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
@@ -20,33 +19,36 @@ namespace Ddon.ConvenientSocket
 
         public static DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
         {
-            ServiceProviderFactory.InitServiceProvider(serviceProvider);            
+            ServiceProviderFactory.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
             return new DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase>(host, post);
         }
 
         public void Start()
         {
-            _listener.Start();
-
-            while (true)
+            Task.Run(() =>
             {
-                var client = _listener.AcceptTcpClient();
-                var connection = new DdonSocketConnectionCore(client);
-                SocketStorage.Add(connection);
+                _listener.Start();
 
-                Task.Run(async () =>
+                while (true)
                 {
-                    try
+                    var client = _listener.AcceptTcpClient();
+                    var connection = new DdonSocketConnectionCore(client);
+                    SocketStorage.Add(connection);
+
+                    Task.Run(async () =>
                     {
-                        await connection.ConsecutiveReadStreamAsync();
-                    }
-                    catch (DdonSocketDisconnectException ex)
-                    {
-                        SocketStorage.Remove(ex.SocketId);
-                    }
-                });
-            }
+                        try
+                        {
+                            await connection.ConsecutiveReadStreamAsync();
+                        }
+                        catch (DdonSocketDisconnectException ex)
+                        {
+                            SocketStorage.Remove(ex.SocketId);
+                        }
+                    });
+                }
+            });
         }
     }
 }

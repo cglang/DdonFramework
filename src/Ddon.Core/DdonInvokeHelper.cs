@@ -58,8 +58,12 @@ namespace Ddon.Core
             }
             else if (methodParameter.Count() == 1)
             {
-                var methodParameterData = JsonSerializer.Deserialize(parameterText, methodParameter.First())
-                    ?? throw new Exception($"序列化参数失败");
+                if (methodParameter.First().Name == typeof(string).Name)
+                    return await InvokeAsync(instance, method, new object[] { parameterText });
+
+                // TODO：当参数为int float 等类型时需要进行处理
+
+                var methodParameterData = JsonSerializer.Deserialize(parameterText, methodParameter.First()) ?? throw new Exception($"序列化参数失败");
                 return await InvokeAsync(instance, method, methodParameterData);
             }
 
@@ -94,49 +98,5 @@ namespace Ddon.Core
             var attrib = (AsyncStateMachineAttribute?)method.GetCustomAttribute(atttype);
             return attrib != null;
         }
-    }
-
-    public class DdonInvokeForServiceHelper
-    {
-        public static async Task<dynamic?> InvokeAsync(IServiceProvider services, string className, string methodName, string parameterText)
-        {
-            var classType = DdonTypeHelper.GetTypeByName(className);
-            var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
-
-            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
-            return await DdonInvokeHelper.InvokeAsync(instance, method, parameterText);
-        }
-
-        /// <summary>
-        /// 从容器中获取类的对象并执行方法中的代码
-        /// </summary>
-        /// <param name="services">容器对象</param>
-        /// <param name="className">类型名称</param>
-        /// <param name="methodName">方法名</param>
-        /// <param name="parameter">参数列表</param>
-        /// <returns></returns>
-        public static async Task<dynamic?> InvokeAsync(IServiceProvider services, string className, string methodName, params object[] parameter)
-        {
-            var classType = DdonTypeHelper.GetTypeByName(className);
-            var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
-            
-            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
-            return await DdonInvokeHelper.InvokeAsync(instance, method, parameter);
-        }
-
-        ///// <summary>
-        ///// 从容器中获取类的对象并执行方法中的代码
-        ///// </summary>
-        ///// <param name="services">容器对象</param>
-        ///// <param name="classType">对象的类型</param>
-        ///// <param name="methodName">方法名</param>
-        ///// <param name="parameter">参数列表</param>
-        ///// <returns></returns>
-        ///// <exception cref="Exception">从容器中找不到对象时引发异常</exception>
-        //private static async Task<dynamic?> IvnvokeAsync(IServiceProvider services, Type classType, MethodInfo method, string parameter)
-        //{
-        //    var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
-        //    return await DdonInvokeHelper.IvnvokeAsync(instance, method, parameter);
-        //}
     }
 }

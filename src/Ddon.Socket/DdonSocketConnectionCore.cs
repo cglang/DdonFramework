@@ -1,5 +1,4 @@
-﻿using Ddon.ConvenientSocket;
-using Ddon.ConvenientSocket.Exceptions;
+﻿using Ddon.ConvenientSocket.Exceptions;
 using Ddon.ConvenientSocket.Extra;
 using Ddon.Core;
 using Ddon.Socket.Route;
@@ -7,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
-namespace Ddon.Socket.Connection
+namespace Ddon.Socket
 {
     public class DdonSocketConnectionCore : IDisposable
     {

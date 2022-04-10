@@ -1,6 +1,4 @@
-﻿using Ddon.Socket.Connection;
-
-namespace Ddon.ConvenientSocket
+﻿namespace Ddon.Socket
 {
     public class DdonSocketStorage
     {
