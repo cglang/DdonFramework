@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ddon.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.KeyValueStorage
 {
-    public class DdonDictionary<TValue> : Dictionary<string, TValue?>
+    public class DdonDictionary<TValue> : Dictionary<string, TValue>
     {
         private readonly JsonSerializerOptions jsonSerializerOptions = new() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
 

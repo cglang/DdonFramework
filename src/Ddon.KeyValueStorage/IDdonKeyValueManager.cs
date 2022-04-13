@@ -54,13 +54,13 @@ namespace Ddon.KeyValueStorage
         /// 获取所有的键
         /// </summary>
         /// <returns></returns>
-        Task<IEnumerable<TValue?>> GetAllValueAsync();
+        Task<IEnumerable<TValue>> GetAllValueAsync();
 
         /// <summary>
         /// 获取所有的键/值
         /// </summary>
         /// <returns></returns>
-        Task<Dictionary<string, TValue?>> GetAllKeyValueAsync();
+        Task<Dictionary<string, TValue>> GetAllKeyValueAsync();
 
         /// <summary>
         /// 删除指定键值

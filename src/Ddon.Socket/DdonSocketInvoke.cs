@@ -29,7 +29,7 @@ namespace Ddon.Socket
             var classType = DdonTypeHelper.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (DdonSocketServiceBase) instance;
+            var ddonSocketService = (DdonSocketControllerBase) instance;
             ddonSocketService.Connection = connection;
             ddonSocketService.Head = head;
 
@@ -48,7 +48,7 @@ namespace Ddon.Socket
             var classType = DdonTypeHelper.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (DdonSocketServiceBase)instance;
+            var ddonSocketService = (DdonSocketControllerBase)instance;
             ddonSocketService.Connection = connection;
             ddonSocketService.Head = head;
 

@@ -9,7 +9,7 @@ namespace Ddon.KeyValueStorage
 {
     public class DdonKeyValueManager<TValue> : IDdonKeyValueManager<TValue>
     {
-        private readonly DdonDictionary<TValue?> _storage;
+        private readonly DdonDictionary<TValue> _storage;
 
         /// <summary>
         /// 配置文件位置
@@ -75,7 +75,7 @@ namespace Ddon.KeyValueStorage
             }
         }
 
-        public async Task<IEnumerable<TValue?>> GetAllValueAsync()
+        public async Task<IEnumerable<TValue>> GetAllValueAsync()
         {
             try
             {
@@ -84,7 +84,7 @@ namespace Ddon.KeyValueStorage
             }
             catch
             {
-                return new List<TValue?>();
+                return new List<TValue>();
             }
         }
 
@@ -101,7 +101,7 @@ namespace Ddon.KeyValueStorage
             }
         }
 
-        public async Task<Dictionary<string, TValue?>> GetAllKeyValueAsync()
+        public async Task<Dictionary<string, TValue>> GetAllKeyValueAsync()
         {
             await Task.CompletedTask;
             return _storage;

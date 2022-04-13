@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketServiceBase
+    public class DdonSocketControllerBase
     {
         [AllowNull]
         public DdonSocketConnectionCore Connection { get; set; }

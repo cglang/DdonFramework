@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Ddon.KeyValueStorage
+namespace Ddon.Core
 {
     public class DdonLocks
     {
