@@ -1,4 +1,6 @@
-﻿namespace Ddon.UploadFile
+﻿using System.Collections.Generic;
+
+namespace Ddon.UploadFile
 {
     public class FileDto
     {

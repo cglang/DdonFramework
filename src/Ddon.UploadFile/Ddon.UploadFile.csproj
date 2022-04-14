@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
@@ -14,6 +13,10 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
 	  <ProjectReference Include="..\Ddon.Repository\Ddon.Repositiry.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Migrations\" />
 	</ItemGroup>
 
 </Project>

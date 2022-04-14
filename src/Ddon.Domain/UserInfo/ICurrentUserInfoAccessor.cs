@@ -1,6 +1,6 @@
-﻿using System;
-using Ddon.Domain.Entities;
+﻿using Ddon.Domain.Entities;
 using Ddon.Identity.Entities;
+using System;
 
 namespace Ddon.Domain.UserInfo
 {

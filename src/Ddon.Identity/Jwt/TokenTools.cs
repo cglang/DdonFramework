@@ -6,10 +6,12 @@ using Ddon.Identity.Entities;
 using Ddon.Identity.Manager.Dtos;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Ddon.Identity.Jwt
 {

@@ -1,8 +1,9 @@
-﻿using Ddon.Core.DependencyInjection;
-using Ddon.Identity.Entities;
+﻿using Ddon.Identity.Entities;
 using Ddon.Identity.Manager.Dtos;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Ddon.Identity.Jwt
 {

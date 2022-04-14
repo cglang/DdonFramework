@@ -3,7 +3,6 @@ using Ddon.Core.Services.LazyService;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Entities.Auditing;
 using Ddon.Domain.UserInfo;
-using Ddon.Identity;
 using Ddon.Repositiry.Extensions;
 using Ddon.Uow;
 using Microsoft.EntityFrameworkCore;
@@ -109,7 +108,7 @@ namespace Ddon.Repositiry
             {
                 if (GuidGenerator != null) entityWithStringId.Id = GuidGenerator.Create().ToString();
                 else entityWithStringId.Id = Guid.NewGuid().ToString();
-            }            
+            }
 
             if (entry.Entity is ICreationAuditedObject entity)
             {

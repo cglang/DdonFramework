@@ -1,8 +1,8 @@
-﻿using System;
-using Ddon.Core.Exceptions;
+﻿using Ddon.Core.Exceptions;
 using Ddon.Domain.Entities;
 using Ddon.Identity.Entities;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace Ddon.Domain.UserInfo
 {

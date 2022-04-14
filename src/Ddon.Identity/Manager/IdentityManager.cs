@@ -9,8 +9,12 @@ using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager.Dtos;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Ddon.Identity.Manager
 {

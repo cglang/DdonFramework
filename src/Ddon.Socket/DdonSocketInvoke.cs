@@ -1,6 +1,8 @@
 ﻿using Ddon.ConvenientSocket.Extra;
 using Ddon.Core;
+using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Ddon.Socket
 {
@@ -29,7 +31,7 @@ namespace Ddon.Socket
             var classType = DdonTypeHelper.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (DdonSocketControllerBase) instance;
+            var ddonSocketService = (DdonSocketControllerBase)instance;
             ddonSocketService.Connection = connection;
             ddonSocketService.Head = head;
 

@@ -1,5 +1,4 @@
 ﻿using Ddon.Core.DependencyInjection;
-using System;
 
 namespace Ddon.Core.Models
 {

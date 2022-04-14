@@ -1,4 +1,6 @@
-﻿namespace Ddon.Socket.Route
+﻿using System.Collections.Generic;
+
+namespace Ddon.Socket.Route
 {
     public abstract class DdonSocketRouteMapLoadBase
     {
