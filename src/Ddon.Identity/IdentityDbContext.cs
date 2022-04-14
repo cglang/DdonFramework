@@ -1,12 +1,13 @@
-﻿using Ddon.Domain.Entities;
+﻿using Ddon.Core.Services.LazyService;
+using Ddon.Domain.Entities;
 using Ddon.Identity.Entities;
+using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Identity
 {
-    public class IdentityDbContext<TDbContext, TKey> : DbContext
+    public class IdentityDbContext<TDbContext, TKey> : BasicDbContext<TDbContext, TKey>
         where TDbContext : DbContext
         where TKey : IEquatable<TKey>
     {
@@ -34,7 +35,7 @@ namespace Ddon.Identity
         [AllowNull]
         public DbSet<Tenant<TKey>> Tenants { get; set; }
 
-        public IdentityDbContext(DbContextOptions<TDbContext> options) : base(options)
+        public IdentityDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(lazyServiceProvider, options)
         {
         }
 

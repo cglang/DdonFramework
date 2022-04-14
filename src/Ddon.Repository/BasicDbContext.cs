@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.Repositiry
 {
-    public class BasicDbContext<TDbContext, TKey> : IdentityDbContext<TDbContext, TKey>
+    public class BasicDbContext<TDbContext, TKey> : DbContext
         where TDbContext : DbContext
         where TKey : IEquatable<TKey>
     {
