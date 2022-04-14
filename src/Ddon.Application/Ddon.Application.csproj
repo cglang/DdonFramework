@@ -6,12 +6,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
-		<ProjectReference Include="..\Ddon.Identity\Ddon.Identity.csproj" />
 		<ProjectReference Include="..\Ddon.Repository\Ddon.Repositiry.csproj" />
-		<ProjectReference Include="..\Ddon.Uow\Ddon.Uow.csproj" />
 	</ItemGroup>
 
 </Project>

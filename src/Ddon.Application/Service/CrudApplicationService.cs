@@ -1,8 +1,9 @@
 ﻿using Ddon.Application.Dtos;
 using Ddon.Core.Services.LazyService;
+using Ddon.Domain;
 using Ddon.Domain.Entities;
-using Ddon.Identity;
-using Ddon.Identity.Repository;
+using Ddon.Domain.Repository;
+using Ddon.Uow;
 using System;
 using System.Threading.Tasks;
 
@@ -15,7 +16,12 @@ namespace Ddon.Application.Service
         where TRequestDto : BaseDto<TKey>
         where TPageDto : Page
     {
-        public CrudApplicationService(IRepository<TEntity, TKey> repository, ILazyServiceProvider lazyServiceProvider) : base(repository, lazyServiceProvider)
+        /// <summary>
+        /// 工作单元
+        /// </summary>
+        protected IUnitOfWork UnitOfWork => LazyServiceProvider.LazyGetRequiredService<IUnitOfWork>();
+
+        public CrudApplicationService(ILazyServiceProvider lazyServiceProvider, IRepository<TEntity, TKey> repository) : base(lazyServiceProvider, repository)
         {
             Repository = repository;
         }

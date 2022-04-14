@@ -10,7 +10,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
     <ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
     <ProjectReference Include="..\Ddon.Repository\Ddon.Repositiry.csproj" />
   </ItemGroup>

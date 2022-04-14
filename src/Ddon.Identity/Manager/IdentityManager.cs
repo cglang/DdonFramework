@@ -322,8 +322,6 @@ namespace Ddon.Identity.Manager
             roleEntity.NormalizedName = entity.NormalizedName;
             roleEntity.ConcurrencyStamp = entity.ConcurrencyStamp;
 
-            await _roleRepository.SaveChangesAsync();
-
             return roleEntity;
         }
 

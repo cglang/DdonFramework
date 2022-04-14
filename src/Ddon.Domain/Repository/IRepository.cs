@@ -1,6 +1,6 @@
 ﻿using Ddon.Domain.Entities;
+using Ddon.Identity.Repository;
 using Ddon.Identity.Specifications;
-using Ddon.Identity.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,11 +9,9 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Identity.Repository
+namespace Ddon.Domain.Repository
 {
-    public interface IRepository : IUnitOfWork { }
-
-    public interface IRepository<TEntity> : IRepository where TEntity : class, IEntity
+    public interface IRepository<TEntity> where TEntity : class, IEntity
     {
         DbSet<TEntity> DbSet { get; }
 

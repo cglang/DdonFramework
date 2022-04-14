@@ -1,9 +1,10 @@
-﻿using Ddon.Application.Dtos;
+﻿using AutoMapper;
+using Ddon.Application.Dtos;
 using Ddon.Core.Models;
 using Ddon.Core.Services.LazyService;
+using Ddon.Domain;
 using Ddon.Domain.Entities;
-using Ddon.Identity;
-using Ddon.Identity.Repository;
+using Ddon.Domain.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,17 +19,22 @@ namespace Ddon.Application.Service
         where TRequestDto : BaseDto<TKey>
         where TPageDto : Page
     {
-        private IRepository<TEntity, TKey> Repository { get; }
+        /// <summary>
+        /// Mapper 映射
+        /// </summary>
+        protected IMapper Mapper => LazyServiceProvider.LazyGetRequiredService<IMapper>();
 
-        public UniversalCrudApplicationService(IRepository<TEntity, TKey> repository, ILazyServiceProvider lazyServiceProvider) : base(lazyServiceProvider)
+        private IRepository<TEntity, TKey> _repository;
+
+        public UniversalCrudApplicationService(ILazyServiceProvider lazyServiceProvider, IRepository<TEntity, TKey> repository) : base(lazyServiceProvider)
         {
-            Repository = repository;
+            _repository = repository;
         }
 
         public virtual async Task<TResponseDto> CreateAsync(TRequestDto requestDto, bool autoSave = false)
         {
             TEntity entity = Mapper.Map<TEntity>(requestDto);
-            await Repository.AddAsync(entity, true);
+            await _repository.AddAsync(entity, true);
             return Mapper.Map<TResponseDto>(entity);
         }
 
@@ -50,12 +56,12 @@ namespace Ddon.Application.Service
         {
             IQueryable<TEntity> query = CreateFilteredQuery(requestDto);
 
-            int totalCount = await Repository.AsyncExecuter.CountAsync(query);
+            int totalCount = await _repository.AsyncExecuter.CountAsync(query);
 
             query = ApplySorting(query, requestDto);
             query = ApplyPaging(query, requestDto);
 
-            var entities = await Repository.AsyncExecuter.ToListAsync(query);
+            var entities = await _repository.AsyncExecuter.ToListAsync(query);
             var entityDtos = Mapper.Map<List<TResponseDto>>(entities);
 
             return new PageResult<TResponseDto>(totalCount, entityDtos);
@@ -63,7 +69,7 @@ namespace Ddon.Application.Service
 
         protected virtual IQueryable<TEntity> CreateFilteredQuery(TPageDto requestDto)
         {
-            return Repository.Query;
+            return _repository.Query;
         }
 
         protected virtual IQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TPageDto requestDto)
@@ -88,9 +94,9 @@ namespace Ddon.Application.Service
 
         public async Task<TResponseDto> UpdateAsync(TRequestDto requestDto, bool autoSave = false)
         {
-            var entity = await Repository.FirstAsync(requestDto.Id);
+            var entity = await _repository.FirstAsync(requestDto.Id);
             Mapper.Map(requestDto, entity);
-            await Repository.UpdateAsync(entity, autoSave);
+            await _repository.UpdateAsync(entity, autoSave);
             return Mapper.Map<TResponseDto>(entity);
         }
 

@@ -1,5 +1,6 @@
-﻿using Ddon.Domain.Entities;
-using Ddon.Identity;
+﻿using Ddon.Domain;
+using Ddon.Domain.Entities;
+using Ddon.Domain.Repository;
 using Ddon.Identity.Repository;
 using Ddon.Identity.Specifications;
 using Ddon.Repositiry.Specifications;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.Repositiry.EntityFrameworkCore
 {
-    public class EfCoreRepository<TDbContext, TKey> : IRepository
+    public class EfCoreRepository<TDbContext, TKey>
         where TDbContext : DbContext
         where TKey : IEquatable<TKey>
     {

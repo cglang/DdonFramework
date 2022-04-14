@@ -1,4 +1,4 @@
-﻿namespace Ddon.Identity
+﻿namespace Ddon.Domain
 {
     public class Page
     {

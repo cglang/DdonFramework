@@ -1,8 +1,10 @@
-﻿using Ddon.Domain.UserInfo;
+﻿using Ddon.Core.Models;
+using Ddon.Domain.UserInfo;
 using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -16,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// 添加身份服务
         /// </summary>
         /// <param name="services"></param>
-        public static void AddDdonIdentity<TDbContext, TKey>(this IServiceCollection services)
+        public static void AddDdonIdentity<TDbContext, TKey>(this IServiceCollection services, IConfiguration configuration)
             where TDbContext : DbContext
             where TKey : IEquatable<TKey>
         {
@@ -32,6 +34,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ITokenTools<TKey>, TokenTools<TKey>>();
 
             services.AddScoped<ICurrentUserInfoAccessor<TKey>, CurrentUserInfoAccessor<TKey>>();
+
+            var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            services.AddSingleton(appSettings);
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Ddon.UploadFile
 
                 //var dtos = await uploadFileService!.UploadFiles(context.Request.Form.Files.Select(x => x));
 
-                await context.Response.WriteAsJsonAsync(new { Name = "cglang" });
+                //await context.Response.WriteAsJsonAsync(new { Name = "cglang" });
             }));
         }
     }
