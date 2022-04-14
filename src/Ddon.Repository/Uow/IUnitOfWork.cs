@@ -1,7 +1,7 @@
 ﻿using Ddon.Core.DependencyInjection;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Ddon.Uow
+namespace Ddon.Repositiry.Uow
 {
     public interface IUnitOfWork : IScopedDependency
     {

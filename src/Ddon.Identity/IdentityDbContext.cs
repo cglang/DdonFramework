@@ -4,7 +4,6 @@ using Ddon.Identity.Entities;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Identity
 {
@@ -12,29 +11,21 @@ namespace Ddon.Identity
         where TDbContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        [AllowNull]
-        public DbSet<User<TKey>> Users { get; set; }
+        public DbSet<User<TKey>>? Users { get; set; }
 
-        [AllowNull]
-        public DbSet<Role<TKey>> Roles { get; set; }
+        public DbSet<Role<TKey>>? Roles { get; set; }
 
-        [AllowNull]
-        public DbSet<UserRole<TKey>> UserRoles { get; set; }
+        public DbSet<UserRole<TKey>>? UserRoles { get; set; }
 
-        [AllowNull]
-        public DbSet<UserClaim<TKey>> UserClaims { get; set; }
+        public DbSet<UserClaim<TKey>>? UserClaims { get; set; }
 
-        [AllowNull]
-        public DbSet<RoleClaim<TKey>> RoleClaims { get; set; }
+        public DbSet<RoleClaim<TKey>>? RoleClaims { get; set; }
 
-        [AllowNull]
-        public DbSet<UserToken<TKey>> UserTokens { get; set; }
+        public DbSet<UserToken<TKey>>? UserTokens { get; set; }
 
-        [AllowNull]
-        public DbSet<UserLogin<TKey>> UserLogins { get; set; }
+        public DbSet<UserLogin<TKey>>? UserLogins { get; set; }
 
-        [AllowNull]
-        public DbSet<Tenant<TKey>> Tenants { get; set; }
+        public DbSet<Tenant<TKey>>? Tenants { get; set; }
 
         public IdentityDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(lazyServiceProvider, options)
         {

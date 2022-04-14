@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Ddon.Uow
+namespace Ddon.Repositiry.Uow
 {
     public class UnitOfWork : IUnitOfWork
     {
