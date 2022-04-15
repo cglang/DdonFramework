@@ -40,9 +40,11 @@ namespace Ddon.Identity.Manager
 
         Task<User<TKey>?> GetUserByClaimsAsync(ClaimsPrincipal? user);
 
+        Task<User<TKey>?> GetUserByIdAsync(TKey userId);
+
         Task<Tenant<TKey>> GetUserTenantByClaimsAsync(ClaimsPrincipal? user);
 
-        Task<Tenant<TKey>> GetUserTenantByClaimsAsync(TKey id);
+        Task<Tenant<TKey>> GetUserTenantByUserIdAsync(TKey id);
 
         Task AddUserClaimAsync(TKey userId, string permissionName);
 

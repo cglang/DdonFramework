@@ -86,9 +86,8 @@ namespace Ddon.Identity.Manager
                 };
             }
 
-            var cacheUserPermissions = SetUserPermissionsToCache(existingUser);
-            var cacheTenantInfo = CacheTenantInfo(existingUser);
-            Task.WaitAll(cacheUserPermissions, cacheTenantInfo);
+            await SetUserPermissionsToCache(existingUser);
+            await CacheTenantInfo(existingUser);           
 
             return await _tokenTools.GenerateJwtTokenAsync(existingUser);
         }
@@ -204,6 +203,11 @@ namespace Ddon.Identity.Manager
             return await _userRepository.FirstOrDefaultAsync(x => x.Id.ToString() == userId);
         }
 
+        public async Task<User<TKey>?> GetUserByIdAsync(TKey userId)
+        {
+            return await _userRepository.FirstOrDefaultAsync(x => x.Id.Equals(userId));
+        }
+
         /// <summary>
         /// 使用当前相关用户信息创建一个租户对象,如没有用户信息则返回默认租户对象
         /// </summary>
@@ -221,7 +225,7 @@ namespace Ddon.Identity.Manager
             return await _tenantRepository.FirstOrDefaultAsync(x => x.Id.Equals(user.TenantId)) ?? new Tenant<TKey>();
         }
 
-        public async Task<Tenant<TKey>> GetUserTenantByClaimsAsync(TKey id)
+        public async Task<Tenant<TKey>> GetUserTenantByUserIdAsync(TKey id)
         {
             var user = await Users.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
@@ -362,7 +366,7 @@ namespace Ddon.Identity.Manager
 
             if (tenant is null)
             {
-                tenant = await GetUserTenantByClaimsAsync(existingUser.Id);
+                tenant = await GetUserTenantByUserIdAsync(existingUser.Id);
                 await _cache.SetAsync($"{CacheKey.TenantKey}{existingUser.Id}", tenant);
             }
         }

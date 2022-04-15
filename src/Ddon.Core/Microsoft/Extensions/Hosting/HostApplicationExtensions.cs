@@ -1,5 +1,6 @@
 ﻿using Ddon.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
 namespace Microsoft.Extensions.Hosting
@@ -15,6 +16,12 @@ namespace Microsoft.Extensions.Hosting
                 new TMoudle().Load(services, configuration);
             });
             return hostBuilder;
+        }
+
+        public static IServiceCollection LoadModule<TMoudle>(this IServiceCollection services, IConfiguration configuration) where TMoudle : Module, new()
+        {
+            new TMoudle().Load(services, configuration);
+            return services;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Ddon.Core.Models;
 using Ddon.Domain.UserInfo;
+using Ddon.Identity;
 using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
@@ -22,6 +23,8 @@ namespace Microsoft.Extensions.DependencyInjection
             where TDbContext : DbContext
             where TKey : IEquatable<TKey>
         {
+            services.AddTransient<UserInfoInitMiddleware<TKey>>();
+
             services.AddTransient<IIdentityManager<TKey>, IdentityManager<TKey>>();
 
             services.AddTransient<IRoleClaimRepository<TKey>, RoleClaimRepository<TDbContext, TKey>>();

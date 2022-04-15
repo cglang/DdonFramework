@@ -1,29 +1,19 @@
-﻿using Ddon.Core.Exceptions;
-using Ddon.Domain.Entities;
+﻿using Ddon.Domain.Entities;
 using Ddon.Identity.Entities;
-using Microsoft.AspNetCore.Http;
 using System;
 
 namespace Ddon.Domain.UserInfo
 {
-    public class CurrentUserInfoAccessor<TKey> : ICurrentUserInfoAccessor<TKey>
-        where TKey : IEquatable<TKey>
+    public class CurrentUserInfoAccessor<TKey> : ICurrentUserInfoAccessor<TKey> where TKey : IEquatable<TKey>
     {
         public User<TKey>? User { get; set; }
 
-        public Tenant<TKey> Tenant { get; set; }
+        public Tenant<TKey> Tenant { get; set; } = new Tenant<TKey>();
 
-        public CurrentUserInfoAccessor(IHttpContextAccessor httpContext)
+        public void Init(User<TKey>? user, Tenant<TKey>? tenant)
         {
-            // TODO: 可从N多位置获取用户信息不只是 HttpContext
-
-            var userClaims = httpContext.HttpContext?.User;
-            if (userClaims is null) throw new UnauthorizedException("没有身份信息!");
-
-            //User = identityManager.GetUserByClaimsAsync(userClaims).Result;
-            //Tenant = identityManager.get(userClaims).Result;
-
-            Tenant = new Tenant<TKey>();
+            User = user;
+            Tenant = tenant ?? new Tenant<TKey>();
         }
     }
 }
