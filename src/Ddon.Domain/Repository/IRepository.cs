@@ -13,7 +13,7 @@ namespace Ddon.Domain.Repository
 {
     public interface IRepository<TEntity> where TEntity : class, IEntity
     {
-        DbSet<TEntity> DbSet { get; }
+        //DbSet<TEntity> DbSet { get; }
 
         Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default);
 
@@ -44,6 +44,8 @@ namespace Ddon.Domain.Repository
         Task<IEnumerable<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
         Task<IEnumerable<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+
+
 
         #region 规约查询
 

@@ -16,7 +16,7 @@ namespace Ddon.Localizer
             configuration.GetSection(nameof(localizerOptions)).Bind(localizerOptions);
 
             services.Configure<JsonLocalizerOptions>(options => options = localizerOptions);
-            services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+            services.AddSingleton<IStringLocalizer, JsonStringLocalizer>();
         }
     }
 }

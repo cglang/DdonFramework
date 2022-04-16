@@ -1,65 +1,31 @@
 ﻿using Ddon.Cache;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ddon.Localizer
 {
-    /// <summary>
-    /// Service that contains LocalizedStrings with json files as localization
-    /// resources and a DistributedCache to cache out the values read from 
-    /// json resource files
-    /// 包含 LocalizedStrings 和 json 文件作为本地化资源和一个 DistributedCache 的服务来缓存从 json 资源文件中读取的值
-    /// </summary>
     public class JsonStringLocalizer : IStringLocalizer
     {
-        #region Dependency Injection Fields
-
         private readonly ICache _cache;
         private readonly IOptions<JsonLocalizerOptions> _options;
 
-        #endregion
+        private readonly Dictionary<string, string> Pairs = new();
 
-        #region Private Fields
-
-        private readonly JsonSerializer _serializer = new();
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// The default constructor for this servce injecting
-        /// the required dependencies
-        /// 此服务的默认构造函数注入所需的依赖项
-        /// </summary>
-        /// <param name="cache">The <see cref="IDistributedCache"/> implementation to use</param>
-        /// <param name="options">The configuration options for the json localizer</param>
         public JsonStringLocalizer(ICache cache, IOptions<JsonLocalizerOptions> options)
         {
             _cache = cache;
             _options = options;
+
+            var fullFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
+            LoadLocalizer(fullFilePath).Wait();
         }
 
-        #endregion
-
-        #region IStringLocalizer Implementation
-
-        /// <summary>
-        /// Gets the string resource with the given name.
-        /// 获取具有给定名称的字符串资源。
-        /// </summary>
-        /// <param name="name">The name of the string resource.</param>
-        /// <returns>
-        /// The string resource as a <see cref="T:Microsoft.Extensions.Localization.LocalizedString" />.
-        /// </returns>
         public LocalizedString this[string name]
         {
             get
@@ -71,15 +37,6 @@ namespace Ddon.Localizer
             }
         }
 
-        /// <summary>
-        /// Gets the string resource with the given name and formatted with the supplied arguments.
-        /// 获取具有给定名称并使用提供的参数进行格式化的字符串资源。
-        /// </summary>
-        /// <param name="name">The name of the string resource.</param>
-        /// <param name="arguments">The values to format the string with.</param>
-        /// <returns>
-        /// The formatted string resource as a <see cref="T:Microsoft.Extensions.Localization.LocalizedString" />.
-        /// </returns>
         public LocalizedString this[string name, params object[] arguments]
         {
             get
@@ -91,129 +48,61 @@ namespace Ddon.Localizer
             }
         }
 
-        /// <summary>
-        /// Gets all string resources.
-        /// 获取所有字符串资源。
-        /// </summary>
-        /// <param name="includeParentCultures">
-        /// A <see cref="T:System.Boolean" /> indicating whether to include strings from parent cultures.
-        /// </param>
-        /// <returns>The strings.</returns>
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
-            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
-            using var str = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var sReader = new StreamReader(str);
-            using var reader = new JsonTextReader(sReader);
-            while (reader.Read())
+            foreach (var lkv in Pairs)
             {
-                if (reader.TokenType != JsonToken.PropertyName)
-                    continue;
-
-                var key = (string)reader.Value;
-                reader.Read();
-                var value = _serializer.Deserialize<string>(reader);
-                yield return new LocalizedString(key, value, false);
+                yield return new LocalizedString($"{lkv.Key}", lkv.Value, false);
             }
         }
-
-        /// <summary>
-        /// Creates a new <see cref="T:Microsoft.Extensions.Localization.IStringLocalizer" /> for 
-        /// a specific <see cref="T:System.Globalization.CultureInfo" />.
-        /// 为特定的 <see cref="T:System.Globalization.CultureInfo" /> 创建一个新的 <see cref="T:Microsoft.Extensions.Localization.IStringLocalizer" />。
-        /// </summary>
-        /// <param name="culture">The <see cref="T:System.Globalization.CultureInfo" /> to use.</param>
-        /// <returns>
-        /// A culture-specific <see cref="T:Microsoft.Extensions.Localization.IStringLocalizer" />.
-        /// </returns>
-        public IStringLocalizer WithCulture(CultureInfo culture)
-        {
-            CultureInfo.DefaultThreadCurrentCulture = culture;
-            return new JsonStringLocalizer(_cache, _options);
-        }
-
-        #endregion
-
-        #region Private Helper Methods
 
         private async Task<string?> GetStringAsync(string key)
         {
-            //var relativeFilePath = $"{_options.Value.ResourcesPath}/{CultureInfo.CurrentCulture.Name}.json";
-            var fullFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
-            //var fullFilePath = Path.GetFullPath(relativeFilePath);
+            var cacheKey = $"{_options.Value.CacheKeyPrefix}_{key}";
+            var cacheValue = await _cache.GetAsync<string>(cacheKey);
+            if (!string.IsNullOrEmpty(cacheValue)) return cacheValue;
 
-            if (File.Exists(fullFilePath))
-            {
-                var cacheKey = $"{_options.Value.CacheKeyPrefix}_{key}";
-                var cacheValue = await _cache.GetAsync<string>(cacheKey);
-                if (!string.IsNullOrEmpty(cacheValue)) return cacheValue;
-
-                var result = PullDeserialize<string>(key, fullFilePath);
-                if (!string.IsNullOrEmpty(result))
-                    await _cache.SetAsync(cacheKey, result);
-
-                return result;
-            }
-
-            WriteEmptyKeys(new CultureInfo("en-US"), fullFilePath);
             return default;
         }
 
-        private void WriteEmptyKeys(CultureInfo sourceCulture, string fullFilePath)
+        public async Task LoadLocalizer(string fullFilePath)
         {
-            //var sourceFilePath = $"{_options.Value.ResourcesPath}/{sourceCulture.Name}.json";
-            var sourceFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{sourceCulture.Name}.json");
+            using var streamReader = new StreamReader(fullFilePath);
+            var json = await streamReader.ReadToEndAsync();
+            var lkvs = await PullDeserialize(json);
 
-            using var str = new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var outStream = File.Create(fullFilePath);
-            using var sWriter = new StreamWriter(outStream);
-            using var writer = new JsonTextWriter(sWriter);
-            using var sReader = new StreamReader(str);
-            using var reader = new JsonTextReader(sReader);
-            writer.Formatting = Formatting.Indented;
-            var jobj = JObject.Load(reader);
-            writer.WriteStartObject();
-            foreach (var property in jobj.Properties())
+            Parallel.ForEach(lkvs, lkv =>
             {
-                writer.WritePropertyName(property.Name);
-                writer.WriteNull();
-            }
-            writer.WriteEndObject();
+                _cache.SetAsync($"{_options.Value.CacheKeyPrefix}_{lkv.Key}", lkv.Value);
+            });
         }
 
-        /// <summary>
-        /// This is used to deserialize only one specific value from
-        /// the json without loading the entire object.
-        /// </summary>
-        /// <typeparam name="T">Type of the object to deserialize</typeparam>
-        /// <param name="propertyName">Name of the property to get from json</param>
-        /// <param name="filePath">The file path of the json resource file</param>
-        /// <returns>Deserialized propert from the json</returns>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        private T? PullDeserialize<T>(string propertyName, string filePath)
+        private async Task<Dictionary<string, string>> PullDeserialize(string json, string baseKey = "", Dictionary<string, string>? pairs = null)
         {
-            if (propertyName == null)
-                throw new ArgumentNullException(nameof(propertyName));
-
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
-
-            using var str = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var sReader = new StreamReader(str);
-            using var reader = new JsonTextReader(sReader);
-            while (reader.Read())
+            if (pairs == null) pairs = new Dictionary<string, string>();
+            var dics = JsonSerializer.Deserialize<IDictionary<string, object?>>(json)!;
+            foreach (var dic in dics)
             {
-                if (reader.TokenType == JsonToken.PropertyName
-                    && (string)reader.Value == propertyName)
+                var jsonEliment = (JsonElement?)dic.Value;
+                if (jsonEliment != null)
                 {
-                    reader.Read();
-                    return _serializer.Deserialize<T>(reader);
+                    var kind = jsonEliment.Value.ValueKind;
+                    if (kind == JsonValueKind.Object)
+                    {
+                        await PullDeserialize($"{dic.Value}", $"{baseKey}{dic.Key}:", pairs);
+                    }
+                    else if (kind == JsonValueKind.Array)
+                    {
+                        // Array 需要特殊处理
+                        pairs.Add($"{baseKey}{dic.Key}", dic.Value?.ToString() ?? string.Empty);
+                    }
+                    else
+                    {
+                        pairs.Add($"{baseKey}{dic.Key}", dic.Value?.ToString() ?? string.Empty);
+                    }
                 }
             }
-            return default;
+            return pairs;
         }
-
-        #endregion
     }
 }

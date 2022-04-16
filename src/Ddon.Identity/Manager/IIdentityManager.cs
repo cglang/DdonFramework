@@ -1,8 +1,8 @@
 ﻿using Ddon.Domain.Entities;
 using Ddon.Identity.Entities;
 using Ddon.Identity.Manager.Dtos;
-using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -10,21 +10,21 @@ namespace Ddon.Identity.Manager
 {
     public interface IIdentityManager<TKey> where TKey : IEquatable<TKey>
     {
-        DbSet<User<TKey>> Users { get; }
+        IQueryable<User<TKey>> Users { get; }
 
-        DbSet<Role<TKey>> Roles { get; }
+        IQueryable<Role<TKey>> Roles { get; }
 
-        DbSet<UserClaim<TKey>> UserClaims { get; }
+        IQueryable<UserClaim<TKey>> UserClaims { get; }
 
-        DbSet<RoleClaim<TKey>> RoleClaims { get; }
+        IQueryable<RoleClaim<TKey>> RoleClaims { get; }
 
-        DbSet<UserRole<TKey>> UserRoles { get; }
+        IQueryable<UserRole<TKey>> UserRoles { get; }
 
-        DbSet<UserToken<TKey>> UserTokens { get; }
+        IQueryable<UserToken<TKey>> UserTokens { get; }
 
-        DbSet<UserLogin<TKey>> UserLogins { get; }
+        IQueryable<UserLogin<TKey>> UserLogins { get; }
 
-        DbSet<Tenant<TKey>> Tenants { get; }
+        IQueryable<Tenant<TKey>> Tenants { get; }
 
         Task<TokenDto> AccessTokenAsync(AccessTokenInPutDto input);
 

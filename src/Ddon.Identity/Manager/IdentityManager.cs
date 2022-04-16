@@ -30,15 +30,15 @@ namespace Ddon.Identity.Manager
         private readonly ITokenTools<TKey> _tokenTools;
         private readonly ICache _cache;
 
-        public DbSet<User<TKey>> Users => _userRepository.DbSet;
-        public DbSet<Role<TKey>> Roles => _roleRepository.DbSet;
-        public DbSet<UserClaim<TKey>> UserClaims => _userClaimRepository.DbSet;
-        public DbSet<RoleClaim<TKey>> RoleClaims => _roleClaimRepository.DbSet;
-        public DbSet<UserRole<TKey>> UserRoles => _userRoleRepository.DbSet;
+        public IQueryable<User<TKey>> Users => _userRepository.Query;
+        public IQueryable<Role<TKey>> Roles => _roleRepository.Query;
+        public IQueryable<UserClaim<TKey>> UserClaims => _userClaimRepository.Query;
+        public IQueryable<RoleClaim<TKey>> RoleClaims => _roleClaimRepository.Query;
+        public IQueryable<UserRole<TKey>> UserRoles => _userRoleRepository.Query;
         // TODO: 这两个的仓储还未实现
-        public DbSet<UserToken<TKey>> UserTokens => default!;
-        public DbSet<UserLogin<TKey>> UserLogins => default!;
-        public DbSet<Tenant<TKey>> Tenants => _tenantRepository.DbSet;
+        public IQueryable<UserToken<TKey>> UserTokens => default!;
+        public IQueryable<UserLogin<TKey>> UserLogins => default!;
+        public IQueryable<Tenant<TKey>> Tenants => _tenantRepository.Query;
 
         public IdentityManager(
             IPermissionDefinitionContext permissionDefinitionContext,
