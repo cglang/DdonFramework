@@ -1,6 +1,6 @@
 ﻿using Ddon.Core.DependencyInjection;
 
-namespace Ddon.Core.Services.Permission
+namespace Ddon.Identity.Permission
 {
     public interface IPermissionDefinitionContext : ISingletonDependency
     {

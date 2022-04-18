@@ -1,4 +1,4 @@
-﻿using Ddon.Core.JwtBearer;
+﻿using Ddon.Identity.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

@@ -1,8 +1,8 @@
-﻿using Ddon.Core.Models;
-using Ddon.Domain.UserInfo;
+﻿using Ddon.Domain.UserInfo;
 using Ddon.Identity;
 using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager;
+using Ddon.Identity.Options;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

@@ -1,4 +1,4 @@
-﻿namespace Ddon.Core.Services.Permission
+﻿namespace Ddon.Identity.Permission
 {
     public interface IPermissionDefinitionProvider
     {

@@ -1,5 +1,4 @@
-﻿using Ddon.Core.Models;
-using System;
+﻿using System;
 
 namespace Ddon.Identity.Jwt
 {

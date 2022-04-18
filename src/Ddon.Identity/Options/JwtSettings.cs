@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ddon.Core.JwtBearer
+namespace Ddon.Identity.Options
 {
     public class JwtSettings
     {

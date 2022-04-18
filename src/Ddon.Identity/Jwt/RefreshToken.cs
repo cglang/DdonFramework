@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Ddon.Core.Models
+namespace Ddon.Identity.Jwt
 {
     public class RefreshToken<TKey> where TKey : IEquatable<TKey>
     {

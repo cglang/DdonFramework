@@ -1,9 +1,8 @@
 ﻿using Ddon.Cache;
 using Ddon.Core;
-using Ddon.Core.JwtBearer;
-using Ddon.Core.Models;
 using Ddon.Identity.Entities;
 using Ddon.Identity.Manager.Dtos;
+using Ddon.Identity.Options;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using System;

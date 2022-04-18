@@ -1,6 +1,6 @@
 ﻿using Ddon.Core.DependencyInjection;
 
-namespace Ddon.Core.Models
+namespace Ddon.Identity.Options
 {
     public class AppSettings : ISingletonDependency
     {

@@ -1,4 +1,5 @@
-﻿using Ddon.Core.Services.Permission;
+﻿
+using Ddon.Identity.Permission;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

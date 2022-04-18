@@ -1,12 +1,11 @@
 ﻿using Ddon.Cache;
 using Ddon.Core;
-using Ddon.Core.Models;
-using Ddon.Core.Services.Permission;
 using Ddon.Core.Utility;
 using Ddon.Domain.Entities;
 using Ddon.Identity.Entities;
 using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager.Dtos;
+using Ddon.Identity.Permission;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;

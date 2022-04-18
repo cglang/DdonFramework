@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Ddon.Core;
+using System;
 using System.Collections.Generic;
 
-namespace Ddon.Core.Services.Permission
+namespace Ddon.Identity.Permission
 {
     public class PermissionDefinitionContext : IPermissionDefinitionContext
     {

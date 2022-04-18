@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Ddon.Core;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace Ddon.Core.Services.Permission
+namespace Ddon.Identity.Permission
 {
     public class PermissionDefinition
     {

@@ -1,4 +1,4 @@
-﻿using Ddon.Core.Models;
+﻿using Ddon.Application.Dtos;
 using Ddon.Domain;
 using System.Threading.Tasks;
 

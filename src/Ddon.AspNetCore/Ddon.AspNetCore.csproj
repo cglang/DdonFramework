@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
     <ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
   </ItemGroup>
 

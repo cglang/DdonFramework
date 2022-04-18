@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ddon.Core.Models
+namespace Ddon.Application.Dtos
 {
     [Serializable]
     public class PageResult<T> : ResultBase<T>

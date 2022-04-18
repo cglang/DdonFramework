@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Ddon.Core
+namespace Ddon.Core.Reflection
 {
     public class DdonInvokeHelper
     {
