@@ -10,12 +10,13 @@ namespace Ddon.Localizer
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
+            Load<CoreModule>(services, configuration);
             Load<CacheModule>(services, configuration);
 
             var localizerOptions = new JsonLocalizerOptions();
             configuration.GetSection(nameof(localizerOptions)).Bind(localizerOptions);
-
             services.Configure<JsonLocalizerOptions>(options => options = localizerOptions);
+
             services.AddSingleton<IStringLocalizer, JsonStringLocalizer>();
         }
     }

@@ -8,6 +8,8 @@ namespace Ddon.Serilog
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
+            Load<CoreModule>(services, configuration);
+
             services.AddLogging(configuration);
         }
     }
