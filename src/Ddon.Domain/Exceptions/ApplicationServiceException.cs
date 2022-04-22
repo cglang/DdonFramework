@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ddon.Core.Exceptions
+namespace Ddon.Domain.Exceptions
 {
     public class ApplicationServiceException : Exception
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ddon.Core.Exceptions
+namespace Ddon.Identity.Exceptions
 {
     /// <summary>
     /// 未授权异常
