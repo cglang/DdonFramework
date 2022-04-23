@@ -28,7 +28,7 @@ namespace System.IO
         {
             byte[] bytes = new byte[length];
             await stream.ReadAsync(bytes.AsMemory(0, length));
-            return ByteCut(bytes);
+            return bytes;
         }
 
         public static async Task<byte[]> ReadAllBytesAsync(this Stream stream, CancellationToken cancellationToken = default)
@@ -77,28 +77,6 @@ namespace System.IO
         {
             var dataBytes = Encoding.UTF8.GetBytes(content);
             await stream.WriteAsync(dataBytes);
-        }
-
-        /// <summary>
-        /// 去掉byte[] 中特定的byte
-        /// </summary>
-        /// <param name="bytes"> 需要处理的byte[]</param>
-        /// <param name="cut">byte[] 中需要除去的特定 byte (此处: byte cut = 0x00 ;) </param>
-        /// <returns> 返回处理完毕的byte[] </returns>
-        private static byte[] ByteCut(byte[] bytes, byte cut = 0x00)
-        {
-            List<byte> list = new(bytes);
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                if (list[i] == cut)
-                    list.RemoveAt(i);
-            }
-            byte[] lastbyte = new byte[list.Count];
-            for (int i = 0; i < list.Count; i++)
-            {
-                lastbyte[i] = list[i];
-            }
-            return lastbyte;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Ddon.Socket.Route
+﻿namespace Ddon.Socket.Session.Route
 {
     public class DdonSocketRoute
     {

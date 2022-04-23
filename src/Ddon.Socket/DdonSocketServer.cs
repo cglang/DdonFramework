@@ -1,6 +1,7 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core;
-using Ddon.Socket.Route;
+using Ddon.Socket.Session;
+using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,26 +11,26 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
+    public class DdonSocketServer<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
         private readonly TcpListener _listener;
         private readonly IServiceProvider _serviceProvider;
 
-        private ILogger? Logger => _serviceProvider.GetService<ILogger<DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase>>>();
+        private ILogger? Logger => _serviceProvider.GetService<ILogger<DdonSocketServer<TDdonSocketRouteMapLoadBase>>>();
 
         public static DdonSocketStorage SocketStorage => DdonSocketStorage.GetInstance();
 
-        private DdonSocketFactoryServer(IServiceProvider serviceProvider, string host, int post)
+        private DdonSocketServer(IServiceProvider serviceProvider, string host, int post)
         {
             _listener = new TcpListener(IPAddress.Parse(host), post);
             _serviceProvider = serviceProvider;
         }
 
-        public static DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
+        public static DdonSocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
         {
             ServiceProviderFactory.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
-            return new DdonSocketFactoryServer<TDdonSocketRouteMapLoadBase>(serviceProvider, host, post);
+            return new DdonSocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, host, post);
         }
 
         public void Start()
@@ -41,15 +42,15 @@ namespace Ddon.Socket
                 while (true)
                 {
                     var client = _listener.AcceptTcpClient();
-                    var connection = new DdonSocketConnection(client);
-                    SocketStorage.Add(connection);
-                    Logger?.LogInformation("客户端接入：{SocketId}", connection.SocketId);
+                    var session = new DdonSocketSession(client);
+                    SocketStorage.Add(session);
+                    Logger?.LogInformation("客户端接入：{SocketId}", session.Conn.SocketId);
 
                     Task.Run(async () =>
                     {
                         try
                         {
-                            await connection.ConsecutiveReadStreamAsync();
+                            await session.Conn.ConsecutiveReadStreamAsync();
                         }
                         catch (DdonSocketDisconnectException ex)
                         {

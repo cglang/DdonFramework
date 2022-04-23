@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ddon.Socket.Session;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,11 +9,11 @@ namespace Ddon.Socket
     {
         private static readonly object _lock = new();
 
-        private readonly Dictionary<Guid, DdonSocketConnection> Pairs = new();
+        private readonly Dictionary<Guid, DdonSocketSession> Pairs = new();
 
         private static DdonSocketStorage? ddonSocketClientConnection;
 
-        public IEnumerable<DdonSocketConnection> Clients => Pairs.Values;
+        public IEnumerable<DdonSocketSession> Clients => Pairs.Values;
 
         public static DdonSocketStorage GetInstance()
         {
@@ -23,20 +24,20 @@ namespace Ddon.Socket
             return ddonSocketClientConnection;
         }
 
-        public DdonSocketConnection? GetClient(Guid SocketId)
+        public DdonSocketSession? GetClient(Guid socketId)
         {
-            return Pairs.ContainsKey(SocketId) ? Pairs[SocketId] : null;
+            return Pairs.ContainsKey(socketId) ? Pairs[socketId] : null;
         }
 
-        public IEnumerable<DdonSocketConnection>? GetClients(IEnumerable<Guid> SocketIds)
+        public IEnumerable<DdonSocketSession>? GetClients(IEnumerable<Guid> socketIds)
         {
-            return Pairs.Values.Where(x => SocketIds.Contains(x.SocketId));
+            return Pairs.Values.Where(x => socketIds.Contains(x.Conn.SocketId));
         }
 
-        public void Add(DdonSocketConnection client)
+        public void Add(DdonSocketSession session)
         {
-            if (!Pairs.ContainsKey(client.SocketId))
-                Pairs.Add(client.SocketId, client);
+            if (!Pairs.ContainsKey(session.Conn.SocketId))
+                Pairs.Add(session.Conn.SocketId, session);
         }
 
         public void Remove(Guid clientId)
