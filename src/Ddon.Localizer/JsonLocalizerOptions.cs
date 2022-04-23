@@ -14,12 +14,6 @@ namespace Ddon.Localizer
             CacheKeyPrefix = "__localization__";
         }
 
-        public JsonLocalizerOptions(string resourcesPath, string cacheKeyPrefix)
-        {
-            ResourcesPath = resourcesPath;
-            CacheKeyPrefix = cacheKeyPrefix;
-        }
-
         /// <summary>
         /// The path of the json files where all the localization is stored
         /// 存储所有本地化的 json 文件的路径

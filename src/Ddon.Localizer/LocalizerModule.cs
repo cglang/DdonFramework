@@ -13,9 +13,12 @@ namespace Ddon.Localizer
             Load<CoreModule>(services, configuration);
             Load<CacheModule>(services, configuration);
 
-            var localizerOptions = new JsonLocalizerOptions();
-            configuration.GetSection(nameof(localizerOptions)).Bind(localizerOptions);
-            services.Configure<JsonLocalizerOptions>(options => options = localizerOptions);
+            var localizerOptions = configuration.GetSection(nameof(JsonLocalizerOptions)).Get<JsonLocalizerOptions>();
+            services.AddOptions().Configure<JsonLocalizerOptions>(options =>
+            {
+                options.ResourcesPath = localizerOptions.ResourcesPath;
+                options.CacheKeyPrefix = localizerOptions.CacheKeyPrefix;
+            });
 
             services.AddSingleton<IStringLocalizer, JsonStringLocalizer>();
         }
