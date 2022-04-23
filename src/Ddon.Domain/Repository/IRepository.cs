@@ -13,8 +13,6 @@ namespace Ddon.Domain.Repository
 {
     public interface IRepository<TEntity> where TEntity : class, IEntity
     {
-        //DbSet<TEntity> DbSet { get; }
-
         Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default);
 
         Task AddAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
