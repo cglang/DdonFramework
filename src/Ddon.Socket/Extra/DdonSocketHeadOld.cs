@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Ddon.ConvenientSocket.Extra
 {
-    public class DdonSocketHead
+    public class DdonSocketHeadOld
     {
         public Guid Id { get; set; }
 
@@ -30,7 +30,7 @@ namespace Ddon.ConvenientSocket.Extra
 
         public static byte[] GetHeadBytes(Mode mode, int length, string? router, Guid id = default, ResponseCode code = ResponseCode.OK)
         {
-            DdonSocketHead head = new()
+            DdonSocketHeadOld head = new()
             {
                 Id = id,
                 Code = code,
@@ -42,7 +42,7 @@ namespace Ddon.ConvenientSocket.Extra
             return head.GetBytes();
         }
 
-        public DdonSocketHead Response(int length, ResponseCode code = ResponseCode.OK)
+        public DdonSocketHeadOld Response(int length, ResponseCode code = ResponseCode.OK)
         {
             Length = length;
             Mode = Mode.Response;

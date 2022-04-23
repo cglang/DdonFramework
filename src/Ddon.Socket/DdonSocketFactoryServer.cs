@@ -41,7 +41,7 @@ namespace Ddon.Socket
                 while (true)
                 {
                     var client = _listener.AcceptTcpClient();
-                    var connection = new DdonSocketConnectionCore(client);
+                    var connection = new DdonSocketConnection(client);
                     SocketStorage.Add(connection);
                     Logger?.LogInformation("客户端接入：{SocketId}", connection.SocketId);
 

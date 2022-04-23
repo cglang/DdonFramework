@@ -8,11 +8,11 @@ namespace Ddon.Socket
     {
         private static readonly object _lock = new();
 
-        private readonly Dictionary<Guid, DdonSocketConnectionCore> Pairs = new();
+        private readonly Dictionary<Guid, DdonSocketConnection> Pairs = new();
 
         private static DdonSocketStorage? ddonSocketClientConnection;
 
-        public IEnumerable<DdonSocketConnectionCore> Clients => Pairs.Values;
+        public IEnumerable<DdonSocketConnection> Clients => Pairs.Values;
 
         public static DdonSocketStorage GetInstance()
         {
@@ -23,17 +23,17 @@ namespace Ddon.Socket
             return ddonSocketClientConnection;
         }
 
-        public DdonSocketConnectionCore? GetClient(Guid SocketId)
+        public DdonSocketConnection? GetClient(Guid SocketId)
         {
             return Pairs.ContainsKey(SocketId) ? Pairs[SocketId] : null;
         }
 
-        public IEnumerable<DdonSocketConnectionCore>? GetClients(IEnumerable<Guid> SocketIds)
+        public IEnumerable<DdonSocketConnection>? GetClients(IEnumerable<Guid> SocketIds)
         {
             return Pairs.Values.Where(x => SocketIds.Contains(x.SocketId));
         }
 
-        public void Add(DdonSocketConnectionCore client)
+        public void Add(DdonSocketConnection client)
         {
             if (!Pairs.ContainsKey(client.SocketId))
                 Pairs.Add(client.SocketId, client);

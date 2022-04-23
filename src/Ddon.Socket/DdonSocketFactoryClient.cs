@@ -8,12 +8,12 @@ namespace Ddon.Socket
 {
     public class DdonSocketFactoryClient<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
-        private readonly DdonSocketConnectionCore _clientConnection;
+        private readonly DdonSocketConnection _clientConnection;
 
         private DdonSocketFactoryClient(string host, int post)
         {
             var tcpClient = new TcpClient(host, post);
-            _clientConnection = new DdonSocketConnectionCore(tcpClient);
+            _clientConnection = new DdonSocketConnection(tcpClient);
         }
 
         public static DdonSocketFactoryClient<TDdonSocketRouteMapLoadBase> CreateClient(IServiceProvider serviceProvider, string host, int post)
@@ -23,7 +23,7 @@ namespace Ddon.Socket
             return new DdonSocketFactoryClient<TDdonSocketRouteMapLoadBase>(host, post);
         }
 
-        public DdonSocketConnectionCore Start()
+        public DdonSocketConnection Start()
         {
             Task.Run(() => _clientConnection.ConsecutiveReadStreamAsync());
             return _clientConnection;

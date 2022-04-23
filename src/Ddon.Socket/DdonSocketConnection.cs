@@ -11,23 +11,19 @@ using System.Text.Json;
 using System.Threading.Tasks;
 namespace Ddon.Socket
 {
-    public class DdonSocketConnectionCore : IDisposable
+    public class DdonSocketConnection : IDisposable
     {
+        public Guid SocketId { get; set; } = Guid.NewGuid();
+
         protected TcpClient TcpClient { get; set; }
 
         protected Stream Stream => TcpClient.GetStream();
 
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider = ServiceProviderFactory.GetServiceProvider();
 
-        /// <summary>
-        /// SocketId
-        /// </summary>
-        public Guid SocketId { get; set; } = Guid.NewGuid();
-
-        public DdonSocketConnectionCore(TcpClient tcpClient)
+        public DdonSocketConnection(TcpClient tcpClient)
         {
             TcpClient = tcpClient;
-            _serviceProvider = ServiceProviderFactory.GetServiceProvider();
         }
 
         /// <summary>
@@ -58,7 +54,7 @@ namespace Ddon.Socket
         /// <returns></returns>
         public async Task<int> SendBytesAsync(string route, byte[] data)
         {
-            var headBytes = DdonSocketHead.GetHeadBytes(Mode.String, data.Length, route);
+            var headBytes = DdonSocketHeadOld.GetHeadBytes(Mode.String, data.Length, route);
             byte[] contentBytes = MergeArrays(headBytes, DdonSocketConst.HeadLength, data);
 
             await Stream.WriteAsync(contentBytes);
@@ -117,7 +113,7 @@ namespace Ddon.Socket
         {
             var id = Guid.NewGuid();
             var dataBytes = Encoding.UTF8.GetBytes(data);
-            var headBytes = DdonSocketHead.GetHeadBytes(Mode.Request, dataBytes.Length, route, id);
+            var headBytes = DdonSocketHeadOld.GetHeadBytes(Mode.Request, dataBytes.Length, route, id);
             byte[] contentBytes = MergeArrays(headBytes, DdonSocketConst.HeadLength, dataBytes);
             Task.Run(async () => await Stream.WriteAsync(contentBytes));
             return new DdonSocketResponse(id);
@@ -145,11 +141,11 @@ namespace Ddon.Socket
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exception">获取消息头错误</exception>
-        private async Task<DdonSocketHead> ReadHeadAsync()
+        private async Task<DdonSocketHeadOld> ReadHeadAsync()
         {
             var bytes = await Stream.ReadLengthBytesAsync(DdonSocketConst.HeadLength);
 
-            var headDto = JsonSerializer.Deserialize<DdonSocketHead>(Encoding.UTF8.GetString(bytes))
+            var headDto = JsonSerializer.Deserialize<DdonSocketHeadOld>(Encoding.UTF8.GetString(bytes))
                 ?? throw new Exception("消息中不包含消息头");
 
             return headDto;
@@ -158,7 +154,7 @@ namespace Ddon.Socket
         /// <summary>
         /// 数据处理器
         /// </summary>
-        private async Task ByteHandler(DdonSocketHead head, byte[] bytes)
+        private async Task ByteHandler(DdonSocketHeadOld head, byte[] bytes)
         {
             if (head.Mode == Mode.Response)
             {

@@ -6,9 +6,9 @@ namespace Ddon.Socket
     public class DdonSocketControllerBase
     {
         [AllowNull]
-        public DdonSocketConnectionCore Connection { get; set; }
+        public DdonSocketConnection Connection { get; set; }
 
         [AllowNull]
-        public DdonSocketHead Head { get; set; }
+        public DdonSocketHeadOld Head { get; set; }
     }
 }

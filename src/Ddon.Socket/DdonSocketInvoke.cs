@@ -14,8 +14,8 @@ namespace Ddon.Socket
             string className,
             string methodName,
             string methodParameter,
-            DdonSocketConnectionCore connection,
-            DdonSocketHead head)
+            DdonSocketConnection connection,
+            DdonSocketHeadOld head)
         {
             var returnData = await IvnvokeAsync(services, className, methodName, methodParameter, connection, head);
             return JsonSerializer.Serialize(returnData);
@@ -26,8 +26,8 @@ namespace Ddon.Socket
             string className,
             string methodName,
             string parameter,
-            DdonSocketConnectionCore connection,
-            DdonSocketHead head)
+            DdonSocketConnection connection,
+            DdonSocketHeadOld head)
         {
             var classType = DdonTypeHelper.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
@@ -45,8 +45,8 @@ namespace Ddon.Socket
             string className,
             string methodName,
             T parameter,
-            DdonSocketConnectionCore connection,
-            DdonSocketHead head) where T : notnull
+            DdonSocketConnection connection,
+            DdonSocketHeadOld head) where T : notnull
         {
             var classType = DdonTypeHelper.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");

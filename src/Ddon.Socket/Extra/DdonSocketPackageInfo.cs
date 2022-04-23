@@ -4,13 +4,13 @@ namespace Ddon.ConvenientSocket.Extra
 {
     public class DdonSocketPackageInfo<TData>
     {
-        public DdonSocketHead Head { get; }
+        public DdonSocketHeadOld Head { get; }
 
         public TData Data { get; set; }
 
-        public DdonSocketConnectionCore Connection { get; set; }
+        public DdonSocketConnection Connection { get; set; }
 
-        public DdonSocketPackageInfo(DdonSocketConnectionCore connection, DdonSocketHead headDto, TData data)
+        public DdonSocketPackageInfo(DdonSocketConnection connection, DdonSocketHeadOld headDto, TData data)
         {
             Connection = connection;
             Head = headDto;
