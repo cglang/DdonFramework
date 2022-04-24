@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.KeyValueStorage
 {
-    public class DdonKeyValueManager<TValue> : IDdonKeyValueManager<TValue>
+    public class DdonKeyValueManager<TValue, TOptions> : IDdonKeyValueManager<TValue, TOptions> where TOptions : DdonKvOptions
     {
         private readonly DdonDictionary<TValue> _storage;
 
@@ -34,22 +34,22 @@ namespace Ddon.KeyValueStorage
             _storage = new(Path.Combine(_directoryPath, slice));
         }
 
-        public DdonKeyValueManager(IOptions<DdonKvOptions> options, string slice = DdonKeyValueStorageConst.DefaultSlice)
+        public DdonKeyValueManager(IOptions<TOptions> options, string slice = DdonKeyValueStorageConst.DefaultSlice)
         {
             _directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, options.Value.Directory);
             _autoSave = options.Value.AutoSave;
             _slice = slice;
 
-            _storage = new(Path.Combine(_directoryPath, slice));
+            _storage = new DdonDictionary<TValue>(Path.Combine(_directoryPath, slice));
         }
 
         /// <summary>
         /// 创建对象
         /// </summary>
         /// <returns></returns>
-        public static DdonKeyValueManager<TValue> CreateObject(DdonKvOptions? option = default, string slice = DdonKeyValueStorageConst.DefaultSlice)
+        public static DdonKeyValueManager<TValue, DdonKvOptions> CreateObject(DdonKvOptions? option = default, string slice = DdonKeyValueStorageConst.DefaultSlice)
         {
-            return new DdonKeyValueManager<TValue>(option, slice);
+            return new DdonKeyValueManager<TValue, DdonKvOptions>(option, slice);
         }
 
         public async Task<bool> SaveAsync(string slice = DdonKeyValueStorageConst.DefaultSlice)

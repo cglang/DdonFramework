@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.KeyValueStorage
 {
-    public interface IDdonKeyValueManager<TValue>
+    public interface IDdonKeyValueManager<TValue, TOptions> where TOptions : DdonKvOptions
     {
         /// <summary>
         /// 保存修改

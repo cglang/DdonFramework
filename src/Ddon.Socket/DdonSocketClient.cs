@@ -19,7 +19,7 @@ namespace Ddon.Socket
 
         public static DdonSocketClient<TDdonSocketRouteMapLoadBase> CreateClient(IServiceProvider serviceProvider, string host, int post)
         {
-            ServiceProviderFactory.InitServiceProvider(serviceProvider);
+            DdonServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
             return new DdonSocketClient<TDdonSocketRouteMapLoadBase>(host, post);
         }

@@ -16,7 +16,7 @@ namespace Ddon.Socket.Session
     {
         public readonly DdonSocketConnectionCore Conn;
 
-        private readonly IServiceProvider ServiceProvider = ServiceProviderFactory.GetServiceProvider();
+        private readonly IServiceProvider ServiceProvider = DdonServiceProvider.GetServiceProvider();
 
         public DdonSocketSession(TcpClient tcpClient)
         {

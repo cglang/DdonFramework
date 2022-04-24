@@ -3,7 +3,7 @@ using System.Timers;
 
 namespace Ddon.Core.System.Timers
 {
-    class DdonTimer : Timer
+    public class DdonTimer : Timer
     {
         private const double DefaultInterval = 60000;
 
@@ -15,37 +15,34 @@ namespace Ddon.Core.System.Timers
 
         private double repeatInterval;
 
-        public DdonTimer SetAction(Action action)
+        public DdonTimer InitAction(Action action)
         {
             Elapsed += (_, _) =>
             {
                 var now = DateTime.Now;
-                if (isDate)
+
+                if (!isDate) { action(); }
+                else if (now >= date)
                 {
-                    if (now >= date)
+                    if (!isRepeat)
                     {
-                        if (isRepeat)
-                        {
-                            var date_s = date.Value.AddMilliseconds(repeatInterval);
-                            if (now >= date_s)
-                            {
-                                date = date_s;
-                                action();
-                            }
-                        }
-                        else
-                        {
-                            action();
-                            Stop();
-                        }
+                        action();
+                        Stop();
                     }
-                }
-                else
-                {
-                    action();
+                    else if (now >= date.Value.AddMilliseconds(repeatInterval))
+                    {
+                        date = date.Value.AddMilliseconds(repeatInterval);
+                        action();
+                    }
                 }
             };
 
+            return this;
+        }
+
+        public DdonTimer FinishAction(Action p)
+        {
+            p();
             return this;
         }
 
@@ -72,9 +69,39 @@ namespace Ddon.Core.System.Timers
             return this;
         }
 
+        public DdonTimer SetRule(DdonTimerRule rule)
+        {
+            if (rule.DateTime != null)
+            {
+                SetDateTime(rule.DateTime.Value, rule.Interval);
+            }
+            else
+            {
+                SetInterval(rule.Interval!.Value);
+            }
+            return this;
+        }
+
         public new void Start()
         {
             base.Start();
         }
+    }
+
+    public class DdonTimerRule
+    {
+        public DdonTimerRule(DateTime? dateTime, TimeSpan? interval)
+        {
+            if (dateTime == null && interval == null)
+            {
+                throw new ArgumentNullException($"{nameof(dateTime)} {nameof(interval)} 不可同时为空");
+            }
+            DateTime = dateTime;
+            Interval = interval;
+        }
+
+        public DateTime? DateTime { get; set; }
+
+        public TimeSpan? Interval { get; set; }
     }
 }
