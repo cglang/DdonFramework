@@ -34,13 +34,13 @@ namespace Ddon.KeyValueStorage
             _storage = new(Path.Combine(_directoryPath, slice));
         }
 
-        public DdonKeyValueManager(IOptions<TOptions> options, string slice = DdonKeyValueStorageConst.DefaultSlice)
+        public DdonKeyValueManager(IOptions<TOptions> options)
         {
             _directoryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, options.Value.Directory);
             _autoSave = options.Value.AutoSave;
-            _slice = slice;
+            _slice = options.Value.StorageName;
 
-            _storage = new DdonDictionary<TValue>(Path.Combine(_directoryPath, slice));
+            _storage = new DdonDictionary<TValue>(Path.Combine(_directoryPath, _slice));
         }
 
         /// <summary>

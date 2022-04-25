@@ -12,12 +12,11 @@ namespace Ddon.Job
             services.Configure<DdonJobOptions>(options =>
             {
                 options.AutoSave = true;
-                options.Directory = "Job";
                 options.StorageName = "jobs";
             });
 
             services.AddSingleton<IDdonKeyValueManager<Plan, DdonJobOptions>, DdonKeyValueManager<Plan, DdonJobOptions>>();
-            services.AddTransient<IDdonJob, DdonJob>();
+            services.AddSingleton<IDdonJob, DdonJob>();
         }
     }
 }
