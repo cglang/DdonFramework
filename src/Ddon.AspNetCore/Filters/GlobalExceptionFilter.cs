@@ -29,13 +29,17 @@ namespace Ddon.AspNetCore.Filters
                 {
                     context.Result = UniteHandleAsync(context.Exception.Message, StatusCodes.Status401Unauthorized).Result;
                 }
+                else if (context.Exception is UnauthenticationException)
+                {
+                    context.Result = UniteHandleAsync(context.Exception.Message, StatusCodes.Status403Forbidden).Result;
+                }
                 else if (context.Exception is ApplicationServiceException)
                 {
                     context.Result = UniteHandleAsync(context.Exception.Message, StatusCodes.Status200OK).Result;
                 }
                 else
                 {
-                    context.Result = UniteHandleAsync(context.Exception.Message, StatusCodes.Status500InternalServerError).Result;
+                    context.Result = UniteHandleAsync("未知错误", StatusCodes.Status500InternalServerError).Result;
                     _logger.LogError(context.Exception, context.Exception.Message);
                 }
             }
