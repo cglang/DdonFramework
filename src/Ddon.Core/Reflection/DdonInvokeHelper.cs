@@ -58,6 +58,8 @@ namespace Ddon.Core.Reflection
             }
             else if (methodParameter.Count() == 1)
             {
+                if(string.IsNullOrEmpty(parameterText)) throw new Exception("参数不允许为空");
+
                 if (methodParameter.First().Name == typeof(string).Name)
                     return await InvokeAsync(instance, method, new object[] { parameterText });
 

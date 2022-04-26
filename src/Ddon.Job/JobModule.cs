@@ -15,7 +15,7 @@ namespace Ddon.Job
                 options.StorageName = "jobs";
             });
 
-            services.AddSingleton<IDdonKeyValueManager<Plan, DdonJobOptions>, DdonKeyValueManager<Plan, DdonJobOptions>>();
+            services.AddSingleton<IDdonKeyValueManager<Job, DdonJobOptions>, DdonKeyValueManager<Job, DdonJobOptions>>();
             services.AddSingleton<IDdonJob, DdonJob>();
         }
     }

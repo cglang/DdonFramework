@@ -36,9 +36,9 @@ namespace Ddon.Identity.Jwt
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
                     new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString() ?? string.Empty)
                 }),
-                IssuedAt = DateTime.UtcNow,
-                NotBefore = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.Add(_jwtSettings.ExpiresIn),
+                IssuedAt = DateTime.Now,
+                NotBefore = DateTime.Now,
+                Expires = DateTime.Now.Add(_jwtSettings.ExpiresIn),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -94,8 +94,8 @@ namespace Ddon.Identity.Jwt
             var refreshTokenDto = new RefreshToken<TKey>(securityToken.Id, refreshToken)
             {
                 UserId = user.Id,
-                CreationTime = DateTime.UtcNow,
-                ExpiryTime = DateTime.UtcNow.AddMonths(6),
+                CreationTime = DateTime.Now,
+                ExpiryTime = DateTime.Now.AddMonths(6),
             };
 
             return new Tokens<TKey>(accessToken, refreshTokenDto, (int)_jwtSettings.ExpiresIn.TotalSeconds);

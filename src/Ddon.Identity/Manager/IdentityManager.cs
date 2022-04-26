@@ -104,7 +104,7 @@ namespace Ddon.Identity.Manager
 
             var expiryDateUnix = long.Parse(claimsPrincipal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
             var expiryDateTimeUtc = UnixTime.UnixTimeStampToDateTime(expiryDateUnix);
-            if (expiryDateTimeUtc > DateTime.UtcNow)
+            if (expiryDateTimeUtc > DateTime.Now)
             {
                 return new TokenDto()
                 {
@@ -123,7 +123,7 @@ namespace Ddon.Identity.Manager
                 };
             }
 
-            if (storedRefreshToken.ExpiryTime < DateTime.UtcNow)
+            if (storedRefreshToken.ExpiryTime < DateTime.Now)
             {
                 return new TokenDto()
                 {

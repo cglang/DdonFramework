@@ -5,103 +5,73 @@ namespace Ddon.Core.System.Timers
 {
     public class DdonTimer : Timer
     {
-        private const double DefaultInterval = 60000;
+        public new Action? Elapsed { get; set; }
 
-        private bool isDate = false;
+        private DateTime _baseTime;             // 基准时间
 
-        private bool isRepeat = false;
+        private readonly DateTime? _startDate;           // 开始时间
+        private readonly double _interval;               // 间隔时间
 
-        private DateTime? date;
-
-        private double repeatInterval;
-
-        public DdonTimer InitAction(Action action)
+        /// <summary>
+        /// DdonTimer
+        /// </summary>
+        /// <param name="startDate">开始时间 UTC Time</param>
+        /// <param name="interval">间隔时间</param>
+        public DdonTimer(DateTime? startDate, TimeSpan interval)
         {
-            Elapsed += (_, _) =>
-            {
-                var now = DateTime.Now;
+            _baseTime = DateTime.Now;
+            _startDate = startDate;
+            _interval = interval.TotalMilliseconds;
 
-                if (!isDate) { action(); }
-                else if (now >= date)
+            // 间隔时间大于一小时每分钟检查一次,否则每秒检查一次
+            //Interval = _interval > 3600000 ? 60000 : 1000;
+            Interval = 1000;
+
+            base.Elapsed += (_, _) =>
+            {
+                if (Elapsed == null) return;
+
+                var now = DateTime.Now;
+                if (_startDate != null && now < _startDate) return;
+
+                if (_baseTime.AddMilliseconds(_interval) < now)
                 {
-                    if (!isRepeat)
-                    {
-                        action();
-                        Stop();
-                    }
-                    else if (now >= date.Value.AddMilliseconds(repeatInterval))
-                    {
-                        date = date.Value.AddMilliseconds(repeatInterval);
-                        action();
-                    }
+                    Elapsed();
+                    _baseTime = now;
                 }
             };
-
-            return this;
         }
 
-        public DdonTimer FinishAction(Action p)
+        /// <summary>
+        /// DdonTimer
+        /// </summary>
+        /// <param name="startDate">开始时间 UTC Time</param>
+        /// <param name="interval">间隔时间</param>
+        public DdonTimer(DateTime? startDate, double interval)
         {
-            p();
-            return this;
-        }
+            if (interval <= 0) throw new Exception("间隔时间不可小于0");
 
-        public DdonTimer SetInterval(TimeSpan interval)
-        {
-            Interval = interval.TotalMilliseconds;
-            return this;
-        }
+            _baseTime = DateTime.Now;
+            _startDate = startDate;
+            _interval = interval;
 
-        public DdonTimer SetDateTime(DateTime dateTime, TimeSpan? interval = null)
-        {
-            isDate = true;
-            if (interval is null)
+            // 间隔时间大于一小时每分钟检查一次,否则每秒检查一次
+            //Interval = _interval > 3600000 ? 60000 : 1000;
+            Interval = 1000;
+
+            base.Elapsed += (_, _) =>
             {
-                Interval = DefaultInterval;
-            }
-            else
-            {
-                Interval = DefaultInterval;
-                repeatInterval = interval.Value.TotalMilliseconds;
-                isRepeat = true;
-            }
-            date = dateTime;
-            return this;
+                if (Elapsed == null) return;
+
+                var now = DateTime.Now;
+                if (_startDate != null && now < _startDate) return;
+
+                if (_baseTime.AddMilliseconds(_interval) < now)
+                {
+                    Elapsed();
+                    _baseTime = now;
+                }
+            };
         }
-
-        public DdonTimer SetRule(DdonTimerRule rule)
-        {
-            if (rule.DateTime != null)
-            {
-                SetDateTime(rule.DateTime.Value, rule.Interval);
-            }
-            else
-            {
-                SetInterval(rule.Interval!.Value);
-            }
-            return this;
-        }
-
-        public new void Start()
-        {
-            base.Start();
-        }
-    }
-
-    public class DdonTimerRule
-    {
-        public DdonTimerRule(DateTime? dateTime, TimeSpan? interval)
-        {
-            if (dateTime == null && interval == null)
-            {
-                throw new ArgumentNullException($"{nameof(dateTime)} {nameof(interval)} 不可同时为空");
-            }
-            DateTime = dateTime;
-            Interval = interval;
-        }
-
-        public DateTime? DateTime { get; set; }
-
-        public TimeSpan? Interval { get; set; }
     }
 }

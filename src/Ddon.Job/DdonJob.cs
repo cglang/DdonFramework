@@ -4,26 +4,32 @@ namespace Ddon.Job
 {
     public class DdonJob : IDdonJob
     {
-        private readonly IDdonKeyValueManager<Plan, DdonJobOptions> _keyValueManager;
+        private readonly IDdonKeyValueManager<Job, DdonJobOptions> _keyValueManager;
 
-        public DdonJob(IDdonKeyValueManager<Plan, DdonJobOptions> keyValueManager)
+        public DdonJob(IDdonKeyValueManager<Job, DdonJobOptions> keyValueManager)
         {
             _keyValueManager = keyValueManager;
-            var allValueTask = keyValueManager.GetAllValueAsync();
-            allValueTask.Wait();
-            Parallel.ForEach(allValueTask.Result, value =>
-            {
-                value.Start();
-            });
         }
 
-        public async Task Add(Plan plan)
+        public async Task Add(Job job)
         {
-            await _keyValueManager.SetValueAsync(plan.Id, plan);
-            plan.Start();
+            await _keyValueManager.SetValueAsync(job.Id, job);
+            
+            job.SetCompleted(async (id) =>
+            {
+                job.Finish = true;
+                job.Stop();
+                await _keyValueManager.SetValueAsync(job.Id, job);
+            });
+            job.Start();
         }
 
-        public async Task<IEnumerable<Plan>> All()
+        public async Task<Job?> Get(Guid id)
+        {
+            return await _keyValueManager.GetValueAsync(id);
+        }
+
+        public async Task<IEnumerable<Job>> All()
         {
             return await _keyValueManager.GetAllValueAsync();
         }
@@ -33,7 +39,7 @@ namespace Ddon.Job
             await _keyValueManager.DeleteValueAsync(id.ToString());
         }
 
-        public async Task Update(Plan plan)
+        public async Task Update(Job plan)
         {
             await _keyValueManager.SetValueAsync(plan.Id, plan);
         }

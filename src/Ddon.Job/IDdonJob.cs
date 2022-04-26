@@ -2,12 +2,14 @@
 {
     public interface IDdonJob
     {
-        Task Add(Plan plan);
+        Task Add(Job plan);
 
         Task Remove(Guid id);
 
-        Task Update(Plan plan);
+        Task Update(Job plan);
 
-        Task<IEnumerable<Plan>> All();
+        Task<Job?> Get(Guid id);
+
+        Task<IEnumerable<Job>> All();
     }
 }
