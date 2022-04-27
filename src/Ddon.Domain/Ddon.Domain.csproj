@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
     <ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
   </ItemGroup>
 
