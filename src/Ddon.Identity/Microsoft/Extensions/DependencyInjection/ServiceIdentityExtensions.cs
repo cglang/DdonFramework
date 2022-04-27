@@ -40,6 +40,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
             services.AddSingleton(appSettings);
+
+            services.AddTransient<Auth<TKey>>();
         }
     }
 }

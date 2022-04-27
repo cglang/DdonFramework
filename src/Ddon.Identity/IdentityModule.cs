@@ -1,11 +1,7 @@
-﻿using Ddon.Core;
+﻿using Ddon.Cache;
+using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ddon.Identity
 {
@@ -13,7 +9,7 @@ namespace Ddon.Identity
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
-
+            Load<CacheModule>(services, configuration);
         }
     }
 }
