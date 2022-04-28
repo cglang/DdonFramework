@@ -306,7 +306,7 @@ namespace Ddon.Identity.Manager
             roleEntity.Name = entity.Name;
             roleEntity.NormalizedName = entity.NormalizedName;
             roleEntity.ConcurrencyStamp = entity.ConcurrencyStamp;
-
+            await _roleRepository.UpdateAsync(roleEntity, true);
             return roleEntity;
         }
 
