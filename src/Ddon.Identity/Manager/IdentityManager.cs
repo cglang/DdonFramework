@@ -2,14 +2,14 @@
 using Ddon.Core;
 using Ddon.Core.Utility;
 using Ddon.Domain.Entities;
-using Ddon.Identity.Entities;
+using Ddon.Domain.Entities.Identity;
+using Ddon.Domain.Exceptions;
 using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager.Dtos;
 using Ddon.Identity.Permission;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -27,6 +27,7 @@ namespace Ddon.Identity.Manager
         private readonly IUserRoleRepository<TKey> _userRoleRepository;
         private readonly ITenantRepository<TKey> _tenantRepository;
         private readonly ITokenTools<TKey> _tokenTools;
+        private readonly IPermissionGrantRepository<TKey> _permissionGrantRepository;
         private readonly ICache _cache;
 
         public IQueryable<User<TKey>> Users => _userRepository.Query;
@@ -47,6 +48,7 @@ namespace Ddon.Identity.Manager
             IUserClaimRepository<TKey> userClaimRepository,
             IUserRoleRepository<TKey> userRoleRepository,
             ITenantRepository<TKey> tenantRepository,
+            IPermissionGrantRepository<TKey> permissionGrantRepository,
             ITokenTools<TKey> tokenTools,
             ICache cache)
         {
@@ -58,6 +60,7 @@ namespace Ddon.Identity.Manager
             _userRoleRepository = userRoleRepository;
             _tenantRepository = tenantRepository;
             _tokenTools = tokenTools;
+            _permissionGrantRepository = permissionGrantRepository;
             _cache = cache;
         }
 
@@ -85,8 +88,8 @@ namespace Ddon.Identity.Manager
                 };
             }
 
-            await SetUserPermissionsToCache(existingUser);
-            await CacheTenantInfo(existingUser);           
+            await CacheUserPermissions(existingUser);
+            await CacheTenantInfo(existingUser);
 
             return await _tokenTools.GenerateJwtTokenAsync(existingUser);
         }
@@ -181,17 +184,6 @@ namespace Ddon.Identity.Manager
             return role;
         }
 
-        public async Task RemoveRoleClaimAsync(TKey roleId, string permissionName)
-        {
-            var role = await _roleClaimRepository.FirstOrDefaultAsync(x => x.RoleId.Equals(roleId) && permissionName.Equals(x.ClaimType));
-            if (role == null)
-            {
-                throw new ApplicationException("没有此Claim");
-            }
-
-            await _roleClaimRepository.DeleteAsync(role, true);
-        }
-
         public async Task<User<TKey>?> GetUserByClaimsAsync(ClaimsPrincipal? user)
         {
             if (user is null) return null;
@@ -207,19 +199,11 @@ namespace Ddon.Identity.Manager
             return await _userRepository.FirstOrDefaultAsync(x => x.Id.Equals(userId));
         }
 
-        /// <summary>
-        /// 使用当前相关用户信息创建一个租户对象,如没有用户信息则返回默认租户对象
-        /// </summary>
-        /// <param name="userClaims"></param>
-        /// <returns></returns>
         public async Task<Tenant<TKey>> GetUserTenantByClaimsAsync(ClaimsPrincipal? userClaims)
         {
             var user = await GetUserByClaimsAsync(userClaims);
 
-            if (user is null)
-            {
-                return new Tenant<TKey>();
-            }
+            if (user is null) return new Tenant<TKey>();
 
             return await _tenantRepository.FirstOrDefaultAsync(x => x.Id.Equals(user.TenantId)) ?? new Tenant<TKey>();
         }
@@ -239,66 +223,62 @@ namespace Ddon.Identity.Manager
         public async Task AddUserClaimAsync(TKey userId, string permissionName)
         {
             var user = await _userRepository.FirstOrDefaultAsync(x => x.Id.Equals(userId));
-            if (user != null)
-            {
+            if (user == null)
+                throw new ApplicationServiceException("没有要添加此权限的用户");
 
-                var have = await _roleClaimRepository.AnyAsync(x => permissionName.Equals(x.ClaimType));
-                var existPermission = _permissionDefinitionContext.GetPermissionOrNull(permissionName) != null;
-                if (existPermission && !have)
-                {
-                    await _userClaimRepository.AddAsync(new UserClaim<TKey>
-                    {
-                        UserId = userId,
-                        ClaimType = permissionName,
-                        ClaimValue = permissionName
-                    }, true);
-                }
-                else
-                {
-                    throw new ApplicationException("没有此权限的定义或该用户已经用此权限");
-                }
-            }
-            else
+            var have = await _permissionGrantRepository.AnyAsync(x => x.Name.Equals(permissionName) && x.GrantKey.Equals(userId));
+            var existPermission = _permissionDefinitionContext.GetPermissionOrNull(permissionName) != null;
+
+            if (!existPermission || have)
+                throw new ApplicationServiceException("没有此权限的定义或该用户已经用此权限");
+
+            await _permissionGrantRepository.AddAsync(new PermissionGrant<TKey>
             {
-                throw new ApplicationException("没有此要添加权限的用户");
-            }
+                GrantKey = userId,
+                Name = permissionName,
+                Type = PermissionGrantType.User
+            }, true);
         }
 
         public async Task RemoveUserClaimAsync(TKey userId, string permissionName)
         {
-            var user = await _userClaimRepository.FirstOrDefaultAsync(x => x.UserId.Equals(userId) && permissionName.Equals(x.ClaimType));
-            if (user == null)
+            var permission = await _permissionGrantRepository.FirstOrDefaultAsync(x => x.GrantKey.Equals(userId) && x.Name.Equals(permissionName));
+            if (permission == null)
             {
-                throw new ApplicationException("没有此Claim");
+                throw new ApplicationServiceException("没有未此角色赋予此权限");
             }
-            await _userClaimRepository.DeleteAsync(user, true);
+            await _permissionGrantRepository.DeleteAsync(permission, true);
         }
 
         public async Task AddRoleClaimAsync(TKey roleId, string permissionName)
         {
             var role = await _roleRepository.FirstOrDefaultAsync(x => x.Id.Equals(roleId));
-            if (role != null)
+            if (role == null)
+                throw new ApplicationServiceException("没有此要添加权限的角色");
+
+            var have = await _permissionGrantRepository.AnyAsync(x => x.Name.Equals(permissionName) && x.GrantKey.Equals(roleId));
+            var existPermission = _permissionDefinitionContext.GetPermissionOrNull(permissionName) != null;
+
+            if (!existPermission || have)
+                throw new ApplicationServiceException("没有此权限的定义或该角色已经用此权限");
+
+            await _permissionGrantRepository.AddAsync(new PermissionGrant<TKey>
             {
-                var have = await _roleClaimRepository.AnyAsync(x => permissionName.Equals(x.ClaimType));
-                var existPermission = _permissionDefinitionContext.GetPermissionOrNull(permissionName) != null;
-                if (existPermission && !have)
-                {
-                    await _roleClaimRepository.AddAsync(new RoleClaim<TKey>
-                    {
-                        RoleId = roleId,
-                        ClaimType = permissionName,
-                        ClaimValue = permissionName
-                    }, true);
-                }
-                else
-                {
-                    throw new ApplicationException("没有此权限的定义或该角色已经用此权限");
-                }
-            }
-            else
+                GrantKey = roleId,
+                Name = permissionName,
+                Type = PermissionGrantType.Role
+            }, true);
+        }
+
+        public async Task RemoveRolePermissionAsync(TKey roleId, string permissionName)
+        {
+            var permission = await _permissionGrantRepository.FirstOrDefaultAsync(x => x.GrantKey.Equals(roleId) && x.Name.Equals(permissionName));
+            if (permission == null)
             {
-                throw new ApplicationException("没有此要添加权限的角色");
+                throw new ApplicationServiceException("没有未改角色赋予此权限");
             }
+
+            await _permissionGrantRepository.DeleteAsync(permission, true);
         }
 
         public async Task DeleteRoleAsync(TKey id)
@@ -306,19 +286,21 @@ namespace Ddon.Identity.Manager
             var entity = await _roleRepository.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
             if (entity is null)
-            {
-                throw new ApplicationException("没有此Id的记录");
-            }
+                throw new ApplicationServiceException("没有此Id的记录");
 
             await _roleRepository.DeleteAsync(entity, true);
+
+            // 移除赋予用户的角色 移除该角色的权限
+            await _userRoleRepository.DeleteAsync(x => x.RoleId.Equals(id));
+            await _permissionGrantRepository.DeleteAsync(x => x.GrantKey.Equals(id) && x.Type.Equals(PermissionGrantType.Role));
         }
 
-        public async Task<Role<TKey>> UpdateAsync(Role<TKey> entity)
+        public async Task<Role<TKey>> UpdateRoleAsync(Role<TKey> entity)
         {
             var roleEntity = await _roleRepository.FirstOrDefaultAsync(x => x.Id.Equals(entity.Id));
             if (roleEntity is null)
             {
-                throw new ApplicationException("没有此角色");
+                throw new ApplicationServiceException("没有此角色");
             }
 
             roleEntity.Name = entity.Name;
@@ -328,32 +310,22 @@ namespace Ddon.Identity.Manager
             return roleEntity;
         }
 
-
         /// <summary>
         /// 设置用户的权限信息到缓存
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        private async Task SetUserPermissionsToCache(User<TKey> user)
+        private async Task CacheUserPermissions(User<TKey> user)
         {
-            var userClaims = await UserClaims.Where(x => x.UserId.Equals(user.Id)).ToListAsync();
-            var roleClaims = new List<RoleClaim<TKey>>();
-            var roles = await UserRoles.Where(x => x.UserId.Equals(user.Id)).ToListAsync();
+            var userRoles = await _userRoleRepository.GetListAsync(x => x.UserId.Equals(user.Id));
+            var userRoleIds = userRoles.Select(x => x.RoleId);
+            var permissions = await _permissionGrantRepository.GetListAsync(x =>
+               (userRoleIds.Contains(x.GrantKey) && x.Type == PermissionGrantType.Role) ||
+               (x.GrantKey.Equals(user.Id) && x.Type == PermissionGrantType.User));
 
-            foreach (var role in roles)
-            {
-                bool decide = await _cache.ContainsKeyAsync($"{CacheKey.RoleClaimsKey}{role.RoleId}");
-                if (decide)
-                {
-                    roleClaims.AddRange(await RoleClaims.Where(x => x.RoleId.Equals(role.RoleId)).ToListAsync());
-                    await _cache.SetAsync($"{CacheKey.RoleClaimsKey}{role.RoleId}", roleClaims.Select(x => x.ClaimType));
-                }
-            }
+            var permissionText = permissions.Select(x => x.Name).ToList();
 
-            var claims = new List<string>();
-            claims.AddRange(userClaims.Select(x => x.ClaimType));
-            claims.AddRange(roleClaims.Select(x => x.ClaimType));
-            await _cache.SetAsync($"{CacheKey.UserClaimsKey}{user.Id}", claims);
+            await _cache.SetAsync($"{CacheKey.UserClaimsKey}{user.Id}", permissionText);
         }
 
         /// <summary>

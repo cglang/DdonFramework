@@ -1,4 +1,4 @@
-﻿using Ddon.Identity.Entities;
+﻿using Ddon.Domain.Entities.Identity;
 using Ddon.Identity.Manager.Dtos;
 using Microsoft.IdentityModel.Tokens;
 using System;

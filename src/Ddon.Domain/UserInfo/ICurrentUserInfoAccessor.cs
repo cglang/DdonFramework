@@ -1,5 +1,5 @@
 ﻿using Ddon.Domain.Entities;
-using Ddon.Identity.Entities;
+using Ddon.Domain.Entities.Identity;
 using System;
 
 namespace Ddon.Domain.UserInfo

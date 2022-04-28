@@ -1,6 +1,6 @@
 ﻿using Ddon.Core.Services.LazyService;
 using Ddon.Domain.Entities;
-using Ddon.Identity.Entities;
+using Ddon.Domain.Entities.Identity;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,6 +27,8 @@ namespace Ddon.Identity
 
         public DbSet<Tenant<TKey>>? Tenants { get; set; }
 
+        public DbSet<PermissionGrant<TKey>>? PermissionGrant { get; set; }
+
         public IdentityDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(lazyServiceProvider, options)
         {
         }
@@ -42,6 +44,7 @@ namespace Ddon.Identity
             modelBuilder.Entity<UserToken<TKey>>(b => { b.ToTable("AppUserToken"); });
             modelBuilder.Entity<UserLogin<TKey>>(b => { b.ToTable("AppUserLogin"); });
             modelBuilder.Entity<Tenant<TKey>>(b => { b.ToTable("AppTenant"); });
+            modelBuilder.Entity<PermissionGrant<TKey>>(b => { b.ToTable("AppPermissionGrant"); });
         }
     }
 }

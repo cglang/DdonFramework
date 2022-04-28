@@ -1,5 +1,5 @@
 ﻿using Ddon.Domain.Entities;
-using Ddon.Identity.Entities;
+using Ddon.Domain.Entities.Identity;
 using Ddon.Identity.Manager.Dtos;
 using System;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace Ddon.Identity.Manager
 
         Task<User<TKey>> CreateUserAsync(string userName, string password);
 
-        Task RemoveRoleClaimAsync(TKey roleId, string permissionName);
+        Task RemoveRolePermissionAsync(TKey roleId, string permissionName);
 
         Task<User<TKey>?> GetUserByClaimsAsync(ClaimsPrincipal? user);
 
@@ -54,7 +54,7 @@ namespace Ddon.Identity.Manager
 
         Task DeleteRoleAsync(TKey id);
 
-        Task<Role<TKey>> UpdateAsync(Role<TKey> entity);
+        Task<Role<TKey>> UpdateRoleAsync(Role<TKey> entity);
 
         Task<Role<TKey>> CreateRoleAsync(string name);
     }

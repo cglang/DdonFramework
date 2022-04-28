@@ -1,8 +1,7 @@
-﻿using Ddon.Domain.Entities;
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Ddon.Identity.Entities
+namespace Ddon.Domain.Entities.Identity
 {
     public class UserClaim<TKey> : Entity<TKey> where TKey : IEquatable<TKey>
     {

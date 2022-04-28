@@ -1,4 +1,4 @@
-﻿using Ddon.Identity.Entities;
+﻿using Ddon.Domain.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 

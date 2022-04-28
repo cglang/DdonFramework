@@ -32,6 +32,7 @@ namespace Ddon.Identity
             services.AddTransient<IUserRepository<TKey>, UserRepository<TDbContext, TKey>>();
             services.AddTransient<IUserRoleRepository<TKey>, UserRoleRepository<TDbContext, TKey>>();
             services.AddTransient<ITenantRepository<TKey>, TenantRepository<TDbContext, TKey>>();
+            services.AddTransient<IPermissionGrantRepository<TKey>, PermissionGrantRepository<TDbContext, TKey>>();            
 
             services.AddSingleton<ITokenTools<TKey>, TokenTools<TKey>>();
 

@@ -4,11 +4,11 @@ using System;
 
 namespace Ddon.Repositiry.EntityFrameworkCore.Identity
 {
-    public class RoleClaimRepository<TDbContext, TKey> : EfCoreRepository<TDbContext, RoleClaim<TKey>, TKey>, IRoleClaimRepository<TKey>
+    public class PermissionGrantRepository<TDbContext, TKey> : EfCoreRepository<TDbContext, PermissionGrant<TKey>, TKey>, IPermissionGrantRepository<TKey>
         where TDbContext : DbContext
         where TKey : IEquatable<TKey>
     {
-        public RoleClaimRepository(TDbContext dbContext) : base(dbContext)
+        public PermissionGrantRepository(TDbContext dbContext) : base(dbContext)
         {
         }
     }

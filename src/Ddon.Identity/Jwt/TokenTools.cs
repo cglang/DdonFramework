@@ -1,6 +1,6 @@
 ﻿using Ddon.Cache;
 using Ddon.Core;
-using Ddon.Identity.Entities;
+using Ddon.Domain.Entities.Identity;
 using Ddon.Identity.Manager.Dtos;
 using Ddon.Identity.Options;
 using Microsoft.Extensions.Caching.Distributed;
