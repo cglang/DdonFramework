@@ -3,8 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Application.Dtos
 {
-    [Serializable]
-    public abstract class BaseDto
+    public class BaseDto
     {
         public override string ToString()
         {
@@ -12,8 +11,7 @@ namespace Ddon.Application.Dtos
         }
     }
 
-    [Serializable]
-    public abstract class BaseDto<TKey> : BaseDto
+    public class BaseDto<TKey> : BaseDto
     {
         [AllowNull]
         public TKey Id { get; set; }

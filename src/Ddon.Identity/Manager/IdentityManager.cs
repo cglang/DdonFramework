@@ -291,8 +291,8 @@ namespace Ddon.Identity.Manager
             await _roleRepository.DeleteAsync(entity, true);
 
             // 移除赋予用户的角色 移除该角色的权限
-            await _userRoleRepository.DeleteAsync(x => x.RoleId.Equals(id));
-            await _permissionGrantRepository.DeleteAsync(x => x.GrantKey.Equals(id) && x.Type.Equals(PermissionGrantType.Role));
+            await _userRoleRepository.DeleteAsync(x => x.RoleId.Equals(id), true);
+            await _permissionGrantRepository.DeleteAsync(x => x.GrantKey.Equals(id) && x.Type.Equals(PermissionGrantType.Role), true);
         }
 
         public async Task<Role<TKey>> UpdateRoleAsync(Role<TKey> entity)
