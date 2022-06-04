@@ -1,7 +1,6 @@
 ﻿using Ddon.Domain.Entities;
 using Ddon.Identity.Repository;
 using Ddon.Identity.Specifications;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,6 +61,8 @@ namespace Ddon.Domain.Repository
         IQueryable<TEntity> Query { get; }
 
         IAsyncQueryableProvider AsyncExecuter { get; }
+
+        Task<int> SaveChangesAsync();
     }
 
     public interface IRepository<TEntity, TKey> : IRepository<TEntity> where TEntity : class, IEntity<TKey>

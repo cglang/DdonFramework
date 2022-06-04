@@ -1,4 +1,7 @@
-﻿using Ddon.Core.System.Timers;
+﻿using Ddon.Core;
+using Ddon.Core.System.Timers;
+using Ddon.EventBus.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Job
 {
@@ -6,17 +9,19 @@ namespace Ddon.Job
     {
         private readonly DdonTimer Timer;
 
-        public Job(string name, DdonJobRule rule, string className, string methodName, string? parameterText)
+        public Job(string name, DdonJobRule rule, int jobType, string businessId)
         {
-            Timer = new DdonTimer(rule.DateTime, rule.Interval == null ? 10 : rule.DateTime.Millisecond);
+            double interval = rule.Interval == null ? 0 : (rule.Interval.Value * 60 * 60);
+            Timer = new DdonTimer(rule.DateTime, interval);
 
             Id = Guid.NewGuid();
             Name = name;
-            ClassName = className;
-            MethodName = methodName;
-            ParameterText = parameterText;
             Rule = rule;
-            CreateDate = DateTime.Now;
+            JobType = jobType;
+            BusinessId = businessId;
+
+            StartDate = DateTime.UtcNow;
+            EndDate = DateTime.UtcNow;
 
             InitTimer();
         }
@@ -25,16 +30,34 @@ namespace Ddon.Job
 
         public string Name { get; set; }
 
-        public string ClassName { get; set; }
+        /// <summary>
+        /// Job 触发的Type类型
+        /// </summary>
+        public int JobType { get; set; }
 
-        public string MethodName { get; set; }
+        /// <summary>
+        /// 业务主键
+        /// </summary>
+        public string BusinessId { get; set; }
 
-        public string? ParameterText { get; set; }
-
+        /// <summary>
+        /// 执行规则
+        /// </summary>
         public DdonJobRule Rule { get; set; }
 
-        public DateTime CreateDate { get; set; }
+        /// <summary>
+        /// 开始日期
+        /// </summary>
+        public DateTime StartDate { get; set; }
 
+        /// <summary>
+        /// 结束日期
+        /// </summary>
+        public DateTime EndDate { get; set; }
+
+        /// <summary>
+        /// Job是否完成
+        /// </summary>
         public bool Finish { get; set; }
 
         public void Start() => Timer.Start();
@@ -47,26 +70,25 @@ namespace Ddon.Job
         private Action<Guid>? _ivnvoked;
         public void SetIvnvoked(Action<Guid> action) => _ivnvoked = action;
 
-        public void Modify(string name, DdonJobRule rule, string className, string methodName, string? parameterText)
-        {
-            Name = name;
-            ClassName = className;
-            MethodName = methodName;
-            ParameterText = parameterText;
-            Rule = rule;
-        }
-
         private void InitTimer()
         {
             Timer.Elapsed = async () =>
             {
-                await DdonJobInvoke.IvnvokeAsync(ClassName, MethodName, ParameterText);
-
+                Console.WriteLine($"{DateTime.UtcNow}-----{Rule.EndTime}");
                 if (_ivnvoked != null)
+                {
                     _ivnvoked(Id);
-
-                if (_completed != null && Rule.Interval == null)
+                }
+                if (_completed != null && (Rule.Interval == null || Rule.Interval == 0 || (Rule.EndTime is not null && DateTime.UtcNow > Rule.EndTime)))
+                {
                     _completed(Id);
+                }
+
+                var serviceProvider = DdonServiceProvider.GetServiceProvider();
+                using var serviceScope = serviceProvider.CreateScope();
+                var eventBus = serviceScope.ServiceProvider.GetService<IEventBus>();
+
+                await eventBus!.PublishAsync(new JobEvent<Guid>(Id, JobType, BusinessId));
             };
         }
     }

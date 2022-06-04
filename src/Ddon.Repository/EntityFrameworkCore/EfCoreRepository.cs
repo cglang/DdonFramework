@@ -24,16 +24,6 @@ namespace Ddon.Repositiry.EntityFrameworkCore
         {
             DbContext = dbContext;
         }
-
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return await SaveChangesAsync(true, cancellationToken);
-        }
-
-        public async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-        {
-            return await DbContext.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        }
     }
 
     public class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext, TKey>, IRepository<TEntity>
@@ -50,6 +40,11 @@ namespace Ddon.Repositiry.EntityFrameworkCore
         public IQueryable<TEntity> Query => DbSet.AsQueryable();
 
         public DbSet<TEntity> DbSet => DbContext.Set<TEntity>();
+
+        public async Task<int> SaveChangesAsync()
+        {
+            return await DbContext.SaveChangesAsync();
+        }
 
         public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
         {

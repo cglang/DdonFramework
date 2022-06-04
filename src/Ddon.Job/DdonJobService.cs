@@ -11,10 +11,13 @@ namespace Ddon.Job
 
             var allValueTask = keyValueManager.GetAllValueAsync();
             allValueTask.Wait();
+            Console.WriteLine($"job个数{allValueTask.Result.Count()}");
             Parallel.ForEach(allValueTask.Result, value =>
             {
                 if (value.Finish == false)
+                {
                     value.Start();
+                }
                 value.SetCompleted(async (id) =>
                 {
                     value.Finish = true;

@@ -112,7 +112,7 @@ namespace Ddon.Repositiry
 
             if (entry.Entity is ICreationAuditedObject entity)
             {
-                entity.CreationTime = DateTime.Now;
+                entity.CreationTime = DateTime.UtcNow;
             }
         }
 
@@ -120,7 +120,7 @@ namespace Ddon.Repositiry
         {
             if (entry.Entity is IAuditedObject entity)
             {
-                entity.LastModificationTime = DateTime.Now;
+                entity.LastModificationTime = DateTime.UtcNow;
             }
         }
 
