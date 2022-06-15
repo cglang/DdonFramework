@@ -30,15 +30,15 @@ namespace Ddon.Identity.Manager
         private readonly IPermissionGrantRepository<TKey> _permissionGrantRepository;
         private readonly ICache _cache;
 
-        public IQueryable<User<TKey>> Users => _userRepository.Query;
-        public IQueryable<Role<TKey>> Roles => _roleRepository.Query;
-        public IQueryable<UserClaim<TKey>> UserClaims => _userClaimRepository.Query;
-        public IQueryable<RoleClaim<TKey>> RoleClaims => _roleClaimRepository.Query;
-        public IQueryable<UserRole<TKey>> UserRoles => _userRoleRepository.Query;
-        // TODO: 这两个的仓储还未实现
-        public IQueryable<UserToken<TKey>> UserTokens => default!;
-        public IQueryable<UserLogin<TKey>> UserLogins => default!;
-        public IQueryable<Tenant<TKey>> Tenants => _tenantRepository.Query;
+        //public IQueryable<User<TKey>> Users => _userRepository.Query;
+        //public IQueryable<Role<TKey>> Roles => _roleRepository.Query;
+        //public IQueryable<UserClaim<TKey>> UserClaims => _userClaimRepository.Query;
+        //public IQueryable<RoleClaim<TKey>> RoleClaims => _roleClaimRepository.Query;
+        //public IQueryable<UserRole<TKey>> UserRoles => _userRoleRepository.Query;
+        //// TODO: 这两个的仓储还未实现
+        //public IQueryable<UserToken<TKey>> UserTokens => default!;
+        //public IQueryable<UserLogin<TKey>> UserLogins => default!;
+        //public IQueryable<Tenant<TKey>> Tenants => _tenantRepository.Query;
 
         public IdentityManager(
             IPermissionDefinitionContext permissionDefinitionContext,
@@ -71,7 +71,7 @@ namespace Ddon.Identity.Manager
 
         public async Task<TokenDto> AccessTokenAsync(AccessTokenInPutDto input)
         {
-            var existingUser = await Users.FirstOrDefaultAsync(x => x.UserName.Equals(input.UserName));
+            var existingUser = await _userRepository.FirstOrDefaultAsync(x => x.UserName.Equals(input.UserName));
             if (existingUser == null)
             {
                 return new TokenDto()
@@ -155,7 +155,7 @@ namespace Ddon.Identity.Manager
                 };
             }
 
-            var dbUser = await Users.FirstOrDefaultAsync(x => x.Id.Equals(storedRefreshToken.UserId));
+            var dbUser = await _userRepository.FirstOrDefaultAsync(x => x.Id.Equals(storedRefreshToken.UserId));
             return await GenerateJwtTokenAsync(dbUser!);
         }
 
@@ -210,7 +210,7 @@ namespace Ddon.Identity.Manager
 
         public async Task<Tenant<TKey>> GetUserTenantByUserIdAsync(TKey id)
         {
-            var user = await Users.FirstOrDefaultAsync(x => x.Id.Equals(id));
+            var user = await _userRepository.FirstOrDefaultAsync(x => x.Id.Equals(id));
 
             if (user is null)
             {

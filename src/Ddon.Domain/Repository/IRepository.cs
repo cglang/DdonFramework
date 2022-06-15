@@ -42,24 +42,6 @@ namespace Ddon.Domain.Repository
 
         Task<IEnumerable<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
-
-
-        #region 规约查询
-
-        Task<long> GetCountAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
-
-        Task<TEntity> FirstAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
-
-        Task<TEntity?> FirstOrDefaultAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
-
-        Task<TEntity?> SingleOrDefaultAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
-
-        Task<IEnumerable<TEntity>> GetListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
-
-        #endregion
-
-        IQueryable<TEntity> Query { get; }
-
         IAsyncQueryableProvider AsyncExecuter { get; }
 
         Task<int> SaveChangesAsync();

@@ -37,9 +37,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         protected EfCoreRepository(TDbContext dbContext) : base(dbContext) { }
 
-        public IQueryable<TEntity> Query => DbSet.AsQueryable();
-
-        public DbSet<TEntity> DbSet => DbContext.Set<TEntity>();
+        protected DbSet<TEntity> Entites => DbContext.Set<TEntity>();
 
         public async Task<int> SaveChangesAsync()
         {
@@ -48,7 +46,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
         {
-            return await DbSet.AnyAsync(predicate, cancellationToken);
+            return await Entites.AnyAsync(predicate, cancellationToken);
         }
 
         public virtual async Task AddAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
@@ -63,7 +61,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
                 multEntityWithStringId.TenantId = new Guid().ToString();
             }
 
-            await DbSet.AddAsync(entity, cancellationToken);
+            await Entites.AddAsync(entity, cancellationToken);
 
             if (autoSave)
             {
@@ -81,7 +79,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
                     entityWithStringId.Id = new Guid().ToString();
                 }
             });
-            await DbSet.AddRangeAsync(enumerable, cancellationToken);
+            await Entites.AddRangeAsync(enumerable, cancellationToken);
 
             if (autoSave)
             {
@@ -91,7 +89,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public virtual async Task DeleteAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
         {
-            DbSet.Remove(entity);
+            Entites.Remove(entity);
 
             if (autoSave)
             {
@@ -101,7 +99,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public virtual async Task DeleteAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
         {
-            DbSet.RemoveRange(entities);
+            Entites.RemoveRange(entities);
 
             if (autoSave)
             {
@@ -111,7 +109,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
         {
-            var entities = await DbSet.Where(predicate).ToListAsync();
+            var entities = await Entites.Where(predicate).ToListAsync(cancellationToken);
 
             await DeleteAsync(entities, autoSave, cancellationToken);
         }
@@ -141,7 +139,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public virtual async Task<long> GetCountAsync(CancellationToken cancellationToken = default)
         {
-            return await DbSet.LongCountAsync(cancellationToken);
+            return await Entites.LongCountAsync(cancellationToken);
         }
 
         public virtual async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
@@ -173,35 +171,6 @@ namespace Ddon.Repositiry.EntityFrameworkCore
         {
             return await BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
         }
-
-        #region 归约查询
-
-        public async Task<long> GetCountAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
-        {
-            return await _specification.BuildQuery(Query, specification).LongCountAsync(cancellationToken);
-        }
-
-        public async Task<TEntity> FirstAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
-        {
-            return await _specification.BuildQuery(Query, specification).FirstAsync(cancellationToken);
-        }
-
-        public async Task<TEntity?> FirstOrDefaultAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
-        {
-            return await _specification.BuildQuery(Query, specification).FirstOrDefaultAsync(cancellationToken);
-        }
-
-        public async Task<TEntity?> SingleOrDefaultAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
-        {
-            return await _specification.BuildQuery(Query, specification).SingleOrDefaultAsync(cancellationToken);
-        }
-
-        public async Task<IEnumerable<TEntity>> GetListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
-        {
-            return await _specification.BuildQuery(Query, specification).ToListAsync(cancellationToken);
-        }
-
-        #endregion
 
         public virtual async Task<TEntity> FirstAsync(TKey id, CancellationToken cancellationToken = default)
         {
@@ -239,12 +208,12 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public async Task<TResult?> FirstOrDefault<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
         {
-            return await _specification2.BuildQuery(Query, specification).FirstOrDefaultAsync(cancellationToken);
+            return await _specification2.BuildQuery(Entites, specification).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
         {
-            return await _specification2.BuildQuery(Query, specification).ToListAsync(cancellationToken);
+            return await _specification2.BuildQuery(Entites, specification).ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -254,7 +223,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
         /// <returns></returns>
         protected virtual IQueryable<TEntity> BuildQuery(params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            var query = Query;
+            var query = Entites.AsQueryable();
 
             foreach (var propertySelector in propertySelectors)
             {

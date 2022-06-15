@@ -53,22 +53,11 @@ namespace Ddon.Application.Service
 
         public virtual async Task<PageResult<TResponseDto>> GetListAsync(TPageDto requestDto)
         {
-            IQueryable<TEntity> query = CreateFilteredQuery(requestDto);
+            var entitiesTask = _repository.GetListAsync(requestDto);
+            var countTask = _repository.GetCountAsync();
+            var entityDtos = Mapper.Map<List<TResponseDto>>(await entitiesTask);
 
-            int totalCount = await _repository.AsyncExecuter.CountAsync(query);
-
-            query = ApplySorting(query, requestDto);
-            query = ApplyPaging(query, requestDto);
-
-            var entities = await _repository.AsyncExecuter.ToListAsync(query);
-            var entityDtos = Mapper.Map<List<TResponseDto>>(entities);
-
-            return new PageResult<TResponseDto>(totalCount, entityDtos);
-        }
-
-        protected virtual IQueryable<TEntity> CreateFilteredQuery(TPageDto requestDto)
-        {
-            return _repository.Query;
+            return new PageResult<TResponseDto>(await countTask, entityDtos);
         }
 
         protected virtual IQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TPageDto requestDto)

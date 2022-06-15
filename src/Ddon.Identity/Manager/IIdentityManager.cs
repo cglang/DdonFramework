@@ -10,22 +10,6 @@ namespace Ddon.Identity.Manager
 {
     public interface IIdentityManager<TKey> where TKey : IEquatable<TKey>
     {
-        IQueryable<User<TKey>> Users { get; }
-
-        IQueryable<Role<TKey>> Roles { get; }
-
-        IQueryable<UserClaim<TKey>> UserClaims { get; }
-
-        IQueryable<RoleClaim<TKey>> RoleClaims { get; }
-
-        IQueryable<UserRole<TKey>> UserRoles { get; }
-
-        IQueryable<UserToken<TKey>> UserTokens { get; }
-
-        IQueryable<UserLogin<TKey>> UserLogins { get; }
-
-        IQueryable<Tenant<TKey>> Tenants { get; }
-
         Task<TokenDto> AccessTokenAsync(AccessTokenInPutDto input);
 
         Task<TokenDto> RefreshTokenAsync(RefreshTokenInPutDto input);

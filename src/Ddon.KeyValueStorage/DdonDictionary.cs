@@ -38,7 +38,7 @@ namespace Ddon.KeyValueStorage
 
         public async Task<bool> SaveAsync()
         {
-            using var ddonLock = new DdonLock();
+            using var ddonLock = new LocalSpinLock();
             if (!await ddonLock.GetLock("save")) throw new Exception("保存失败");
 
             using var stream = new StreamWriter(_persistDataFullName);

@@ -9,7 +9,7 @@ namespace Ddon.Core
         public static readonly HashSet<string> Locks = new();
     }
 
-    public class DdonLock : IDisposable
+    public class LocalSpinLock : IDisposable
     {
         private string _key = string.Empty;
 
