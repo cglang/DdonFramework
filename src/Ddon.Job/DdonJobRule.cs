@@ -13,8 +13,8 @@ namespace Ddon.Core.System.Timers
 
         public DdonJobRule(DateTime dateTime, DateTime? endTime, double? interval)
         {
-            DateTime = dateTime;
-            EndTime = endTime;
+            DateTime = dateTime.ToLocalTime();
+            EndTime = endTime?.ToLocalTime();
             Interval = interval;
         }
 
