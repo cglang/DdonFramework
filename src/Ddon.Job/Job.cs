@@ -1,4 +1,4 @@
-﻿using Ddon.Core;
+﻿using Ddon.Core.Services.LazyService.Static;
 using Ddon.Core.System.Timers;
 using Ddon.EventBus.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,8 +84,7 @@ namespace Ddon.Job
                     _completed(Id);
                 }
 
-                var serviceProvider = DdonServiceProvider.GetServiceProvider();
-                using var serviceScope = serviceProvider.CreateScope();
+                using var serviceScope = LazyServiceProvider.LazyServicePrivider.ServiceProvider.CreateScope();
                 var eventBus = serviceScope.ServiceProvider.GetService<IEventBus>();
 
                 await eventBus!.PublishAsync(new JobEvent<Guid>(Id, JobType, BusinessId));

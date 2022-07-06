@@ -1,5 +1,6 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core;
+using Ddon.Core.Services.LazyService.Static;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +29,7 @@ namespace Ddon.Socket
 
         public static DdonSocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
         {
-            DdonServiceProvider.InitServiceProvider(serviceProvider);
+            LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
             return new DdonSocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, host, post);
         }

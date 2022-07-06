@@ -1,9 +1,8 @@
-﻿using Ddon.Core;
+﻿using Ddon.Core.Services.LazyService.Static;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using System;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace Ddon.Socket
 {
@@ -19,7 +18,7 @@ namespace Ddon.Socket
 
         public static DdonSocketSession CreateClient(IServiceProvider serviceProvider, string host, int post)
         {
-            DdonServiceProvider.InitServiceProvider(serviceProvider);
+            LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
             var t = new DdonSocketClient<TDdonSocketRouteMapLoadBase>(host, post);
             return t._session;

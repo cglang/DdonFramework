@@ -20,5 +20,7 @@ namespace Ddon.Core.Services.LazyService
         object LazyGetService(Type serviceType, Func<IServiceProvider, object> factory);
 
         T LazyGetService<T>(Func<IServiceProvider, object> factory);
+
+        IServiceProvider ServiceProvider { get; set; }
     }
 }

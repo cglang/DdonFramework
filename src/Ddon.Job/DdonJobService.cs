@@ -1,4 +1,4 @@
-﻿using Ddon.Core;
+﻿using Ddon.Core.Services.LazyService.Static;
 using Ddon.KeyValueStorage;
 
 namespace Ddon.Job
@@ -7,7 +7,7 @@ namespace Ddon.Job
     {
         public static void Start(IServiceProvider serviceProvider, IDdonKeyValueManager<Job, DdonJobOptions> keyValueManager)
         {
-            DdonServiceProvider.InitServiceProvider(serviceProvider);
+            LazyServiceProvider.InitServiceProvider(serviceProvider);
 
             var allValueTask = keyValueManager.GetAllValueAsync();
             allValueTask.Wait();

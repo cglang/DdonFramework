@@ -8,7 +8,7 @@ namespace Ddon.Core.Services.LazyService
     {
         protected IDictionary<Type, object> CachedServices { get; set; }
 
-        protected IServiceProvider ServiceProvider { get; set; }
+        public IServiceProvider ServiceProvider { get; set; }
 
         public LazyServiceProvider(IServiceProvider serviceProvider)
         {
