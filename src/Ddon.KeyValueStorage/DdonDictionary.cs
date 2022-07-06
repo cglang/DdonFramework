@@ -58,9 +58,8 @@ namespace Ddon.KeyValueStorage
             {
                 var kv = text.Split("\t");
                 var value = JsonSerializer.Deserialize<TValue>(kv[1]);
-                Add(kv[0], value);
+                Add(kv[0], value!);
             }
-            stream.Close();
         }
     }
 }

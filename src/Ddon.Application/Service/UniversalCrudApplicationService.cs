@@ -23,7 +23,7 @@ namespace Ddon.Application.Service
         /// </summary>
         protected IMapper Mapper => LazyServiceProvider.LazyGetRequiredService<IMapper>();
 
-        private IRepository<TEntity, TKey> _repository;
+        private readonly IRepository<TEntity, TKey> _repository;
 
         public UniversalCrudApplicationService(ILazyServiceProvider lazyServiceProvider, IRepository<TEntity, TKey> repository) : base(lazyServiceProvider)
         {
