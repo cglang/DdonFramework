@@ -1,14 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<Nullable>enable</Nullable>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageIcon>icon.nuget.jpg</PackageIcon>
 	</PropertyGroup>
+
+	<Import Project="../../common.props" />
 
 	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
-		<ProjectReference Include="..\Ddon.Repository\Ddon.Repositiry.csproj" />
+		<ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
 	</ItemGroup>
 
 </Project>

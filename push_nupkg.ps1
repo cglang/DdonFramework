@@ -5,7 +5,22 @@ $rootFolder = (Get-Item -Path "./" -Verbose).FullName
 
 # List of projects
 $projects = (
-    "Ddon.Core"
+    "Ddon.Core",
+    "Ddon.Application",
+    "Ddon.AspNetCore",
+    "Ddon.Cache",
+    "Ddon.Domain",
+    "Ddon.EventBus",
+    "Ddon.EventBus.Memory",
+    "Ddon.Identity",
+    "Ddon.Job",
+    "Ddon.KeyValueStorage",
+    "Ddon.Localizer",
+    "Ddon.Mail",
+    "Ddon.Repository",
+    "Ddon.Serilog",
+    "Ddon.Socket",
+    "Ddon.UploadFile"
 )
 
 [xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "common.props")
@@ -16,5 +31,5 @@ foreach($project in $projects) {
     $projectFolder = Join-Path $rootFolder ("src" + "/" + $project + "/" + $project + ".csproj")
 
     dotnet publish $projectFolder -p:Configuration=Release -p:SourceLinkCreate=true -t:pack
-    dotnet nuget push ($releasePath + $project + "." + $version + ".nupkg") --api-key $apikey --source https://api.nuget.org/v3/index.json
+    dotnet nuget push ($releasePath + $project + "." + $version + ".nupkg") --api-key $apikey --source https://api.nuget.org/v3/index.json --skip-duplicate
 }

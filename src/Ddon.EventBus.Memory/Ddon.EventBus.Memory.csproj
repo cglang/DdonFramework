@@ -1,12 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageIcon>icon.nuget.jpg</PackageIcon>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
-  </ItemGroup>
+	<Import Project="../../common.props" />
+
+	<ItemGroup>
+		<ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
+	</ItemGroup>
 
 </Project>

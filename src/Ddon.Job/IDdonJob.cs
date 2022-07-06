@@ -1,4 +1,8 @@
-﻿namespace Ddon.Job
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Ddon.Job
 {
     public interface IDdonJob
     {

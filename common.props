@@ -5,9 +5,8 @@
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		
 		<Authors>cglang</Authors>
-		<PackageIcon>icon.nuget.jpg</PackageIcon>
 		<RepositoryUrl>https://github.com/cglang/DdonFramework</RepositoryUrl>
-		<Version>1.0.3</Version>
+		<Version>1.1.0</Version>
 		<AnalysisLevel>none</AnalysisLevel>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

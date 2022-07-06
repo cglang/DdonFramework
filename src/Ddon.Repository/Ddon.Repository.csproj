@@ -10,11 +10,13 @@
 	<Import Project="../../common.props" />
 
 	<ItemGroup>
-		<PackageReference Include="MailKit" Version="3.2.0" />
+		<PackageReference Include="Dapper" Version="2.0.123" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
+		<ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
+		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
 	</ItemGroup>
 
 </Project>

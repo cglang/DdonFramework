@@ -1,15 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageIcon>icon.nuget.jpg</PackageIcon>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
-    <ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
-    <ProjectReference Include="..\Ddon.KeyValueStorage\Ddon.KeyValueStorage.csproj" />
-  </ItemGroup>
+	<Import Project="../../common.props" />
+
+	<ItemGroup>
+		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
+		<ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
+		<ProjectReference Include="..\Ddon.KeyValueStorage\Ddon.KeyValueStorage.csproj" />
+	</ItemGroup>
 
 </Project>

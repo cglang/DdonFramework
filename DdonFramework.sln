@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Identity", "src\Ddon.I
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Localizer", "src\Ddon.Localizer\Ddon.Localizer.csproj", "{AEBBC681-0C5D-4AC9-BBBE-3D22D0A28568}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Repositiry", "src\Ddon.Repository\Ddon.Repositiry.csproj", "{89A85153-49AE-4D93-8570-38674D83274C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Repository", "src\Ddon.Repository\Ddon.Repository.csproj", "{89A85153-49AE-4D93-8570-38674D83274C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.UploadFile", "src\Ddon.UploadFile\Ddon.UploadFile.csproj", "{381745B2-5779-4A3B-962C-5CB09F8AAEE2}"
 EndProject
@@ -41,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Mail", "src\Ddon.Mail\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Job", "src\Ddon.Job\Ddon.Job.csproj", "{049B93EE-4832-4779-9334-043D853E7F67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Ddon.Socket", "test\Test.Ddon.Socket\Test.Ddon.Socket.csproj", "{4DB7B85F-A65F-4990-8C39-6D379C403B0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Ddon.Socket", "test\Test.Ddon.Socket\Test.Ddon.Socket.csproj", "{4DB7B85F-A65F-4990-8C39-6D379C403B0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
