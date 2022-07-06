@@ -1,5 +1,4 @@
-﻿using Ddon.ConvenientSocket.Exceptions;
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -11,14 +10,20 @@ namespace Ddon.Socket.Core
     public class DdonSocketConnectionCore : IDisposable
     {
         private readonly Func<DdonSocketConnectionCore, byte[], Task> ByteHandler;
+        private readonly Func<DdonSocketConnectionCore, Exception, Task>? ExceptionHandler;
 
-        public DdonSocketConnectionCore(TcpClient tcpClient, Func<DdonSocketConnectionCore, byte[], Task> byteHandler)
+
+        public DdonSocketConnectionCore(TcpClient tcpClient, Func<DdonSocketConnectionCore, byte[], Task> byteHandler,
+            Func<DdonSocketConnectionCore, Exception, Task>? exceptionHandler = null)
         {
             TcpClient = tcpClient;
             ByteHandler = byteHandler;
+            ExceptionHandler = exceptionHandler;
+
+            ConsecutiveReadStream();
         }
 
-        public Guid SocketId { get; set; } = Guid.NewGuid();
+        public Guid SocketId { get; } = Guid.NewGuid();
 
         public Stream Stream => TcpClient.GetStream();
 
@@ -27,22 +32,25 @@ namespace Ddon.Socket.Core
         /// <summary>
         /// 持续从流中读取数据
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="DdonSocketDisconnectException">Socket连接断开异常 携带断开连接Id</exception>
-        public async Task ConsecutiveReadStreamAsync()
+        public void ConsecutiveReadStream()
         {
-            while (true)
+            _ = Task.Run(async () =>
             {
                 try
                 {
-                    var head = await Stream.ReadLengthBytesAsync(sizeof(int));
-                    var length = BitConverter.ToInt32(head);
-                    var initialBytes = await Stream.ReadLengthBytesAsync(length);
-                    await ByteHandler(this, initialBytes);
+                    while (true)
+                    {
+                        var head = await Stream.ReadLengthBytesAsync(sizeof(int));
+                        var length = BitConverter.ToInt32(head);
+                        var initialBytes = await Stream.ReadLengthBytesAsync(length);
+                        await ByteHandler(this, initialBytes);
+                    }
                 }
-                catch (IOException ex) { throw new DdonSocketDisconnectException(ex, SocketId); }
-                catch { }
-            }
+                catch (Exception ex)
+                {
+                    if (ExceptionHandler != null) await ExceptionHandler(this, ex);
+                }
+            });
         }
 
         /// <summary>

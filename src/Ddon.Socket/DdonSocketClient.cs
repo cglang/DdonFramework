@@ -17,17 +17,12 @@ namespace Ddon.Socket
             _session = new DdonSocketSession(tcpClient);
         }
 
-        public static DdonSocketClient<TDdonSocketRouteMapLoadBase> CreateClient(IServiceProvider serviceProvider, string host, int post)
+        public static DdonSocketSession CreateClient(IServiceProvider serviceProvider, string host, int post)
         {
             DdonServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
-            return new DdonSocketClient<TDdonSocketRouteMapLoadBase>(host, post);
-        }
-
-        public DdonSocketSession Start()
-        {
-            Task.Run(() => _session.Conn.ConsecutiveReadStreamAsync());
-            return _session;
+            var t = new DdonSocketClient<TDdonSocketRouteMapLoadBase>(host, post);
+            return t._session;
         }
     }
 }

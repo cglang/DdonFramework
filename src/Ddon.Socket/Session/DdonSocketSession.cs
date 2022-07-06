@@ -20,7 +20,7 @@ namespace Ddon.Socket.Session
 
         public DdonSocketSession(TcpClient tcpClient)
         {
-            Conn = new DdonSocketConnectionCore(tcpClient, ByteHandler);
+            Conn = new DdonSocketConnectionCore(tcpClient, ByteHandler, ExceptionHandler);
         }
 
         private Func<DdonSocketConnectionCore, byte[], Task> ByteHandler => async (conn, bytes) =>
@@ -74,6 +74,12 @@ namespace Ddon.Socket.Session
                     await Conn.SendBytesAsync(contentBytes);
                 }
             }
+        };
+
+        private Func<DdonSocketConnectionCore, Exception, Task> ExceptionHandler => async (conn, ex) =>
+        {
+            // TODO: Socket 断开等异常时
+            await Task.CompletedTask;
         };
 
         public async Task SendAsync<T>(string route, T data, Guid id = default)

@@ -45,19 +45,6 @@ namespace Ddon.Socket
                     var session = new DdonSocketSession(client);
                     SocketStorage.Add(session);
                     Logger?.LogInformation("客户端接入：{SocketId}", session.Conn.SocketId);
-
-                    Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await session.Conn.ConsecutiveReadStreamAsync();
-                        }
-                        catch (DdonSocketDisconnectException ex)
-                        {
-                            SocketStorage.Remove(ex.SocketId);
-                            Logger?.LogInformation("客户端断开：{SocketId}", ex.SocketId);
-                        }
-                    });
                 }
             });
         }
