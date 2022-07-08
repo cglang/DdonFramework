@@ -52,13 +52,10 @@ namespace Ddon.Core.System.Timers
             base.Elapsed += (_, _) =>
             {
                 if (Elapsed == null) return;
-
                 var now = DateTime.UtcNow;
                 if (_startDate != null && now < _startDate) return;
-                Console.WriteLine($"{_baseTime}-{_baseTime.AddSeconds(_interval)}-{now}");
                 if (_baseTime.AddSeconds(_interval) < now)
                 {
-                    Console.WriteLine($"{_baseTime.AddSeconds(_interval)}--{now}");
                     Elapsed();
                     _baseTime = now;
                 }
