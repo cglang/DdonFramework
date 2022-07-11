@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Ddon.Core
+namespace Ddon.Core.Use.Reflection
 {
-    public static class DdonTypeHelper
+    public static class DdonType
     {
         private readonly static IEnumerable<Type> Types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes());
 

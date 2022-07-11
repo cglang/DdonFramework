@@ -1,5 +1,4 @@
-﻿using Ddon.Core;
-using Ddon.Core.Reflection;
+﻿using Ddon.Core.Use.Reflection;
 using Ddon.Socket.Session.Model;
 using System;
 using System.Text.Json;
@@ -29,15 +28,15 @@ namespace Ddon.Socket.Session
             DdonSocketSession connection,
             DdonSocketRequest head)
         {
-            var classType = DdonTypeHelper.GetTypeByName(className);
+            var classType = DdonType.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
             var ddonSocketService = (DdonSocketApiCore)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 
-            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
-            return await DdonInvokeHelper.InvokeAsync(instance, method, parameter);
+            var method = DdonType.GetMothodByName(classType, methodName);
+            return await DdonInvoke.InvokeAsync(instance, method, parameter);
         }
 
         public static async Task<dynamic?> IvnvokeAsync<T>(
@@ -48,15 +47,15 @@ namespace Ddon.Socket.Session
             DdonSocketSession connection,
             DdonSocketRequest head) where T : notnull
         {
-            var classType = DdonTypeHelper.GetTypeByName(className);
+            var classType = DdonType.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
             var ddonSocketService = (DdonSocketApiCore)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 
-            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
-            return await DdonInvokeHelper.InvokeAsync(instance, method, parameter);
+            var method = DdonType.GetMothodByName(classType, methodName);
+            return await DdonInvoke.InvokeAsync(instance, method, parameter);
         }
     }
 }

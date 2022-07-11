@@ -8,7 +8,7 @@ namespace System
     /// <summary>
     /// Extension methods for all objects.
     /// </summary>
-    public static class AbpObjectExtensions
+    public static class ObjectExtensions
     {
         /// <summary>
         /// Used to simplify and beautify casting an object to a type.

@@ -1,4 +1,4 @@
-﻿using Ddon.Core.DependencyInjection;
+﻿using Ddon.Core.Use.Di;
 
 namespace Ddon.Identity.Permission
 {

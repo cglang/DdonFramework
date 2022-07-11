@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace Ddon.Core.Use
 {
-    public class SocketCore : IDisposable
+    public class DdonSocketCore : IDisposable
     {
-        private readonly Func<SocketCore, byte[], Task> ByteHandler;
-        private readonly Func<SocketCore, Exception, Task>? ExceptionHandler;
+        private readonly Func<DdonSocketCore, byte[], Task> ByteHandler;
+        private readonly Func<DdonSocketCore, Exception, Task>? ExceptionHandler;
 
 
-        public SocketCore(TcpClient tcpClient, Func<SocketCore, byte[], Task> byteHandler,
-            Func<SocketCore, Exception, Task>? exceptionHandler = null)
+        public DdonSocketCore(TcpClient tcpClient, Func<DdonSocketCore, byte[], Task> byteHandler,
+            Func<DdonSocketCore, Exception, Task>? exceptionHandler = null)
         {
             TcpClient = tcpClient;
             ByteHandler = byteHandler;

@@ -4,7 +4,6 @@ using System.Diagnostics;
 
 namespace Ddon.Core
 {
-    [DebuggerStepThrough]
     public static class Check
     {
         public static T NotNull<T>(

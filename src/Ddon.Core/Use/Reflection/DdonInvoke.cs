@@ -6,9 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Ddon.Core.Reflection
+namespace Ddon.Core.Use.Reflection
 {
-    public class DdonInvokeHelper
+    public class DdonInvoke
     {
         /// <summary>
         /// 通过类名和方法名执行方法中的代码
@@ -20,8 +20,8 @@ namespace Ddon.Core.Reflection
         /// <exception cref="Exception">当反序列化失败时或者执行多个参数的方法时引发异常</exception>
         public static async Task<dynamic?> InvokeAsync(string className, string methodName, string parameter)
         {
-            var classType = DdonTypeHelper.GetTypeByName(className);
-            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
+            var classType = DdonType.GetTypeByName(className);
+            var method = DdonType.GetMothodByName(classType, methodName);
             var instance = Activator.CreateInstance(classType);
             return await InvokeAsync(instance, method, parameter);
         }
@@ -35,8 +35,8 @@ namespace Ddon.Core.Reflection
         /// <returns></returns>
         public static async Task<dynamic?> InvokeAsync(string className, string methodName, params object[] parameter)
         {
-            var classType = DdonTypeHelper.GetTypeByName(className);
-            var method = DdonTypeHelper.GetMothodByName(classType, methodName);
+            var classType = DdonType.GetTypeByName(className);
+            var method = DdonType.GetMothodByName(classType, methodName);
             var instance = Activator.CreateInstance(classType);
             return await InvokeAsync(instance, method, parameter);
         }
@@ -58,7 +58,7 @@ namespace Ddon.Core.Reflection
             }
             else if (methodParameter.Count() == 1)
             {
-                if(string.IsNullOrEmpty(parameterText)) throw new Exception("参数不允许为空");
+                if (string.IsNullOrEmpty(parameterText)) throw new Exception("参数不允许为空");
 
                 if (methodParameter.First().Name == typeof(string).Name)
                     return await InvokeAsync(instance, method, new object[] { parameterText });

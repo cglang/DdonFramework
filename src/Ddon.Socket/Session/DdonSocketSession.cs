@@ -14,16 +14,16 @@ namespace Ddon.Socket.Session
 {
     public class DdonSocketSession
     {
-        public readonly SocketCore Conn;
+        public readonly DdonSocketCore Conn;
 
         private readonly IServiceProvider ServiceProvider = Ddon.Core.Services.LazyService.Static.LazyServiceProvider.LazyServicePrivider.ServiceProvider;
 
         public DdonSocketSession(TcpClient tcpClient)
         {
-            Conn = new SocketCore(tcpClient, ByteHandler, ExceptionHandler);
+            Conn = new DdonSocketCore(tcpClient, ByteHandler, ExceptionHandler);
         }
 
-        private Func<SocketCore, byte[], Task> ByteHandler => async (conn, bytes) =>
+        private Func<DdonSocketCore, byte[], Task> ByteHandler => async (conn, bytes) =>
         {
             var headBytes = DdonArray.ByteCut(bytes[0..DdonSocketConst.HeadLength]);
             var dataBytes = DdonArray.ByteCut(bytes[DdonSocketConst.HeadLength..]);
@@ -76,7 +76,7 @@ namespace Ddon.Socket.Session
             }
         };
 
-        private Func<SocketCore, Exception, Task> ExceptionHandler => async (conn, ex) =>
+        private Func<DdonSocketCore, Exception, Task> ExceptionHandler => async (conn, ex) =>
         {
             // TODO: Socket 断开等异常时
             await Task.CompletedTask;

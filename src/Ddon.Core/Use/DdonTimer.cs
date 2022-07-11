@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Timers;
 
-namespace Ddon.Core.System.Timers
+namespace Ddon.Core.Use
 {
     /// <summary>
     /// 指定开始时间,间隔指定秒数执行事件

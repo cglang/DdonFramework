@@ -1,4 +1,4 @@
-﻿using Ddon.Core.DependencyInjection;
+﻿using Ddon.Core.Use.Di;
 using System;
 
 namespace Ddon.Core.Services.LazyService

@@ -24,7 +24,7 @@ namespace Test.Ddon.Socket
             _ = Task.Run(() =>
             {
                 var client = listener.AcceptTcpClient();
-                SocketCore core = new(client, async (a, b) =>
+                DdonSocketCore core = new(client, async (a, b) =>
                 {
                     await Task.CompletedTask;
                     result = Encoding.UTF8.GetString(b);
@@ -32,7 +32,7 @@ namespace Test.Ddon.Socket
             });
 
             var tcpClient = new TcpClient("127.0.0.1", 5356);
-            SocketCore core = new(tcpClient, async (a, b) =>
+            DdonSocketCore core = new(tcpClient, async (a, b) =>
             {
                 await Task.CompletedTask;
             });
