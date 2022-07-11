@@ -1,15 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Ddon.Socket
+namespace Ddon.Core.Use
 {
-    public static class DdonSocketCommon
+    public static class DdonArray
     {
-        public static byte[] MergeArrays(byte[] array1, int headLength, byte[] array2)
+        /// <summary>
+        /// 合并两个byte[]，
+        /// </summary>
+        /// <param name="array1"></param>
+        /// <param name="array2"></param>
+        /// <param name="array1Length">指定多少数组之后再合并array2，中间使用0补位</param>
+        /// <returns></returns>
+        public static byte[] MergeArrays(byte[] array1, byte[] array2, int array1Length = default)
         {
-            byte[] contentBytes = new byte[headLength + array2.Length];
+            if (array1Length == default) array1Length = array1.Length;
+
+            byte[] contentBytes = new byte[array1Length + array2.Length];
             Array.Copy(array1, contentBytes, array1.Length);
-            Array.Copy(array2, 0, contentBytes, DdonSocketConst.HeadLength, array2.Length);
+            Array.Copy(array2, 0, contentBytes, array1Length, array2.Length);
             return contentBytes;
         }
 

@@ -1,4 +1,4 @@
-using Ddon.Socket.Core;
+using Ddon.Core.Use;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Net;
@@ -24,7 +24,7 @@ namespace Test.Ddon.Socket
             _ = Task.Run(() =>
             {
                 var client = listener.AcceptTcpClient();
-                DdonSocketConnectionCore core = new(client, async (a, b) =>
+                SocketCore core = new(client, async (a, b) =>
                 {
                     await Task.CompletedTask;
                     result = Encoding.UTF8.GetString(b);
@@ -32,7 +32,7 @@ namespace Test.Ddon.Socket
             });
 
             var tcpClient = new TcpClient("127.0.0.1", 5356);
-            DdonSocketConnectionCore core = new(tcpClient, async (a, b) =>
+            SocketCore core = new(tcpClient, async (a, b) =>
             {
                 await Task.CompletedTask;
             });

@@ -105,19 +105,6 @@ namespace Ddon.Core
             return value;
         }
 
-
-        public static Type AssignableTo<TBaseType>(Type type, string parameterName)
-        {
-            NotNull(type, parameterName);
-
-            if (!type.IsAssignableTo<TBaseType>())
-            {
-                throw new ArgumentException($"{parameterName} (type of {type.AssemblyQualifiedName}) should be assignable to the {typeof(TBaseType).GetFullNameWithAssemblyName()}!");
-            }
-
-            return type;
-        }
-
         public static string Length(string value, string parameterName, int maxLength, int minLength = 0)
         {
             if (minLength > 0)

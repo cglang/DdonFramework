@@ -1,5 +1,4 @@
-﻿using Ddon.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
@@ -7,7 +6,7 @@ using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 
-namespace Ddon.KeyValueStorage
+namespace Ddon.Core.Use
 {
     public class DdonDictionary<TValue> : Dictionary<string, TValue>
     {

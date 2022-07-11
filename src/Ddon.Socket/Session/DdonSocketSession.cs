@@ -1,6 +1,6 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core.Services.LazyService;
-using Ddon.Socket.Core;
+using Ddon.Core.Use;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
 using System;
@@ -14,19 +14,19 @@ namespace Ddon.Socket.Session
 {
     public class DdonSocketSession
     {
-        public readonly DdonSocketConnectionCore Conn;
+        public readonly SocketCore Conn;
 
         private readonly IServiceProvider ServiceProvider = Ddon.Core.Services.LazyService.Static.LazyServiceProvider.LazyServicePrivider.ServiceProvider;
 
         public DdonSocketSession(TcpClient tcpClient)
         {
-            Conn = new DdonSocketConnectionCore(tcpClient, ByteHandler, ExceptionHandler);
+            Conn = new SocketCore(tcpClient, ByteHandler, ExceptionHandler);
         }
 
-        private Func<DdonSocketConnectionCore, byte[], Task> ByteHandler => async (conn, bytes) =>
+        private Func<SocketCore, byte[], Task> ByteHandler => async (conn, bytes) =>
         {
-            var headBytes = DdonSocketCommon.ByteCut(bytes[0..DdonSocketConst.HeadLength]);
-            var dataBytes = DdonSocketCommon.ByteCut(bytes[DdonSocketConst.HeadLength..]);
+            var headBytes = DdonArray.ByteCut(bytes[0..DdonSocketConst.HeadLength]);
+            var dataBytes = DdonArray.ByteCut(bytes[DdonSocketConst.HeadLength..]);
 
             var head = JsonSerializer.Deserialize<DdonSocketRequest>(Encoding.UTF8.GetString(headBytes)) ?? throw new Exception("消息中不包含消息头");
             if (head.Mode == DdonSocketMode.Response)
@@ -54,7 +54,7 @@ namespace Ddon.Socket.Session
                 // 前 160 byte 作为文件的格式名称，20个字符。
                 var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Files", DateTime.Now.ToString("yyyy-MM-dd"));
                 Directory.CreateDirectory(path);
-                var fileFormat = Encoding.UTF8.GetString(DdonSocketCommon.ByteCut(dataBytes[0..160]));
+                var fileFormat = Encoding.UTF8.GetString(DdonArray.ByteCut(dataBytes[0..160]));
                 var fullName = Path.Combine(path, $"{Guid.NewGuid()}{fileFormat}");
 
                 using var fileStream = new FileStream(fullName, FileMode.CreateNew);
@@ -70,13 +70,13 @@ namespace Ddon.Socket.Session
                     var resData = await DdonSocketInvoke.IvnvokeReturnJsonAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, json, this, head);
                     var resdataBytes = Encoding.UTF8.GetBytes(resData);
                     var resheadBytes = head.Response().GetBytes();
-                    byte[] contentBytes = DdonSocketCommon.MergeArrays(headBytes, DdonSocketConst.HeadLength, dataBytes);
+                    byte[] contentBytes = DdonArray.MergeArrays(headBytes, dataBytes, DdonSocketConst.HeadLength);
                     await Conn.SendBytesAsync(contentBytes);
                 }
             }
         };
 
-        private Func<DdonSocketConnectionCore, Exception, Task> ExceptionHandler => async (conn, ex) =>
+        private Func<SocketCore, Exception, Task> ExceptionHandler => async (conn, ex) =>
         {
             // TODO: Socket 断开等异常时
             await Task.CompletedTask;
@@ -89,7 +89,7 @@ namespace Ddon.Socket.Session
             var requetBytes = new DdonSocketRequest(id, DdonSocketMode.String, route).GetBytes();
             var json = JsonSerializer.Serialize(data);
             var dataBytes = Encoding.UTF8.GetBytes(json);
-            byte[] contentBytes = DdonSocketCommon.MergeArrays(requetBytes, DdonSocketConst.HeadLength, dataBytes);
+            byte[] contentBytes = DdonArray.MergeArrays(requetBytes, dataBytes, DdonSocketConst.HeadLength);
             await Conn.SendBytesAsync(contentBytes);
         }
 
@@ -147,7 +147,7 @@ namespace Ddon.Socket.Session
         private async Task<DdonSocketRequest> ReadHeadAsync()
         {
             var initialBytes = await Conn.Stream.ReadLengthBytesAsync(DdonSocketConst.HeadLength);
-            var bytes = DdonSocketCommon.ByteCut(initialBytes);
+            var bytes = DdonArray.ByteCut(initialBytes);
 
             var headDto = JsonSerializer.Deserialize<DdonSocketRequest>(Encoding.UTF8.GetString(bytes))
                 ?? throw new Exception("消息中不包含消息头");

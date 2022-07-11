@@ -5,16 +5,16 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Ddon.Socket.Core
+namespace Ddon.Core.Use
 {
-    public class DdonSocketConnectionCore : IDisposable
+    public class SocketCore : IDisposable
     {
-        private readonly Func<DdonSocketConnectionCore, byte[], Task> ByteHandler;
-        private readonly Func<DdonSocketConnectionCore, Exception, Task>? ExceptionHandler;
+        private readonly Func<SocketCore, byte[], Task> ByteHandler;
+        private readonly Func<SocketCore, Exception, Task>? ExceptionHandler;
 
 
-        public DdonSocketConnectionCore(TcpClient tcpClient, Func<DdonSocketConnectionCore, byte[], Task> byteHandler,
-            Func<DdonSocketConnectionCore, Exception, Task>? exceptionHandler = null)
+        public SocketCore(TcpClient tcpClient, Func<SocketCore, byte[], Task> byteHandler,
+            Func<SocketCore, Exception, Task>? exceptionHandler = null)
         {
             TcpClient = tcpClient;
             ByteHandler = byteHandler;
@@ -104,7 +104,7 @@ namespace Ddon.Socket.Core
             if (headBytes.Length > 160) throw new Exception("文件格式字符太长");
 
             var dataBytes = await fileStream.ReadAllBytesAsync();
-            byte[] contentBytes = DdonSocketCommon.MergeArrays(headBytes, 160, dataBytes);
+            byte[] contentBytes = DdonArray.MergeArrays(headBytes, dataBytes, 160);
 
             return await SendBytesAsync(contentBytes);
         }

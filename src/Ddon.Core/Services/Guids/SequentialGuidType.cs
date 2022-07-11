@@ -1,22 +1,22 @@
 ﻿namespace Ddon.Core.Services.Guids
 {
     /// <summary>
-    /// Describes the type of a sequential GUID value.
+    /// 顺序 GUID 类型
     /// </summary>
     public enum SequentialGuidType
     {
         /// <summary>
-        /// Used by MySql and PostgreSql.
+        /// 适用于 MySQL 和 PostgreSql
         /// </summary>
         SequentialAsString,
 
         /// <summary>
-        /// Used by Oracle.
+        /// 适用于 Oracle
         /// </summary>
         SequentialAsBinary,
 
         /// <summary>
-        /// Used by SqlServer.
+        /// 适用于 SqlServer
         /// </summary>
         SequentialAtEnd
     }

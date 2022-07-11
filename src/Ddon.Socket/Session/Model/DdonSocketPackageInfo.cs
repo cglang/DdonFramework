@@ -1,16 +1,16 @@
-﻿using Ddon.Socket.Core;
+﻿using Ddon.Core.Use;
 
 namespace Ddon.Socket.Session.Model
 {
     public class DdonSocketPackageInfo<TData>
     {
-        public DdonSocketConnectionCore Connection { get; set; }
+        public SocketCore Connection { get; set; }
 
         public DdonSocketRequest Head { get; }
 
         public TData Data { get; set; }
 
-        public DdonSocketPackageInfo(DdonSocketConnectionCore connection, DdonSocketRequest head, TData data)
+        public DdonSocketPackageInfo(SocketCore connection, DdonSocketRequest head, TData data)
         {
             Connection = connection;
             Head = head;
