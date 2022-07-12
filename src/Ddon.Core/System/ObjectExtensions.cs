@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -104,6 +105,47 @@ namespace System
             }
 
             return obj;
+        }
+
+        /// <summary>
+        /// 格式化为 Key-Value 格式
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static ICollection<KeyValuePair<string, string>> ToKeyValuePair(this object obj)
+        {
+            var keyValues = new Collection<KeyValuePair<string, string>>();
+
+            if (obj == null) return keyValues;
+
+            if (obj.GetType() == typeof(string) || (obj?.GetType().IsValueType ?? false))
+            {
+                keyValues.Add(new KeyValuePair<string, string>(obj.ToString() ?? string.Empty, obj.ToString() ?? string.Empty));
+                return keyValues;
+            }
+
+            var properties = obj?.GetType().GetProperties().ToList();
+            if (properties?.Count > 0)
+            {
+                foreach (var pro in properties)
+                {
+                    var value = pro.GetValue(obj);
+                    if (value != null && pro.PropertyType == typeof(DateTime))
+                    {
+                        try
+                        {
+                            value = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
+                        }
+                        catch
+                        {
+                            value = string.Empty;
+                        }
+                    }
+
+                    keyValues.Add(new KeyValuePair<string, string>(pro.Name, value?.ToString() ?? string.Empty));
+                }
+            }
+            return keyValues;
         }
     }
 }
