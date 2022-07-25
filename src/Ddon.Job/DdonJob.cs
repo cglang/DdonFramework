@@ -17,7 +17,7 @@ namespace Ddon.Job
         public async Task Add(Job job)
         {
             await _keyValueManager.SetValueAsync(job.Id, job);
-            
+
             job.SetCompleted(async (id) =>
             {
                 job.Finish = true;

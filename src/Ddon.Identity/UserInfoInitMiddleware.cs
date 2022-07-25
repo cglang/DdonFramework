@@ -3,8 +3,6 @@ using Ddon.Identity.Manager;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Ddon.Identity

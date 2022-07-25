@@ -4,7 +4,7 @@ namespace Ddon.Job
 {
     public class JobEvent<TKey> : INotification
     {
-        public JobEvent(TKey jobId, int jobEventId,string businessId)
+        public JobEvent(TKey jobId, int jobEventId, string businessId)
         {
             Id = jobId;
             JobEventId = jobEventId;

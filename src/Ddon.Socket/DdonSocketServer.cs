@@ -1,6 +1,4 @@
-﻿using Ddon.ConvenientSocket.Exceptions;
-using Ddon.Core;
-using Ddon.Core.Services.LazyService.Static;
+﻿using Ddon.Core.Services.LazyService.Static;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;

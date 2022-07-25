@@ -8,7 +8,6 @@ using Ddon.Identity.Jwt;
 using Ddon.Identity.Manager.Dtos;
 using Ddon.Identity.Permission;
 using Ddon.Repositiry.EntityFrameworkCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;

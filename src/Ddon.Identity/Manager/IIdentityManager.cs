@@ -2,7 +2,6 @@
 using Ddon.Domain.Entities.Identity;
 using Ddon.Identity.Manager.Dtos;
 using System;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 

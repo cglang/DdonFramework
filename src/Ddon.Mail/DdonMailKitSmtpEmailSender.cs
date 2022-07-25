@@ -1,9 +1,9 @@
-﻿using System.Linq;
+﻿using Microsoft.Extensions.Options;
+using MimeKit;
+using System.Linq;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
-using MimeKit;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
 namespace Ddon.Mail

@@ -18,7 +18,6 @@ namespace Ddon.Socket.Session
 
         private DdonSocketResponsePool()
         {
-            // 检测剪切板变化
             STimer timer = new() { Enabled = true, Interval = 10000 };
             timer.Elapsed += (_, _) =>
             {
@@ -27,10 +26,9 @@ namespace Ddon.Socket.Session
                     var removeIds = Pairs.Values.Where(x => x.Time.AddMinutes(5) < DateTime.Now).Select(x => x.Id);
                     Parallel.ForEach(removeIds, id =>
                     {
-                        Pairs[id].ExceptionThen?.Invoke(default);
+                        Pairs[id].ExceptionThen?.Invoke(string.Empty);
                         Pairs.Remove(id);
                     });
-                    //Pairs.RemoveAll(x => x.Value.Time.AddSeconds(5) < DateTime.Now);
                 }
             };
             timer.Start();
