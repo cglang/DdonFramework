@@ -23,26 +23,10 @@ namespace Ddon.Core.Use
         public DdonTimer(DateTime? startDate, TimeSpan interval)
         {
             _baseTime = DateTime.UtcNow;
-            _startDate = startDate;
+            _startDate = startDate?.Kind == DateTimeKind.Utc ? startDate : startDate?.ToUniversalTime();
             _interval = interval.TotalSeconds;
 
-            Interval = 1000;
-
-            InitElapsed();
-        }
-
-        /// <summary>
-        /// DdonTimer
-        /// </summary>
-        /// <param name="startDate">开始时间 UTC Time</param>
-        /// <param name="interval">间隔时间秒数</param>
-        public DdonTimer(DateTime? startDate, double interval)
-        {
-            _baseTime = DateTime.UtcNow;
-            _startDate = startDate;
-            _interval = interval;
-
-            Interval = 1000;
+            Interval = 100;
 
             InitElapsed();
         }
@@ -57,7 +41,7 @@ namespace Ddon.Core.Use
                 if (_baseTime.AddSeconds(_interval) < now)
                 {
                     Elapsed();
-                    _baseTime = now;
+                    _baseTime = _baseTime.AddSeconds(_interval);
                 }
             };
         }

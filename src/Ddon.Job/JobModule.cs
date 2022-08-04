@@ -1,5 +1,5 @@
 ﻿using Ddon.Core;
-using Ddon.EventBus;
+using Ddon.EventBus.MemoryQueue;
 using Ddon.KeyValueStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,16 +10,16 @@ namespace Ddon.Job
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
-            Load<EventBusModule>(services, configuration);
+            Load<EventBusMemoryModule>(services, configuration);
 
-            services.Configure<DdonJobOptions>(options =>
+            services.Configure<JobOptions>(options =>
             {
                 options.AutoSave = true;
                 options.StorageName = "jobs";
             });
 
-            services.AddSingleton<IDdonKeyValueManager<Job, DdonJobOptions>, DdonKeyValueManager<Job, DdonJobOptions>>();
-            services.AddTransient<IDdonJob, DdonJob>();
+            services.AddSingleton<IMissionManager, MissionManager>();
+            services.AddSingleton<IDdonKeyValueManager<Mission, JobOptions>, DdonKeyValueManager<Mission, JobOptions>>();
         }
     }
 }

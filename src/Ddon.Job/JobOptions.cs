@@ -2,7 +2,7 @@
 
 namespace Ddon.Job
 {
-    public class DdonJobOptions : DdonKvOptions
+    public class JobOptions : DdonKvOptions
     {
     }
 }

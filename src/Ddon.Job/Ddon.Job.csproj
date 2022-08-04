@@ -11,8 +11,13 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
+		<ProjectReference Include="..\Ddon.EventBus.Memory\Ddon.EventBus.Memory.csproj" />
 		<ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
 		<ProjectReference Include="..\Ddon.KeyValueStorage\Ddon.KeyValueStorage.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="..\..\icon.nuget.jpg" Link="icon.nuget.jpg" />
 	</ItemGroup>
 
 </Project>
