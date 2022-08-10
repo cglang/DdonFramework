@@ -1,4 +1,5 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
+using Ddon.Core.Services.LazyService.Static;
 using Ddon.Core.Use;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
@@ -15,7 +16,7 @@ namespace Ddon.Socket.Session
     {
         public readonly DdonSocketCore Conn;
 
-        private readonly IServiceProvider ServiceProvider = Ddon.Core.Services.LazyService.Static.LazyServiceProvider.LazyServicePrivider.ServiceProvider;
+        private readonly IServiceProvider ServiceProvider = LazyServiceProvider.LazyServicePrivider.ServiceProvider;
 
         public DdonSocketSession(TcpClient tcpClient)
         {

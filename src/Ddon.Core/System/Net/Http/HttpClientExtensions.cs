@@ -28,8 +28,9 @@ namespace Ddon.Core.System.Net.Http
 
         public static async Task<T?> GetAsync<T>(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, HttpKeyValue? headers = default) where T : class
         {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var content = await GetStringAsync(httpClient, uri, queryData, headers);
-            return JsonSerializer.Deserialize<T>(content);
+            return JsonSerializer.Deserialize<T>(content, options);
         }
 
         public static async Task<string> GetStringAsync(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, HttpKeyValue? headers = default)
@@ -48,8 +49,9 @@ namespace Ddon.Core.System.Net.Http
 
         public static async Task<T?> PostAsync<T>(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, object? formData = default, HttpKeyValue? headers = default)
         {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var content = await PostStringAsync(httpClient, uri, queryData, formData, headers);
-            return JsonSerializer.Deserialize<T>(content);
+            return JsonSerializer.Deserialize<T>(content, options);
         }
 
         public static async Task<string> PostStringAsync(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, object? formData = default, HttpKeyValue? headers = default)
