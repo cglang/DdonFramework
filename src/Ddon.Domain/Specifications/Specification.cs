@@ -1,11 +1,10 @@
-﻿using Ddon.Domain;
-using Ddon.Domain.Entities;
-using Ddon.Identity.Specifications.Builder;
+﻿using Ddon.Domain.Entities;
+using Ddon.Domain.Specifications.Builder;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Ddon.Identity.Specifications
+namespace Ddon.Domain.Specifications
 {
     public abstract class Specification<T> : ISpecification<T>
     {
@@ -40,7 +39,7 @@ namespace Ddon.Identity.Specifications
     }
 
     public abstract class Specification<T, TKey, TResult> : Specification<T>, ISpecification<T, TKey, TResult>
-        where T : TenantEntity<TKey>
+        where T : IMultTenant<TKey>
         where TKey : IEquatable<TKey>
     {
         protected new virtual ISpecificationBuilder<T, TKey, TResult> Query { get; }

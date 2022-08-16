@@ -1,4 +1,4 @@
-﻿namespace Ddon.Identity.Specifications.Builder
+﻿namespace Ddon.Domain.Specifications.Builder
 {
     public interface IIncludeAggregator
     {

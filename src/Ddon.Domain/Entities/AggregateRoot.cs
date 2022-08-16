@@ -4,9 +4,12 @@ using System.Collections.Generic;
 
 namespace Ddon.Domain.Entities
 {
-    public abstract class AggregateRoot<TKey> : TenantEntity<TKey>, IAggregateRoot, IDomainEvents where TKey : IEquatable<TKey>
+    public abstract class AggregateRoot<TKey> : Entity<TKey>, IMultTenant<TKey>, IAggregateRoot
+        where TKey : IEquatable<TKey>
     {
         private readonly List<INotification> _domainEvents = new();
+
+        public TKey? TenantId { get; set; }
 
         public IReadOnlyCollection<INotification> DomainEvents => _domainEvents.AsReadOnly();
 

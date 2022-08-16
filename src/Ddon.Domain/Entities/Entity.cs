@@ -13,7 +13,7 @@ namespace Ddon.Domain.Entities
         }
     }
 
-    public abstract class Entity<TKey> : Entity, IEntity<TKey>
+    public class Entity<TKey> : Entity, IEntity<TKey>
         where TKey : IEquatable<TKey>
     {
         [Key]
