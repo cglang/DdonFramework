@@ -3,7 +3,7 @@ using Ddon.Application.Dtos;
 using Ddon.Core.Services.LazyService;
 using Ddon.Domain;
 using Ddon.Domain.Entities;
-using Ddon.Domain.Repository;
+using Ddon.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,8 +1,7 @@
 ﻿using Ddon.Domain;
 using Ddon.Domain.Entities;
-using Ddon.Domain.Repository;
-using Ddon.Identity.Repository;
-using Ddon.Identity.Specifications;
+using Ddon.Domain.Repositories;
+using Ddon.Domain.Specifications;
 using Ddon.Repositiry.Specifications;
 using Microsoft.EntityFrameworkCore;
 using System;

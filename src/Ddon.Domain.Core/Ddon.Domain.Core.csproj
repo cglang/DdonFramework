@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
@@ -10,8 +10,12 @@
 	<Import Project="../../common.props" />
 
 	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
-		<ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
+		<PackageReference Include="AutoMapper" Version="10.1.1" />
+		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
 	</ItemGroup>
 
 </Project>

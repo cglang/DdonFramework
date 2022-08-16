@@ -2,7 +2,7 @@
 
 namespace Ddon.UploadFile
 {
-    public class FileEntity : FullAuditedAggregateRoot<string>
+    public class FileEntity : AuditedAggregateRoot<string>
     {
         /// <summary>
         /// 名称

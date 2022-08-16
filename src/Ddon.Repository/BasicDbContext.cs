@@ -2,7 +2,6 @@
 using Ddon.Core.Services.LazyService;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Entities.Auditing;
-using Ddon.Domain.UserInfo;
 using Ddon.Repositiry.Extensions;
 using Ddon.Repositiry.Uow;
 using Microsoft.EntityFrameworkCore;
@@ -20,9 +19,7 @@ namespace Ddon.Repositiry
         private readonly ILazyServiceProvider LazyServiceProvider;
         private readonly IUnitOfWork _unitOfWork;
 
-        private ICurrentUserInfoAccessor<TKey> CurrentUserInfoAccessor => LazyServiceProvider.LazyGetRequiredService<ICurrentUserInfoAccessor<TKey>>();
         private IGuidGenerator? GuidGenerator => LazyServiceProvider.LazyGetRequiredService<IGuidGenerator>();
-        private Tenant<TKey> Tenant => CurrentUserInfoAccessor.Tenant;
 
 
         public BasicDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(options)
@@ -45,11 +42,11 @@ namespace Ddon.Repositiry
                 modelBuilder.Entity(x.ClrType).AddQueryFilter<ISoftDelete>(e => !e.IsDeleted);
             });
 
-            var multiTenantTypes = modelBuilder.Model.GetEntityTypes().Where(x => typeof(IMultTenant<TKey>).IsAssignableFrom(x.ClrType));
-            Parallel.ForEach(multiTenantTypes, x =>
-            {
-                modelBuilder.Entity(x.ClrType).AddQueryFilter<IMultTenant<TKey>>(e => e.TenantId.Equals(Tenant.Id));
-            });
+            //var multiTenantTypes = modelBuilder.Model.GetEntityTypes().Where(x => typeof(IMultTenant<TKey>).IsAssignableFrom(x.ClrType));
+            //Parallel.ForEach(multiTenantTypes, x =>
+            //{
+            //    modelBuilder.Entity(x.ClrType).AddQueryFilter<IMultTenant<TKey>>(e => e.TenantId.Equals(Tenant.Id));
+            //});
         }
 
         public virtual void Initialize()
@@ -88,11 +85,6 @@ namespace Ddon.Repositiry
 
         protected virtual void ApplyAbpConceptsForAddedEntity(EntityEntry entry)
         {
-            if (entry.Entity is IMultTenant<TKey> multTenant)
-            {
-                multTenant.TenantId = Tenant.Id;
-            }
-
             if (entry.Entity is IMultTenant<string> stringMultTenant)
             {
                 stringMultTenant.TenantId = Guid.NewGuid().ToString();
@@ -110,7 +102,7 @@ namespace Ddon.Repositiry
                 else entityWithStringId.Id = Guid.NewGuid().ToString();
             }
 
-            if (entry.Entity is ICreationAuditedObject entity)
+            if (entry.Entity is IAuditedObject entity)
             {
                 entity.CreationTime = DateTime.UtcNow;
             }

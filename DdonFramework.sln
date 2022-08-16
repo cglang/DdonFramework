@@ -43,7 +43,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Job", "src\Ddon.Job\Dd
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Ddon.Socket", "test\Test.Ddon.Socket\Test.Ddon.Socket.csproj", "{4DB7B85F-A65F-4990-8C39-6D379C403B0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Job", "test\Test.Job\Test.Job.csproj", "{98D17783-ED51-4BA1-9FFB-20951EBB3AC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Job", "test\Test.Job\Test.Job.csproj", "{98D17783-ED51-4BA1-9FFB-20951EBB3AC4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Domain.Core", "src\Ddon.Domain.Core\Ddon.Domain.Core.csproj", "{837209F3-9A55-4652-BE88-3225681041A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +129,10 @@ Global
 		{98D17783-ED51-4BA1-9FFB-20951EBB3AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98D17783-ED51-4BA1-9FFB-20951EBB3AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98D17783-ED51-4BA1-9FFB-20951EBB3AC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{837209F3-9A55-4652-BE88-3225681041A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{837209F3-9A55-4652-BE88-3225681041A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{837209F3-9A55-4652-BE88-3225681041A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{837209F3-9A55-4652-BE88-3225681041A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -151,6 +157,7 @@ Global
 		{049B93EE-4832-4779-9334-043D853E7F67} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{4DB7B85F-A65F-4990-8C39-6D379C403B0D} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 		{98D17783-ED51-4BA1-9FFB-20951EBB3AC4} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
+		{837209F3-9A55-4652-BE88-3225681041A2} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}
