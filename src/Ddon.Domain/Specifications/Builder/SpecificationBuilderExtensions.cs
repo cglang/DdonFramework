@@ -1,11 +1,10 @@
-﻿using Ddon.Domain;
-using Ddon.Domain.Entities;
-using Ddon.Identity.Specifications.Exceptions;
+﻿using Ddon.Domain.Entities;
+using Ddon.Domain.Specifications.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Ddon.Identity.Specifications.Builder
+namespace Ddon.Domain.Specifications.Builder
 {
     public static class SpecificationBuilderExtensions
     {
@@ -91,7 +90,7 @@ namespace Ddon.Identity.Specifications.Builder
         public static ISpecificationBuilder<TEntity, TKey, TResult> Select<TEntity, TKey, TResult>(
             this ISpecificationBuilder<TEntity, TKey, TResult> specificationBuilder,
             Expression<Func<TEntity, TResult>> selector)
-            where TEntity : TenantEntity<TKey>
+            where TEntity : IMultTenant<TKey>
             where TKey : IEquatable<TKey>
         {
             specificationBuilder.Specification.Selector = selector;

@@ -6,7 +6,7 @@
 		
 		<Authors>cglang</Authors>
 		<RepositoryUrl>https://github.com/cglang/DdonFramework</RepositoryUrl>
-		<Version>1.4.0</Version>
+		<Version>1.6.0</Version>
 		<AnalysisLevel>none</AnalysisLevel>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

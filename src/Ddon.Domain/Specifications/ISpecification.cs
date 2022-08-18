@@ -1,11 +1,10 @@
-﻿using Ddon.Domain;
-using Ddon.Domain.Entities;
-using Ddon.Identity.Specifications.Builder;
+﻿using Ddon.Domain.Entities;
+using Ddon.Domain.Specifications.Builder;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Ddon.Identity.Specifications
+namespace Ddon.Domain.Specifications
 {
     public interface ISpecification<TEntity>
     {
@@ -28,7 +27,7 @@ namespace Ddon.Identity.Specifications
         string CacheKey { get; }
     }
 
-    public interface ISpecification<TEntity, TKey> where TEntity : class, IEntity<TKey>
+    public interface ISpecification<TEntity, TKey> where TEntity : IEntity<TKey>
     {
         IEnumerable<Expression<Func<TEntity, bool>>> WhereExpressions { get; }
 
@@ -49,7 +48,7 @@ namespace Ddon.Identity.Specifications
         string CacheKey { get; }
     }
 
-    public interface ISpecification<TEntity, TKey, TResult> : ISpecification<TEntity, TKey> where TEntity : class, IEntity<TKey>
+    public interface ISpecification<TEntity, TKey, TResult> : ISpecification<TEntity, TKey> where TEntity : IEntity<TKey>
     {
         Expression<Func<TEntity, TResult>> Selector { get; }
     }

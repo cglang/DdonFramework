@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Ddon.Identity.Specifications.Builder
+namespace Ddon.Domain.Specifications.Builder
 {
     public static class IncludableBuilderExtensions
     {

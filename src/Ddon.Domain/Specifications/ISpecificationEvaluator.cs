@@ -1,7 +1,7 @@
 ﻿using Ddon.Domain.Entities;
 using System.Linq;
 
-namespace Ddon.Identity.Specifications
+namespace Ddon.Domain.Specifications
 {
     public interface ISpecificationEvaluator<TEntity> where TEntity : class, IEntity
     {

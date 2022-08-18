@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ddon.Identity.Specifications.Exceptions
+namespace Ddon.Domain.Specifications.Exceptions
 {
     public class DuplicateOrderChainException : Exception
     {

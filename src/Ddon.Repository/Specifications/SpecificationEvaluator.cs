@@ -1,6 +1,6 @@
 ﻿using Ddon.Domain.Entities;
-using Ddon.Identity.Specifications;
-using Ddon.Identity.Specifications.Exceptions;
+using Ddon.Domain.Specifications;
+using Ddon.Domain.Specifications.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;

@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Identity.Repository
+namespace Ddon.Domain.Repositories
 {
     public interface IAsyncQueryableProvider
     {

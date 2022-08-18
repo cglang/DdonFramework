@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Ddon.Identity.Specifications.Builder
+namespace Ddon.Domain.Specifications.Builder
 {
     public class IncludeAggregator : IIncludeAggregator
     {

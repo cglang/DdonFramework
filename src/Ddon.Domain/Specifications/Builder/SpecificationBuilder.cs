@@ -1,11 +1,11 @@
 ﻿using Ddon.Domain.Entities;
 using System;
 
-namespace Ddon.Identity.Specifications.Builder
+namespace Ddon.Domain.Specifications.Builder
 {
     public class SpecificationBuilder<TEntity, TKey, TResult> : SpecificationBuilder<TEntity>, ISpecificationBuilder<TEntity, TKey, TResult>
         where TKey : IEquatable<TKey>
-        where TEntity : TenantEntity<TKey>
+        where TEntity : IMultTenant<TKey>
     {
         public new Specification<TEntity, TKey, TResult> Specification { get; }
 

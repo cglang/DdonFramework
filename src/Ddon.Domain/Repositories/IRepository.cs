@@ -1,13 +1,12 @@
 ﻿using Ddon.Domain.Entities;
-using Ddon.Identity.Repository;
-using Ddon.Identity.Specifications;
+using Ddon.Domain.Specifications;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Domain.Repository
+namespace Ddon.Domain.Repositories
 {
     public interface IRepository<TEntity> where TEntity : class, IEntity
     {

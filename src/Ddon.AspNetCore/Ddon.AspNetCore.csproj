@@ -17,7 +17,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
-		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
 		<ProjectReference Include="..\Ddon.Identity\Ddon.Identity.csproj" />
 	</ItemGroup>
 

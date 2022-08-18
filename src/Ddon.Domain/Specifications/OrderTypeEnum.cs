@@ -1,4 +1,4 @@
-﻿namespace Ddon.Identity.Specifications
+﻿namespace Ddon.Domain.Specifications
 {
     public enum OrderTypeEnum
     {

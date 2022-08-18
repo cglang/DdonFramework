@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Ddon.Core.Services.Guids;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Core
@@ -8,6 +9,11 @@ namespace Ddon.Core
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
             services.AddAutoInject();
+
+            services.Configure<SequentialGuidGeneratorOptions>(options =>
+            {
+                options.DefaultSequentialGuidType = SequentialGuidType.SequentialAsString;
+            });
         }
     }
 }
