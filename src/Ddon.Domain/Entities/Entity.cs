@@ -26,7 +26,7 @@ namespace Ddon.Domain.Entities
 
         public override string ToString()
         {
-            return $"[ENTITY: {GetType().Name}] Id = {Id}";
+            return $"[ENTITY: {GetType().Name}] {nameof(Id)} = {Id}";
         }
     }
 }
