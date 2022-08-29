@@ -13,6 +13,7 @@ namespace Ddon.Application.Service
         : UniversalCrudApplicationService<TEntity, TKey, TResponseDto, TRequestDto, TPageDto>
         where TEntity : Entity<TKey>
         where TKey : IEquatable<TKey>
+        where TResponseDto : BaseDto<TKey>
         where TRequestDto : BaseDto<TKey>
         where TPageDto : Page
     {
