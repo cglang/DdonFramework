@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Ddon.Cache
@@ -9,9 +10,17 @@ namespace Ddon.Cache
     {
         private readonly IDistributedCache _memoryCache;
 
+        public JsonSerializerOptions JsonSerializeroptions { get; set; }
+
         public Cache(IDistributedCache distributedCache)
         {
             _memoryCache = distributedCache;
+
+            JsonSerializeroptions = new()
+            {
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                WriteIndented = true
+            };
         }
 
         public async Task<bool> ContainsKeyAsync(string key)
@@ -43,13 +52,13 @@ namespace Ddon.Cache
 
         public async Task SetAsync<TItem>(string key, TItem value)
         {
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(value);
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(value, JsonSerializeroptions);
             await _memoryCache.SetAsync(key, bytes);
         }
 
         public async Task SetAsync<TItem>(string key, TItem value, DistributedCacheEntryOptions options)
         {
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(value);
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(value, JsonSerializeroptions);
             await _memoryCache.SetAsync(key, bytes, options);
         }
     }

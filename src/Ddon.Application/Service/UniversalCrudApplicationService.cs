@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace Ddon.Application.Service
 {
-    public abstract class UniversalCrudApplicationService<TEntity, TKey, TResponseDto, TRequestDto, TPageDto>
-        : ApplicationService<TKey>, ICrudApplicationService<TKey, TResponseDto, TRequestDto, TPageDto>
+    public abstract class UniversalCrudApplicationService<TEntity, TKey, TResponseDto, TRequestDto, TPageDto> : ApplicationService<TKey>, ICrudApplicationService<TKey, TResponseDto, TRequestDto, TPageDto>
         where TEntity : Entity<TKey>
         where TKey : IEquatable<TKey>
+        where TResponseDto : BaseDto<TKey>
         where TRequestDto : BaseDto<TKey>
         where TPageDto : Page
     {
