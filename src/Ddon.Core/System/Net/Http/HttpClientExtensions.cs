@@ -15,25 +15,38 @@ namespace Ddon.Core.System.Net.Http
     public static class HttpClientExtensions
     {
 
-        public static void SetBasicAuthentication(this HttpClient httpClient, string username, string password)
+        public static void SetBasicAuthentication(
+            this HttpClient httpClient,
+            string username,
+            string password)
         {
             var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
         }
 
-        public static void SetBearerToken(this HttpClient httpClient, string token)
+        public static void SetBearerToken(
+            this HttpClient httpClient,
+            string token)
         {
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        public static async Task<T?> GetAsync<T>(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, HttpKeyValue? headers = default) where T : class
+        public static async Task<T?> GetAsync<T>(
+            this HttpClient httpClient,
+            string uri,
+            HttpKeyValue? queryData = default,
+            HttpKeyValue? headers = default)
         {
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var content = await GetStringAsync(httpClient, uri, queryData, headers);
             return JsonSerializer.Deserialize<T>(content, options);
         }
 
-        public static async Task<string> GetStringAsync(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, HttpKeyValue? headers = default)
+        public static async Task<string> GetStringAsync(
+            this HttpClient httpClient,
+            string uri,
+            HttpKeyValue? queryData = default,
+            HttpKeyValue? headers = default)
         {
             uri = queryData is null ? uri : $"{uri}?{queryData.GetStringQueryData()}";
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
@@ -47,14 +60,24 @@ namespace Ddon.Core.System.Net.Http
             return await response.Content.ReadAsStringAsync();
         }
 
-        public static async Task<T?> PostAsync<T>(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, object? formData = default, HttpKeyValue? headers = default)
+        public static async Task<T?> PostAsync<T>(
+            this HttpClient httpClient,
+            string uri,
+            HttpKeyValue? queryData = default,
+            object? formData = default,
+            HttpKeyValue? headers = default)
         {
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var content = await PostStringAsync(httpClient, uri, queryData, formData, headers);
             return JsonSerializer.Deserialize<T>(content, options);
         }
 
-        public static async Task<string> PostStringAsync(this HttpClient httpClient, string uri, HttpKeyValue? queryData = default, object? formData = default, HttpKeyValue? headers = default)
+        public static async Task<string> PostStringAsync(
+            this HttpClient httpClient,
+            string uri,
+            HttpKeyValue? queryData = default,
+            object? formData = default,
+            HttpKeyValue? headers = default)
         {
             uri = queryData is null ? uri : $"{uri}?{queryData.GetStringQueryData()}";
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
