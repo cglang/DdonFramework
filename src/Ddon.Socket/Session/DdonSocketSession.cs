@@ -65,13 +65,14 @@ namespace Ddon.Socket.Session
             {
                 if (api is not null)
                 {
-                    var data = Encoding.UTF8.GetString(dataBytes);
-                    var json = JsonSerializer.Serialize(data);
-                    var resData = await DdonSocketInvoke.IvnvokeReturnJsonAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, json, this, head);
-                    var resdataBytes = Encoding.UTF8.GetBytes(resData);
-                    var resheadBytes = head.Response().GetBytes();
-                    byte[] contentBytes = DdonArray.MergeArrays(headBytes, dataBytes, DdonSocketConst.HeadLength);
-                    await Conn.SendBytesAsync(contentBytes);
+                    var jsonData = Encoding.UTF8.GetString(dataBytes);
+                    var methodReturnJson = await DdonSocketInvoke.IvnvokeReturnJsonAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, jsonData, this, head);
+                    
+                    var methodReturnJsonBytes = Encoding.UTF8.GetBytes(methodReturnJson);
+                    var responseHeadBytes = head.Response().GetBytes();
+
+                    var sendBytes = DdonArray.MergeArrays(responseHeadBytes, methodReturnJsonBytes, DdonSocketConst.HeadLength);
+                    await Conn.SendBytesAsync(sendBytes);
                 }
             }
         };
@@ -82,11 +83,9 @@ namespace Ddon.Socket.Session
             await Task.CompletedTask;
         };
 
-        public async Task SendAsync<T>(string route, T data, Guid id = default)
+        public async Task SendAsync(string route, object data)
         {
-            if (id == default) id = Guid.NewGuid();
-
-            var requetBytes = new DdonSocketRequest(id, DdonSocketMode.String, route).GetBytes();
+            var requetBytes = new DdonSocketRequest(default, DdonSocketMode.String, route).GetBytes();
             var json = JsonSerializer.Serialize(data);
             var dataBytes = Encoding.UTF8.GetBytes(json);
             byte[] contentBytes = DdonArray.MergeArrays(requetBytes, dataBytes, DdonSocketConst.HeadLength);
@@ -100,26 +99,27 @@ namespace Ddon.Socket.Session
         /// <param name="data"></param>
         /// <returns></returns>
         /// <exception cref="DdonSocketRequestException">请求超时异样</exception>
-        public async Task<string> RequestAsync(string route, string data)
+        public async Task<T?> RequestAsync<T>(string route, object data)
         {
             var taskCompletion = new TaskCompletionSource<string>();
 
             var id = Guid.NewGuid();
-            await SendAsync(route, data, id);
-
             var response = new DdonSocketResponseBody(id);
             response.Then(info => { taskCompletion.SetResult(info); })
                 .Exception(info => { taskCompletion.SetException(new DdonSocketRequestException()); });
 
-            return await taskCompletion.Task;
+            var requetBytes = new DdonSocketRequest(default, DdonSocketMode.Request, route).GetBytes();
+            var json = JsonSerializer.Serialize(data);
+            var dataBytes = Encoding.UTF8.GetBytes(json);
+            byte[] contentBytes = DdonArray.MergeArrays(requetBytes, dataBytes, DdonSocketConst.HeadLength);
+            await Conn.SendBytesAsync(contentBytes);
+
+            var result = await taskCompletion.Task;
+
+            return JsonSerializer.Deserialize<T>(result);
         }
 
-        /// <summary>
-        /// 响应处理
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="info"></param>
-        internal void ResponseHandle(DdonSocketPackageInfo<string> info)
+        private static void ResponseHandle(DdonSocketPackageInfo<string> info)
         {
             var pairs = DdonSocketResponsePool.GetInstance().Pairs;
             var id = info.Head.Id;
@@ -138,22 +138,5 @@ namespace Ddon.Socket.Session
                 pairs[id].ExceptionThen?.Invoke("响应数据错误");
             }
         }
-
-        /// <summary>
-        /// 从流中获取消息头
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="Exception">获取消息头错误</exception>
-        private async Task<DdonSocketRequest> ReadHeadAsync()
-        {
-            var initialBytes = await Conn.Stream.ReadLengthBytesAsync(DdonSocketConst.HeadLength);
-            var bytes = DdonArray.ByteCut(initialBytes);
-
-            var headDto = JsonSerializer.Deserialize<DdonSocketRequest>(Encoding.UTF8.GetString(bytes))
-                ?? throw new Exception("消息中不包含消息头");
-
-            return headDto;
-        }
-
     }
 }
