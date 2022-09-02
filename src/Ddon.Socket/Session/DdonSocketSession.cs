@@ -66,9 +66,10 @@ namespace Ddon.Socket.Session
                 if (api is not null)
                 {
                     var jsonData = Encoding.UTF8.GetString(dataBytes);
-                    var methodReturnJson = await DdonSocketInvoke.IvnvokeReturnJsonAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, jsonData, this, head);
-                    
-                    var methodReturnJsonBytes = Encoding.UTF8.GetBytes(methodReturnJson);
+                    var methodReturn = await DdonSocketInvoke.IvnvokeAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, jsonData, this, head);
+
+                    var responseData = new DdonSocketResponse<dynamic>(DdonSocketResponseCode.OK, methodReturn);                    
+                    var methodReturnJsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(responseData));
                     var responseHeadBytes = head.Response().GetBytes();
 
                     var sendBytes = DdonArray.MergeArrays(responseHeadBytes, methodReturnJsonBytes, DdonSocketConst.HeadLength);
@@ -108,7 +109,7 @@ namespace Ddon.Socket.Session
             response.Then(info => { taskCompletion.SetResult(info); })
                 .Exception(info => { taskCompletion.SetException(new DdonSocketRequestException()); });
 
-            var requetBytes = new DdonSocketRequest(default, DdonSocketMode.Request, route).GetBytes();
+            var requetBytes = new DdonSocketRequest(id, DdonSocketMode.Request, route).GetBytes();
             var json = JsonSerializer.Serialize(data);
             var dataBytes = Encoding.UTF8.GetBytes(json);
             byte[] contentBytes = DdonArray.MergeArrays(requetBytes, dataBytes, DdonSocketConst.HeadLength);
@@ -130,9 +131,9 @@ namespace Ddon.Socket.Session
                 if (res != null)
                 {
                     if (res.Code == DdonSocketResponseCode.OK)
-                        pairs[id].ActionThen?.Invoke(info.Data);
+                        pairs[id].ActionThen?.Invoke(JsonSerializer.Serialize(res.Data));
                     else if (res.Code == DdonSocketResponseCode.Error)
-                        pairs[id].ExceptionThen?.Invoke(info.Data);
+                        pairs[id].ExceptionThen?.Invoke(JsonSerializer.Serialize(res.Data));
                 }
 
                 pairs[id].ExceptionThen?.Invoke("响应数据错误");

@@ -25,7 +25,6 @@ namespace Ddon.Socket.Session.Route
 
         public static (string, string)? Get(string route)
         {
-            System.Console.WriteLine(_routeMap.ContainsKey(route));
             return _routeMap.ContainsKey(route) ? _routeMap[route] : null;
         }
     }
