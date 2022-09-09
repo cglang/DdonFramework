@@ -15,7 +15,7 @@ namespace Test.Core
             var obj = "result";
 
             IDdonServiceInvoke serviceInvoke = ServiceProvider.LazyGetService<IDdonServiceInvoke>()!;
-            var result = await serviceInvoke.IvnvokeAsync<TestClass>(nameof(TestClass.TestMethod001), obj);
+            var result = await serviceInvoke.IvnvokeAsync(nameof(TestClass), nameof(TestClass.TestMethod001), obj);
             Assert.AreEqual(result, obj);
         }
 
@@ -26,7 +26,7 @@ namespace Test.Core
 
             IDdonServiceInvoke serviceInvoke = ServiceProvider.LazyGetService<IDdonServiceInvoke>()!;
 
-            var result = await serviceInvoke.IvnvokeAsync<TestClass>(nameof(TestClass.TestMethod002), obj);
+            var result = await serviceInvoke.IvnvokeAsync(nameof(TestClass), nameof(TestClass.TestMethod002), obj);
             Assert.AreEqual(result, obj);
         }
     }
