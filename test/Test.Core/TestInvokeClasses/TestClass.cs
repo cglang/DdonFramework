@@ -19,6 +19,11 @@ namespace Test.Core.TestInvokeClasses
         {
             return new() { UserName = UserName, Age = Age };
         }
+
+        public UserInfo TestMethod004(UserInfo userInfo)
+        {
+            return userInfo;
+        }
     }
 
     public class UserInfo

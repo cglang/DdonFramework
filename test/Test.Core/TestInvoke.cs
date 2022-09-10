@@ -45,5 +45,19 @@ namespace Test.Core
             var resultJson = JsonSerializer.Serialize(userInfo);
             Assert.AreEqual(resultJson, userInfoJson);
         }
+
+        [TestMethod]
+        public async Task TestInvokeBaseTest004()
+        {
+            var userInfo = new UserInfo() { UserName = "cglang", Age = 22 };
+            var userInfoJson = JsonSerializer.Serialize(userInfo);
+
+            IDdonServiceInvoke serviceInvoke = ServiceProvider.LazyGetService<IDdonServiceInvoke>()!;
+
+            var result = await serviceInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.TestMethod004), userInfoJson);
+
+            var resultJson = JsonSerializer.Serialize(userInfo);
+            Assert.AreEqual(resultJson, userInfoJson);
+        }
     }
 }

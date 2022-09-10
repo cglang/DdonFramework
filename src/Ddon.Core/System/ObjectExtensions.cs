@@ -134,6 +134,7 @@ namespace System
                     {
                         try
                         {
+                            // FIX: 这样会丢失时区信息
                             value = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
                         }
                         catch
