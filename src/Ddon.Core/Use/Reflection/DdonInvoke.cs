@@ -51,25 +51,48 @@ namespace Ddon.Core.Use.Reflection
         /// <exception cref="Exception">当反序列化失败时或者执行多个参数的方法时引发异常</exception>
         public static async Task<dynamic?> InvokeAsync(object? instance, MethodInfo method, string parameterText)
         {
-            IEnumerable<Type>? methodParameter = method.GetParameters().Select(x => x.ParameterType);
-            if (methodParameter is null || !methodParameter.Any())
+            var parameters = method.GetParameters().AsEnumerable();
+            if (!parameters.Any())
             {
                 return await InvokeAsync(instance, method);
             }
-            else if (methodParameter.Count() == 1)
+            else if (parameters.Count() == 1)
             {
+                IEnumerable<Type> methodParameter = parameters.Select(x => x.ParameterType);
                 if (string.IsNullOrEmpty(parameterText)) throw new Exception("参数不允许为空");
 
                 if (methodParameter.First().Name == typeof(string).Name)
                     return await InvokeAsync(instance, method, new object[] { parameterText });
 
-                // TODO：当参数为int float 等类型时需要进行处理
-
                 var methodParameterData = JsonSerializer.Deserialize(parameterText, methodParameter.First()) ?? throw new Exception($"序列化参数失败");
                 return await InvokeAsync(instance, method, methodParameterData);
             }
+            else
+            {
+                var elementParameter = JsonSerializer.Deserialize<JsonElement>(parameterText);
 
-            throw new Exception("暂不支持执行多个参数的方法");
+                List<object> methodParameteies = new();
+
+                foreach (var parameter in parameters)
+                {
+                    var property = elementParameter.GetProperty(parameter.Name!);
+
+                    switch (property.ValueKind)
+                    {
+                        case JsonValueKind.Number:
+                            if (parameter.ParameterType.Name == nameof(Int16)) methodParameteies.Add(property.GetInt16());
+                            if (parameter.ParameterType.Name == nameof(Int32)) methodParameteies.Add(property.GetInt32());
+                            if (parameter.ParameterType.Name == nameof(Int64)) methodParameteies.Add(property.GetInt64());
+                            break;
+                        case JsonValueKind.String: methodParameteies.Add(property.GetString()!); break;
+                        default:
+                            var data = JsonSerializer.Deserialize(property.GetString()!, parameter.ParameterType);
+                            methodParameteies.Add(data!); break;
+                    }
+                }
+
+                return await InvokeAsync(instance, method, methodParameteies.ToArray());
+            }
         }
 
         /// <summary>
@@ -81,14 +104,23 @@ namespace Ddon.Core.Use.Reflection
         /// <returns>当方法返回值为 viod 或 Task 时，返回 null</returns>
         public static async Task<dynamic?> InvokeAsync(object? instance, MethodInfo method, params object[] parameter)
         {
-            dynamic? methodReturn = method.Invoke(instance, parameter);
-
-            if (IsAsyncMethod(method))
+            try
             {
-                methodReturn = method.ReturnType == typeof(Task) ? null : await methodReturn;
+                dynamic? methodReturn = method.Invoke(instance, parameter);
+
+                if (IsAsyncMethod(method))
+                {
+                    methodReturn = method.ReturnType == typeof(Task) ? null : await methodReturn;
+                }
+
+                return methodReturn;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
 
-            return methodReturn;
+            return null;
         }
 
         /// <summary>
