@@ -24,5 +24,16 @@ namespace Test.WebApplication.Controllers
 
             return Enumerable.Range(0, input.Count).Select(x => x.ToString()); ;
         }
+
+        /// <summary>
+        /// 测试2
+        /// </summary>
+        [SocketApi("Test2")]
+        public async Task<IEnumerable<string>> GetAnalysisByDayDayAsync(AnalysisByDayInput input)
+        {
+            await Task.Delay(100);
+
+            return Enumerable.Range(0, input.Count).Select(x => x.ToString()); ;
+        }
     }
 }
