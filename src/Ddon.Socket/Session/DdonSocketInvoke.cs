@@ -1,27 +1,30 @@
-﻿using Ddon.Core.Use.Reflection;
+﻿using Ddon.Core.Use.Di;
+using Ddon.Core.Use.Reflection;
 using Ddon.Socket.Session.Model;
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
 {
-    public class DdonSocketInvoke
+    public class DdonSocketInvoke : ITransientDependency
     {
-        public static async Task<string> IvnvokeReturnJsonAsync(
-            IServiceProvider services,
-            string className,
-            string methodName,
-            string methodParameter,
+        private readonly IServiceProvider services;
+
+        public DdonSocketInvoke(IServiceProvider services)
+        {
+            this.services = services;
+        }
+
+        public async Task<dynamic?> IvnvokeAsync(
+            (string, string) methodinfo,
+            string parameter,
             SocketSession connection,
             DdonSocketRequest head)
         {
-            var returnData = await IvnvokeAsync(services, className, methodName, methodParameter, connection, head);
-            return JsonSerializer.Serialize(returnData);
+            return await IvnvokeAsync(methodinfo.Item1, methodinfo.Item2, parameter, connection, head);
         }
 
-        public static async Task<dynamic?> IvnvokeAsync(
-            IServiceProvider services,
+        public async Task<dynamic?> IvnvokeAsync(
             string className,
             string methodName,
             string parameter,
@@ -39,8 +42,7 @@ namespace Ddon.Socket.Session
             return await DdonInvoke.InvokeAsync(instance, method, parameter);
         }
 
-        public static async Task<dynamic?> IvnvokeAsync<T>(
-            IServiceProvider services,
+        public async Task<dynamic?> IvnvokeAsync<T>(
             string className,
             string methodName,
             T parameter,

@@ -33,13 +33,5 @@ namespace Test.WebApplication.Controllers
 
             return Enumerable.Range(1, 5);
         }
-
-        class DdonSocketRouteMapLoad : DdonSocketRouteMapLoadBase
-        {
-            protected override List<DdonSocketRoute> InitRouteMap()
-            {
-                return new();
-            }
-        }
     }
 }

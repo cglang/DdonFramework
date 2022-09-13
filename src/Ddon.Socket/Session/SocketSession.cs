@@ -3,6 +3,7 @@ using Ddon.Core.Services.LazyService.Static;
 using Ddon.Core.Use;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -16,7 +17,9 @@ namespace Ddon.Socket.Session
     {
         public readonly DdonSocketCore Conn;
 
-        private readonly IServiceProvider ServiceProvider = LazyServiceProvider.LazyServicePrivider.ServiceProvider;
+        private IServiceProvider ServiceProvider => LazyServiceProvider.LazyServicePrivider.ServiceProvider;
+
+        private DdonSocketInvoke SocketInvoke => ServiceProvider.GetRequiredService<DdonSocketInvoke>();
 
         public SocketSession(TcpClient tcpClient)
         {
@@ -42,12 +45,12 @@ namespace Ddon.Socket.Session
             if (head.Mode == DdonSocketMode.String)
             {
                 var data = Encoding.UTF8.GetString(dataBytes);
-                await DdonSocketInvoke.IvnvokeAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, data, this, head);
+                await SocketInvoke.IvnvokeAsync(api.Value, data, this, head);
             }
             else if (head.Mode == DdonSocketMode.Byte)
             {
                 var data = Encoding.UTF8.GetString(dataBytes);
-                await DdonSocketInvoke.IvnvokeAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, data, this, head);
+                await SocketInvoke.IvnvokeAsync(api.Value, data, this, head);
             }
             else if (head.Mode == DdonSocketMode.File)
             {
@@ -59,22 +62,19 @@ namespace Ddon.Socket.Session
 
                 using var fileStream = new FileStream(fullName, FileMode.CreateNew);
                 fileStream.Write(dataBytes, 160, dataBytes.Length - 160);
-                await DdonSocketInvoke.IvnvokeAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, fileStream, this, head);
+                await SocketInvoke.IvnvokeAsync(api.Value.Item1, api.Value.Item2, fileStream, this, head);
             }
             else if (head.Mode == DdonSocketMode.Request)
             {
-                if (api is not null)
-                {
-                    var jsonData = Encoding.UTF8.GetString(dataBytes);
-                    var methodReturn = await DdonSocketInvoke.IvnvokeAsync(ServiceProvider, api.Value.Item1, api.Value.Item2, jsonData, this, head);
+                var jsonData = Encoding.UTF8.GetString(dataBytes);
+                var methodReturn = await SocketInvoke.IvnvokeAsync(api.Value, jsonData, this, head);
 
-                    var responseData = new DdonSocketResponse<dynamic>(DdonSocketResponseCode.OK, methodReturn);                    
-                    var methodReturnJsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(responseData));
-                    var responseHeadBytes = head.Response().GetBytes();
+                var responseData = new DdonSocketResponse<dynamic>(DdonSocketResponseCode.OK, methodReturn);
+                var methodReturnJsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(responseData));
+                var responseHeadBytes = head.Response().GetBytes();
 
-                    var sendBytes = DdonArray.MergeArrays(responseHeadBytes, methodReturnJsonBytes, DdonSocketConst.HeadLength);
-                    await Conn.SendBytesAsync(sendBytes);
-                }
+                var sendBytes = DdonArray.MergeArrays(responseHeadBytes, methodReturnJsonBytes, DdonSocketConst.HeadLength);
+                await Conn.SendBytesAsync(sendBytes);
             }
         };
 
