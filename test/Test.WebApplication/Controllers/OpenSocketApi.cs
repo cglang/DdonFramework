@@ -6,7 +6,7 @@ namespace Test.WebApplication.Controllers
     /// <summary>
     /// Socket API
     /// </summary>
-    public class OpenSocketApi : DdonSocketApiCore, ITransientDependency
+    public class OpenSocketApi : SocketApiCore, ITransientDependency
     {
 
         /// <summary>
@@ -17,6 +17,7 @@ namespace Test.WebApplication.Controllers
         /// <summary>
         /// 获取某天的N条热点
         /// </summary>
+        [SocketApi]
         public async Task<IEnumerable<string>> GetAnalysisByDayAsync(AnalysisByDayInput input)
         {
             await Task.Delay(100);

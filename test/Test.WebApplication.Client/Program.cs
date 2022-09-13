@@ -18,7 +18,7 @@ namespace Test.WebApplication.Client
             var sp = services.BuildServiceProvider();
 
 
-            var client = DdonSocketClient<DdonSocketRouteMapLoad>.CreateClient(sp, "127.0.0.1", 2222);
+            var client = SocketClient<DdonSocketRouteMapLoad>.CreateClient(sp, "127.0.0.1", 2222);
 
             var aaa = await client.RequestAsync<object>(route, data);
 

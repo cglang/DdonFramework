@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
 {
-    public class DdonSocketSession
+    public class SocketSession
     {
         public readonly DdonSocketCore Conn;
 
         private readonly IServiceProvider ServiceProvider = LazyServiceProvider.LazyServicePrivider.ServiceProvider;
 
-        public DdonSocketSession(TcpClient tcpClient)
+        public SocketSession(TcpClient tcpClient)
         {
             Conn = new DdonSocketCore(tcpClient, ByteHandler, ExceptionHandler);
         }

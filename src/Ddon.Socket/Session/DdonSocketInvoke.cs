@@ -13,7 +13,7 @@ namespace Ddon.Socket.Session
             string className,
             string methodName,
             string methodParameter,
-            DdonSocketSession connection,
+            SocketSession connection,
             DdonSocketRequest head)
         {
             var returnData = await IvnvokeAsync(services, className, methodName, methodParameter, connection, head);
@@ -25,13 +25,13 @@ namespace Ddon.Socket.Session
             string className,
             string methodName,
             string parameter,
-            DdonSocketSession connection,
+            SocketSession connection,
             DdonSocketRequest head)
         {
             var classType = DdonType.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (DdonSocketApiCore)instance;
+            var ddonSocketService = (SocketApiCore)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 
@@ -44,13 +44,13 @@ namespace Ddon.Socket.Session
             string className,
             string methodName,
             T parameter,
-            DdonSocketSession connection,
+            SocketSession connection,
             DdonSocketRequest head) where T : notnull
         {
             var classType = DdonType.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (DdonSocketApiCore)instance;
+            var ddonSocketService = (SocketApiCore)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 

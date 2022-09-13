@@ -10,26 +10,26 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketServer<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
+    public class SocketServer<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
         private readonly TcpListener _listener;
         private readonly IServiceProvider _serviceProvider;
 
-        private ILogger? Logger => _serviceProvider.GetService<ILogger<DdonSocketServer<TDdonSocketRouteMapLoadBase>>>();
+        private ILogger? Logger => _serviceProvider.GetService<ILogger<SocketServer<TDdonSocketRouteMapLoadBase>>>();
 
         public static DdonSocketStorage SocketStorage => DdonSocketStorage.GetInstance();
 
-        private DdonSocketServer(IServiceProvider serviceProvider, string host, int post)
+        internal SocketServer(IServiceProvider serviceProvider, string host, int post)
         {
             _listener = new TcpListener(IPAddress.Parse(host), post);
             _serviceProvider = serviceProvider;
         }
 
-        public static DdonSocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
+        public static SocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, int post)
         {
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
-            return new DdonSocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, host, post);
+            return new SocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, "127.0.0.1", post);
         }
 
         public void Start()
@@ -41,11 +41,26 @@ namespace Ddon.Socket
                 while (true)
                 {
                     var client = _listener.AcceptTcpClient();
-                    var session = new DdonSocketSession(client);
+                    var session = new SocketSession(client);
                     SocketStorage.Add(session);
                     Logger?.LogInformation("客户端接入：{SocketId}", session.Conn.SocketId);
                 }
             });
+        }
+    }
+
+
+    public class SocketServer : SocketServer<DeafultDdonSocketRouteMap>
+    {
+        protected SocketServer(IServiceProvider serviceProvider, string host, int post) : base(serviceProvider, host, post)
+        {
+        }
+
+        public static SocketServer CreateServer(IServiceProvider serviceProvider, int post)
+        {
+            LazyServiceProvider.InitServiceProvider(serviceProvider);
+            DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();
+            return new SocketServer(serviceProvider, "127.0.0.1", post);
         }
     }
 }

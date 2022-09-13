@@ -17,4 +17,8 @@
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="V2\" />
+	</ItemGroup>
+
 </Project>

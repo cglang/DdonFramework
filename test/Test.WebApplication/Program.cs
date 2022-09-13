@@ -1,5 +1,4 @@
 using Ddon.Socket;
-using Test.WebApplication;
 using Test.WebApplication.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +13,7 @@ builder.Services.AddTransient<OpenSocketApi>();
 
 var app = builder.Build();
 
-DdonSocketServer<ApplicationSocketRouteMap>.CreateServer(app.Services, "127.0.0.1", 2222).Start();
+SocketServer.CreateServer(app.Services, 2222).Start();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
