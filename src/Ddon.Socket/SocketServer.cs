@@ -56,7 +56,7 @@ namespace Ddon.Socket
         {
         }
 
-        public static SocketServer CreateServer(IServiceProvider serviceProvider, int post)
+        public new static SocketServer CreateServer(IServiceProvider serviceProvider, int post)
         {
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();

@@ -24,7 +24,7 @@ namespace Test.WebApplication.Controllers
             var data = new { Count = 10 };
             var json = JsonSerializer.Serialize(data);
 
-            var client = SocketClient<DdonSocketRouteMapLoad>.CreateClient(_serviceProvider, "127.0.0.1", 2222);
+            var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
 
             var aaa = await client.RequestAsync<object>(route, data);
 

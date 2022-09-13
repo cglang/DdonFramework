@@ -8,12 +8,12 @@ namespace Ddon.Socket
 {
     public class SocketClient<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
-        private readonly SocketSession _session;
+        protected readonly SocketSession session;
 
-        private SocketClient(string host, int post)
+        protected SocketClient(string host, int post)
         {
             var tcpClient = new TcpClient(host, post);
-            _session = new SocketSession(tcpClient);
+            session = new SocketSession(tcpClient);
         }
 
         public static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post)
@@ -21,7 +21,22 @@ namespace Ddon.Socket
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
             var t = new SocketClient<TDdonSocketRouteMapLoadBase>(host, post);
-            return t._session;
+            return t.session;
+        }
+    }
+
+    public class SocketClient : SocketClient<DeafultDdonSocketRouteMap>
+    {
+        protected SocketClient(string host, int post) : base(host, post)
+        {
+        }
+
+        public new static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post)
+        {
+            LazyServiceProvider.InitServiceProvider(serviceProvider);
+            DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();
+            var t = new SocketClient(host, post);
+            return t.session;
         }
     }
 }
