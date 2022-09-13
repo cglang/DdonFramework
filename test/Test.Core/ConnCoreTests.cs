@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Test.Ddon.Socket
 {
     [TestClass]
-    public class ConnCoreTest
+    public class ConnCoreTests
     {
         /// <summary>
         /// ºËĞÄÀà»ù´¡²âÊÔ
