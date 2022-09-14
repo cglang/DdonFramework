@@ -18,8 +18,7 @@ namespace Test.SocketApplication.Client.Controllers
         [HttpGet(Name = "Get")]
         public async Task<IEnumerable<int>> Get()
         {
-            Console.WriteLine("Hello, World!");
-            var route = "OpenSocketApi/GetAnalysisByDayAsync";
+            var route = "OpenSocketApi::GetAnalysisByDayAsync";
             var data = new { Count = 10 };
             var json = JsonSerializer.Serialize(data);
 

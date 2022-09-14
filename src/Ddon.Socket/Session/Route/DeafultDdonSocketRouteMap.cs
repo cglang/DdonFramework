@@ -26,12 +26,12 @@ namespace Ddon.Socket.Session.Route
                     {
                         if (socketApi.Template != null)
                         {
-                            var route = new DdonSocketRoute($"/{type.Name}/{socketApi.Template}", type.Name, method.Name);
+                            var route = new DdonSocketRoute($"{type.Name}::{socketApi.Template}", type.Name, method.Name);
                             routes.Add(route);
                         }
                         else
                         {
-                            var route = new DdonSocketRoute($"/{type.Name}/{method.Name}", type.Name, method.Name);
+                            var route = new DdonSocketRoute($"{type.Name}::{method.Name}", type.Name, method.Name);
                             routes.Add(route);
                         }
                     }
