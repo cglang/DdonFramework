@@ -14,7 +14,9 @@ namespace Ddon.Core.Use
         private readonly Func<DdonSocketCore, DdonSocketException, Task>? ExceptionHandler;
 
 
-        public DdonSocketCore(TcpClient tcpClient, Func<DdonSocketCore, byte[], Task> byteHandler,
+        public DdonSocketCore(
+            TcpClient tcpClient,
+            Func<DdonSocketCore, byte[], Task> byteHandler,
             Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null)
         {
             TcpClient = tcpClient;
@@ -30,10 +32,7 @@ namespace Ddon.Core.Use
 
         protected TcpClient TcpClient { get; set; }
 
-        /// <summary>
-        /// 持续从流中读取数据
-        /// </summary>
-        public void ConsecutiveReadStream()
+        private void ConsecutiveReadStream()
         {
             _ = Task.Run(async () =>
             {
