@@ -1,4 +1,6 @@
-﻿using Ddon.Core.Services.LazyService.Static;
+﻿using Ddon.Core.Exceptions;
+using Ddon.Core.Services.LazyService.Static;
+using Ddon.Core.Use;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,12 +43,21 @@ namespace Ddon.Socket
                 while (true)
                 {
                     var client = _listener.AcceptTcpClient();
-                    var session = new SocketSession(client);
+                    var session = new SocketSession(client, ExceptionHandler);
                     SocketStorage.Add(session);
                     Logger?.LogInformation("客户端接入：{SocketId}", session.Conn.SocketId);
                 }
             });
         }
+
+        private Func<DdonSocketCore, DdonSocketException, Task> ExceptionHandler => async (conn, ex) =>
+        {
+            Logger?.LogWarning(ex, $"Scoket 客户端断开:{ex.SocketId}");
+
+            SocketStorage.Remove(ex.SocketId);
+
+            await Task.CompletedTask;
+        };
     }
 
 

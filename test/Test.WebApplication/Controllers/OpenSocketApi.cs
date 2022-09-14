@@ -18,11 +18,12 @@ namespace Test.WebApplication.Controllers
         /// 获取某天的N条热点
         /// </summary>
         [SocketApi]
-        public async Task<IEnumerable<string>> GetAnalysisByDayAsync(AnalysisByDayInput input)
+        public Task<IEnumerable<string>> GetAnalysisByDayAsync(AnalysisByDayInput input)
         {
-            await Task.Delay(100);
+            //await Task.Delay(100);
 
-            return Enumerable.Range(0, input.Count).Select(x => x.ToString()); ;
+            //return Enumerable.Range(0, input.Count).Select(x => x.ToString());
+            return Task.Run(() => new List<string> { "1", "2" }.AsEnumerable());
         }
 
         /// <summary>

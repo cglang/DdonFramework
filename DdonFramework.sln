@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.WebApplication", "test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Core", "test\Test.Core\Test.Core.csproj", "{E10067D4-FA92-4BF2-ADA6-A5E34EBB352A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.SocketApplication.Client", "test\Test.SocketApplication.Client\Test.SocketApplication.Client.csproj", "{F9033059-F816-4A20-AACC-4BFD8826033E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +141,10 @@ Global
 		{E10067D4-FA92-4BF2-ADA6-A5E34EBB352A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E10067D4-FA92-4BF2-ADA6-A5E34EBB352A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E10067D4-FA92-4BF2-ADA6-A5E34EBB352A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9033059-F816-4A20-AACC-4BFD8826033E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9033059-F816-4A20-AACC-4BFD8826033E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9033059-F816-4A20-AACC-4BFD8826033E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9033059-F816-4A20-AACC-4BFD8826033E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -165,6 +171,7 @@ Global
 		{DF4C98F9-9BDF-4BBF-A9F6-5C73999FE919} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{10415C54-565E-4A7D-8A88-91F353805A7E} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 		{E10067D4-FA92-4BF2-ADA6-A5E34EBB352A} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
+		{F9033059-F816-4A20-AACC-4BFD8826033E} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}

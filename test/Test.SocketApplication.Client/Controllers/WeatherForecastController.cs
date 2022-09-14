@@ -1,9 +1,8 @@
 using Ddon.Socket;
-using Ddon.Socket.Session.Route;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
-namespace Test.WebApplication.Controllers
+namespace Test.SocketApplication.Client.Controllers
 {
     [ApiController]
     [Route("[controller]")]

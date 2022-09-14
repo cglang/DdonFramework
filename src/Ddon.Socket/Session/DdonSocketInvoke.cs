@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
 {
-    public class DdonSocketInvoke : ITransientDependency
+    public class DdonSocketInvoke
     {
         private readonly IServiceProvider services;
 

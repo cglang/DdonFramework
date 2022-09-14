@@ -1,9 +1,11 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
+using Ddon.Core.Exceptions;
 using Ddon.Core.Services.LazyService.Static;
 using Ddon.Core.Use;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -21,9 +23,11 @@ namespace Ddon.Socket.Session
 
         private DdonSocketInvoke SocketInvoke => ServiceProvider.GetRequiredService<DdonSocketInvoke>();
 
-        public SocketSession(TcpClient tcpClient)
+        private ILogger Logger => ServiceProvider.GetRequiredService<ILogger<SocketSession>>();
+
+        public SocketSession(TcpClient tcpClient, Func<DdonSocketCore, DdonSocketException, Task> exceptionHandler)
         {
-            Conn = new DdonSocketCore(tcpClient, ByteHandler, ExceptionHandler);
+            Conn = new DdonSocketCore(tcpClient, ByteHandler, exceptionHandler);
         }
 
         private Func<DdonSocketCore, byte[], Task> ByteHandler => async (conn, bytes) =>
@@ -76,12 +80,6 @@ namespace Ddon.Socket.Session
                 var sendBytes = DdonArray.MergeArrays(responseHeadBytes, methodReturnJsonBytes, DdonSocketConst.HeadLength);
                 await Conn.SendBytesAsync(sendBytes);
             }
-        };
-
-        private Func<DdonSocketCore, Exception, Task> ExceptionHandler => async (conn, ex) =>
-        {
-            // TODO: Socket 断开等异常时
-            await Task.CompletedTask;
         };
 
         public async Task SendAsync(string route, object data)

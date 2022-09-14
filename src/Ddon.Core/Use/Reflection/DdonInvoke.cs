@@ -105,23 +105,15 @@ namespace Ddon.Core.Use.Reflection
         /// <returns>当方法返回值为 viod 或 Task 时，返回 null</returns>
         public static async Task<dynamic?> InvokeAsync(object? instance, MethodInfo method, params object[] parameter)
         {
-            try
-            {
-                dynamic? methodReturn = method.Invoke(instance, parameter);
+            dynamic? invokeResult = method.Invoke(instance, parameter);
 
-                if (IsAsyncMethod(method))
-                {
-                    methodReturn = method.ReturnType == typeof(Task) ? null : await methodReturn;
-                }
-
-                return methodReturn;
-            }
-            catch (Exception e)
+            if (method.ReturnType.IsAssignableTo(typeof(Task)))
             {
-                Console.WriteLine(e);
+                if (method.ReturnType.IsGenericType)
+                    return await invokeResult;
             }
 
-            return null;
+            return invokeResult;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ddon.Core.Exceptions;
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -10,11 +11,11 @@ namespace Ddon.Core.Use
     public class DdonSocketCore : IDisposable
     {
         private readonly Func<DdonSocketCore, byte[], Task> ByteHandler;
-        private readonly Func<DdonSocketCore, Exception, Task>? ExceptionHandler;
+        private readonly Func<DdonSocketCore, DdonSocketException, Task>? ExceptionHandler;
 
 
         public DdonSocketCore(TcpClient tcpClient, Func<DdonSocketCore, byte[], Task> byteHandler,
-            Func<DdonSocketCore, Exception, Task>? exceptionHandler = null)
+            Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null)
         {
             TcpClient = tcpClient;
             ByteHandler = byteHandler;
@@ -48,7 +49,11 @@ namespace Ddon.Core.Use
                 }
                 catch (Exception ex)
                 {
-                    if (ExceptionHandler != null) await ExceptionHandler(this, ex);
+                    if (ExceptionHandler != null)
+                    {
+                        var socketEx = new DdonSocketException(ex, SocketId);
+                        await ExceptionHandler(this, socketEx);
+                    }
                 }
             });
         }
