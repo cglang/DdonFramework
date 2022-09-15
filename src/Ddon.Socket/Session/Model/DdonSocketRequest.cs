@@ -14,6 +14,8 @@ namespace Ddon.Socket.Session.Model
 
         public DdonSocketResponseCode Code { get; set; }
 
+        public int BlockIndex { get; set; } = 0;
+
         public DdonSocketRequest(Guid id, DdonSocketMode mode, string api)
         {
             Id = id;
@@ -38,12 +40,25 @@ namespace Ddon.Socket.Session.Model
 
         public byte[] GetBytes()
         {
-            return Encoding.UTF8.GetBytes(ToString());
+            //var bytes = new byte[DdonSocketConst.HeadLength];
+            //var jsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(this));
+            //Array.Copy(jsonBytes, 0, bytes, 0, jsonBytes.Length);
+            //return bytes;
+            return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(this));
         }
 
-        public override string ToString()
+        public bool IsEnd => BlockIndex == -1;
+
+        public DdonSocketRequest SetEnd()
         {
-            return JsonSerializer.Serialize(this);
+            BlockIndex = -1;
+            return this;
+        }
+
+        public DdonSocketRequest CountAddOne()
+        {
+            BlockIndex += 1;
+            return this;
         }
     }
 }

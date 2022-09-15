@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "Test.SocketApplication.Client": {
+    "Client": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

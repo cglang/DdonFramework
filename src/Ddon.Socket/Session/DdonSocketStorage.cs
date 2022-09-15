@@ -1,9 +1,8 @@
-﻿using Ddon.Socket.Session;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ddon.Socket
+namespace Ddon.Socket.Session
 {
     public class DdonSocketStorage
     {
