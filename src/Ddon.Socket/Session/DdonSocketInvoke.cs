@@ -1,37 +1,40 @@
-﻿using Ddon.Core.Use.Reflection;
+﻿using Ddon.Core.Use.Di;
+using Ddon.Core.Use.Reflection;
 using Ddon.Socket.Session.Model;
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
 {
     public class DdonSocketInvoke
     {
-        public static async Task<string> IvnvokeReturnJsonAsync(
-            IServiceProvider services,
-            string className,
-            string methodName,
-            string methodParameter,
-            DdonSocketSession connection,
-            DdonSocketRequest head)
+        private readonly IServiceProvider services;
+
+        public DdonSocketInvoke(IServiceProvider services)
         {
-            var returnData = await IvnvokeAsync(services, className, methodName, methodParameter, connection, head);
-            return JsonSerializer.Serialize(returnData);
+            this.services = services;
         }
 
-        public static async Task<dynamic?> IvnvokeAsync(
-            IServiceProvider services,
+        public async Task<dynamic?> IvnvokeAsync(
+            (string, string) methodinfo,
+            string parameter,
+            SocketSession connection,
+            DdonSocketRequest head)
+        {
+            return await IvnvokeAsync(methodinfo.Item1, methodinfo.Item2, parameter, connection, head);
+        }
+
+        public async Task<dynamic?> IvnvokeAsync(
             string className,
             string methodName,
             string parameter,
-            DdonSocketSession connection,
+            SocketSession connection,
             DdonSocketRequest head)
         {
             var classType = DdonType.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (DdonSocketApiCore)instance;
+            var ddonSocketService = (SocketApiCore)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 
@@ -39,18 +42,17 @@ namespace Ddon.Socket.Session
             return await DdonInvoke.InvokeAsync(instance, method, parameter);
         }
 
-        public static async Task<dynamic?> IvnvokeAsync<T>(
-            IServiceProvider services,
+        public async Task<dynamic?> IvnvokeAsync<T>(
             string className,
             string methodName,
             T parameter,
-            DdonSocketSession connection,
+            SocketSession connection,
             DdonSocketRequest head) where T : notnull
         {
             var classType = DdonType.GetTypeByName(className);
             var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (DdonSocketApiCore)instance;
+            var ddonSocketService = (SocketApiCore)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 

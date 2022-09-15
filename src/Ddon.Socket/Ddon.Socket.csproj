@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
@@ -11,9 +11,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 	</ItemGroup>
 

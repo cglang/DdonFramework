@@ -3,10 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Socket.Session
 {
-    public class DdonSocketApiCore
+    public abstract class SocketApiCore
     {
         [AllowNull]
-        public DdonSocketSession Session { get; set; }
+        public virtual SocketSession Session { get; set; }
 
         [AllowNull]
         public DdonSocketRequest Head { get; set; }
