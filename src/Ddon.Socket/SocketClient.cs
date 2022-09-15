@@ -14,7 +14,7 @@ namespace Ddon.Socket
     public class SocketClient<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
     {
         private IServiceProvider ServiceProvider => LazyServiceProvider.LazyServicePrivider.ServiceProvider;
-        private ILogger Logger => ServiceProvider.GetRequiredService<ILogger>();
+        private ILogger Logger => ServiceProvider.GetRequiredService<ILogger<SocketClient<TDdonSocketRouteMapLoadBase>>>();
 
         protected readonly SocketSession session;
 
