@@ -1,6 +1,7 @@
 ﻿using Ddon.Core.Use.Di;
 using Ddon.Core.Use.Reflection;
 using Ddon.Socket.Session.Model;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
@@ -31,8 +32,10 @@ namespace Ddon.Socket.Session
             SocketSession connection,
             DdonSocketRequest head)
         {
+            using var scope = services.CreateScope();
             var classType = DdonType.GetTypeByName(className);
-            var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
+            var instance = scope.ServiceProvider.GetService(classType) ??
+                throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
             var ddonSocketService = (SocketApiCore)instance;
             ddonSocketService.Session = connection;
@@ -49,8 +52,10 @@ namespace Ddon.Socket.Session
             SocketSession connection,
             DdonSocketRequest head) where T : notnull
         {
+            using var scope = services.CreateScope();
             var classType = DdonType.GetTypeByName(className);
-            var instance = services.GetService(classType) ?? throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
+            var instance = scope.ServiceProvider.GetService(classType) ??
+                throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
             var ddonSocketService = (SocketApiCore)instance;
             ddonSocketService.Session = connection;
