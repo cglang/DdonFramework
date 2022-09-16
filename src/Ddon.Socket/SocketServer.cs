@@ -29,9 +29,14 @@ namespace Ddon.Socket
 
         public static SocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, int post)
         {
+            return CreateServer(serviceProvider, "0.0.0.0", post);
+        }
+
+        public static SocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
+        {
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
-            return new SocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, "127.0.0.1", post);
+            return new SocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, host, post);
         }
 
         public void Start()
