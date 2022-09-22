@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
 {
-    public class DdonSocketInvoke
+    internal class DdonSocketInvoke
     {
         private readonly IServiceProvider services;
 
