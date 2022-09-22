@@ -29,6 +29,12 @@ namespace Ddon.Core.Use
             ConsecutiveReadStream();
         }
 
+        public DdonSocketCore(TcpClient tcpClient)
+        {
+            TcpClient = tcpClient;
+            ConsecutiveReadStream();
+        }
+
         public Guid SocketId { get; } = Guid.NewGuid();
 
         public Stream Stream => TcpClient.GetStream();
