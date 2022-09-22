@@ -1,4 +1,4 @@
-using Ddon.Core.Use;
+using Ddon.Core.Use.Socket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Sockets;

@@ -8,40 +8,22 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Core.Use
+namespace Ddon.Core.Use.Socket
 {
-    public class DdonSocketCore : IDisposable
+    public class DdonSocketCore : DdonSocketBase
     {
-        private Func<DdonSocketCore, byte[], Task>? byteHandler;
-        private Func<DdonSocketCore, string, Task>? stringHandler;
-        private Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler;
-
-
         public DdonSocketCore(
             TcpClient tcpClient,
             Func<DdonSocketCore, byte[], Task> byteHandler,
-            Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null)
+            Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null) : base(tcpClient)
         {
-            TcpClient = tcpClient;
-            this.byteHandler = byteHandler;
-            this.exceptionHandler = exceptionHandler;
-
-            ConsecutiveReadStream();
+            _byteHandler = byteHandler;
+            _exceptionHandler = exceptionHandler;
         }
 
-        public DdonSocketCore(TcpClient tcpClient)
-        {
-            TcpClient = tcpClient;
-            ConsecutiveReadStream();
-        }
+        public DdonSocketCore(TcpClient tcpClient) : base(tcpClient) { }
 
-        public Guid SocketId { get; } = Guid.NewGuid();
-
-        public Stream Stream => TcpClient.GetStream();
-
-        protected TcpClient TcpClient { get; set; }
-
-        private void ConsecutiveReadStream()
+        protected override void ConsecutiveReadStream()
         {
             var newThread = new Thread(async () =>
             {
@@ -52,23 +34,23 @@ namespace Ddon.Core.Use
                         var dataSize = await Stream.ReadLengthBytesAsync(sizeof(int));
                         var length = BitConverter.ToInt32(dataSize);
                         var initialBytes = await Stream.ReadLengthBytesAsync(length);
-                        if (byteHandler != null)
+                        if (_byteHandler != null)
                         {
-                            await byteHandler(this, initialBytes);
+                            await _byteHandler(this, initialBytes);
                         }
-                        if (stringHandler != null)
+                        if (_stringHandler != null)
                         {
                             var data = Encoding.UTF8.GetString(initialBytes);
-                            await stringHandler(this, data ?? string.Empty);
+                            await _stringHandler(this, data ?? string.Empty);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    if (exceptionHandler != null)
+                    if (_exceptionHandler != null)
                     {
                         var socketEx = new DdonSocketException(ex, SocketId);
-                        await exceptionHandler(this, socketEx);
+                        await _exceptionHandler(this, socketEx);
                     }
                 }
             });
@@ -117,26 +99,20 @@ namespace Ddon.Core.Use
 
         public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task> byteHandler)
         {
-            this.byteHandler = byteHandler;
+            _byteHandler = byteHandler;
             return this;
         }
 
         public DdonSocketCore StringHandler(Func<DdonSocketCore, string, Task> stringHandler)
         {
-            this.stringHandler = stringHandler;
+            _stringHandler = stringHandler;
             return this;
         }
 
         public DdonSocketCore ExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task> exceptionHandler)
         {
-            this.exceptionHandler = exceptionHandler;
+            _exceptionHandler = exceptionHandler;
             return this;
-        }
-
-        public void Dispose()
-        {
-            if (TcpClient is not null) TcpClient.Close();
-            GC.SuppressFinalize(this);
         }
     }
 }
