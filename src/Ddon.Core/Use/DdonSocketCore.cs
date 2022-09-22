@@ -12,8 +12,9 @@ namespace Ddon.Core.Use
 {
     public class DdonSocketCore : IDisposable
     {
-        private readonly Func<DdonSocketCore, byte[], Task> ByteHandler;
-        private readonly Func<DdonSocketCore, DdonSocketException, Task>? ExceptionHandler;
+        private Func<DdonSocketCore, byte[], Task>? byteHandler;
+        private Func<DdonSocketCore, string, Task>? stringHandler;
+        private Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler;
 
 
         public DdonSocketCore(
@@ -22,8 +23,8 @@ namespace Ddon.Core.Use
             Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null)
         {
             TcpClient = tcpClient;
-            ByteHandler = byteHandler;
-            ExceptionHandler = exceptionHandler;
+            this.byteHandler = byteHandler;
+            this.exceptionHandler = exceptionHandler;
 
             ConsecutiveReadStream();
         }
@@ -45,15 +46,23 @@ namespace Ddon.Core.Use
                         var dataSize = await Stream.ReadLengthBytesAsync(sizeof(int));
                         var length = BitConverter.ToInt32(dataSize);
                         var initialBytes = await Stream.ReadLengthBytesAsync(length);
-                        await ByteHandler(this, initialBytes);
+                        if (byteHandler != null)
+                        {
+                            await byteHandler(this, initialBytes);
+                        }
+                        if (stringHandler != null)
+                        {
+                            var data = Encoding.UTF8.GetString(initialBytes);
+                            await stringHandler(this, data ?? string.Empty);
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    if (ExceptionHandler != null)
+                    if (exceptionHandler != null)
                     {
                         var socketEx = new DdonSocketException(ex, SocketId);
-                        await ExceptionHandler(this, socketEx);
+                        await exceptionHandler(this, socketEx);
                     }
                 }
             });
@@ -86,11 +95,11 @@ namespace Ddon.Core.Use
         }
 
         /// <summary>
-        /// 发送字符串
+        /// 发送Json字符串
         /// </summary>
         /// <param name="data">数据</param>
         /// <returns>发送的数据字节长度</returns>
-        public async Task<int> SendStringAsync<TData>(TData data)
+        public async Task<int> SendJsonAsync<TData>(TData data)
         {
             var options = new JsonSerializerOptions
             {
@@ -98,6 +107,24 @@ namespace Ddon.Core.Use
                 ReferenceHandler = ReferenceHandler.IgnoreCycles
             };
             return await SendStringAsync(JsonSerializer.Serialize(data, options));
+        }
+
+        public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task> byteHandler)
+        {
+            this.byteHandler = byteHandler;
+            return this;
+        }
+
+        public DdonSocketCore StringHandler(Func<DdonSocketCore, string, Task> stringHandler)
+        {
+            this.stringHandler = stringHandler;
+            return this;
+        }
+
+        public DdonSocketCore ExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task> exceptionHandler)
+        {
+            this.exceptionHandler = exceptionHandler;
+            return this;
         }
 
         public void Dispose()
