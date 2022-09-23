@@ -12,16 +12,26 @@ namespace Ddon.Core.Use.Socket
 {
     public class DdonSocketCore : DdonSocketBase
     {
+        protected Func<DdonSocketCore, byte[], Task>? _byteHandler;
+        protected Func<DdonSocketCore, string, Task>? _stringHandler;
+        protected Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
+        private readonly string host = string.Empty;
+
         public DdonSocketCore(
             TcpClient tcpClient,
             Func<DdonSocketCore, byte[], Task> byteHandler,
             Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null) : base(tcpClient)
         {
-            _byteHandler = byteHandler;
-            _exceptionHandler = exceptionHandler;
+            _byteHandler += byteHandler;
+            _exceptionHandler += exceptionHandler;
         }
 
         public DdonSocketCore(TcpClient tcpClient) : base(tcpClient) { }
+
+        public DdonSocketCore(string host, int port) : base(new TcpClient(host, port))
+        {
+            this.host = host;
+        }
 
         protected override void ConsecutiveReadStream()
         {
@@ -31,6 +41,8 @@ namespace Ddon.Core.Use.Socket
                 {
                     while (true)
                     {
+                        if (!TcpClient.Connected) throw new Exception("客户端已正常断开");
+
                         var dataSize = await Stream.ReadLengthBytesAsync(sizeof(int));
                         var length = BitConverter.ToInt32(dataSize);
                         var initialBytes = await Stream.ReadLengthBytesAsync(length);
@@ -97,21 +109,21 @@ namespace Ddon.Core.Use.Socket
             return await SendStringAsync(JsonSerializer.Serialize(data, options));
         }
 
-        public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task> byteHandler)
+        public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task>? byteHandler)
         {
-            _byteHandler = byteHandler;
+            _byteHandler += byteHandler;
             return this;
         }
 
-        public DdonSocketCore StringHandler(Func<DdonSocketCore, string, Task> stringHandler)
+        public DdonSocketCore StringHandler(Func<DdonSocketCore, string, Task>? stringHandler)
         {
-            _stringHandler = stringHandler;
+            _stringHandler += stringHandler;
             return this;
         }
 
-        public DdonSocketCore ExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task> exceptionHandler)
+        public DdonSocketCore ExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
         {
-            _exceptionHandler = exceptionHandler;
+            _exceptionHandler += exceptionHandler;
             return this;
         }
     }

@@ -19,7 +19,7 @@ namespace Ddon.Socket
 
         private ILogger? Logger => _serviceProvider.GetService<ILogger<SocketServer<TDdonSocketRouteMapLoadBase>>>();
 
-        internal static DdonSocketStorage SocketStorage => DdonSocketStorage.GetInstance();
+        internal static Session.DdonSocketStorage SocketStorage => Session.DdonSocketStorage.GetInstance();
 
         internal SocketServer(IServiceProvider serviceProvider, string host, int post)
         {
