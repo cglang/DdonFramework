@@ -2,6 +2,7 @@
 using Ddon.Core.Exceptions;
 using Ddon.Core.Services.LazyService.Static;
 using Ddon.Core.Use;
+using Ddon.Core.Use.Socket;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;

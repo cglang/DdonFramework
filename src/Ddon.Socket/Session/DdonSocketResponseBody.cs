@@ -2,7 +2,7 @@
 
 namespace Ddon.Socket.Session
 {
-    public class DdonSocketResponseBody
+    internal class DdonSocketResponseBody
     {
         public Guid Id { get; set; }
 

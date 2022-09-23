@@ -8,27 +8,25 @@ namespace Ddon.Core.Use.Timers
     /// </summary>
     public class DdonTimer : IDisposable
     {
-        private readonly Timer timer;
-        private DateTime baseTime;
+        private readonly Timer _timer;
 
-        public ElapsedEventHandler? Elapsed { get; set; }
+        private static ElapsedEventHandler? Elapsed => null;
 
-        public TimeSpan Interval { get; set; }
+        private TimeSpan Interval { get; set; }
 
         public DdonTimer(TimeSpan interval)
         {
-            baseTime = DateTime.UtcNow;
+            var baseTime = DateTime.UtcNow;
 
             Interval = interval;
 
-            timer = new Timer() { Interval = 100 };
-            timer.Elapsed += (sender, e) =>
+            _timer = new Timer() { Interval = 100 };
+            _timer.Elapsed += (sender, e) =>
             {
-                if (Elapsed is not null && baseTime.AddMilliseconds(Interval.TotalMilliseconds) < DateTime.UtcNow)
-                {
-                    Elapsed.Invoke(sender, e);
-                    baseTime = baseTime.AddMilliseconds(Interval.TotalMilliseconds);
-                }
+                if (Elapsed is null || baseTime.AddMilliseconds(Interval.TotalMilliseconds) >= DateTime.UtcNow) return;
+                
+                Elapsed.Invoke(sender, e);
+                baseTime = baseTime.AddMilliseconds(Interval.TotalMilliseconds);
             };
         }
 
@@ -39,19 +37,19 @@ namespace Ddon.Core.Use.Timers
                 throw new NullReferenceException("Elapsed Is Null");
             }
 
-            timer.Enabled = true;
-            timer.Start();
+            _timer.Enabled = true;
+            _timer.Start();
         }
 
         public void Stop()
         {
-            timer.Enabled = false;
-            timer.Stop();
+            _timer.Enabled = false;
+            _timer.Stop();
         }
 
         #region Dispose
 
-        private bool disposed = false;
+        private bool _disposed;
 
         public void Dispose()
         {
@@ -61,14 +59,14 @@ namespace Ddon.Core.Use.Timers
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!this.disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    timer.Dispose();
+                    _timer.Dispose();
                 }
 
-                disposed = true;
+                _disposed = true;
             }
         }
 

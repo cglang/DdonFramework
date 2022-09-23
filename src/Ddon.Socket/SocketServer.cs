@@ -1,6 +1,6 @@
 ﻿using Ddon.Core.Exceptions;
 using Ddon.Core.Services.LazyService.Static;
-using Ddon.Core.Use;
+using Ddon.Core.Use.Socket;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +19,7 @@ namespace Ddon.Socket
 
         private ILogger? Logger => _serviceProvider.GetService<ILogger<SocketServer<TDdonSocketRouteMapLoadBase>>>();
 
-        public static DdonSocketStorage SocketStorage => DdonSocketStorage.GetInstance();
+        internal static Session.DdonSocketStorage SocketStorage => Session.DdonSocketStorage.GetInstance();
 
         internal SocketServer(IServiceProvider serviceProvider, string host, int post)
         {
@@ -29,9 +29,14 @@ namespace Ddon.Socket
 
         public static SocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, int post)
         {
+            return CreateServer(serviceProvider, "0.0.0.0", post);
+        }
+
+        public static SocketServer<TDdonSocketRouteMapLoadBase> CreateServer(IServiceProvider serviceProvider, string host, int post)
+        {
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
-            return new SocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, "127.0.0.1", post);
+            return new SocketServer<TDdonSocketRouteMapLoadBase>(serviceProvider, host, post);
         }
 
         public void Start()

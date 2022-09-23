@@ -9,7 +9,7 @@ namespace Ddon.Socket.Session
     /// <summary>
     /// 响应集合
     /// </summary>
-    public class DdonSocketResponsePool
+    internal class DdonSocketResponsePool
     {
         private static readonly object _lock = new();
         private static DdonSocketResponsePool? obj;

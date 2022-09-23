@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace System
 {
     /// <summary>
@@ -116,35 +117,32 @@ namespace System
         {
             var keyValues = new Collection<KeyValuePair<string, string>>();
 
-            if (obj == null) return keyValues;
-
-            if (obj.GetType() == typeof(string) || (obj?.GetType().IsValueType ?? false))
+            if (obj is string)
             {
                 keyValues.Add(new KeyValuePair<string, string>(obj.ToString() ?? string.Empty, obj.ToString() ?? string.Empty));
                 return keyValues;
             }
 
-            var properties = obj?.GetType().GetProperties().ToList();
-            if (properties?.Count > 0)
+            var properties = obj.GetType().GetProperties().ToList();
+            if (!(properties.Count > 0)) return keyValues;
+            
+            foreach (var pro in properties)
             {
-                foreach (var pro in properties)
+                var value = pro.GetValue(obj);
+                if (value != null && pro.PropertyType == typeof(DateTime))
                 {
-                    var value = pro.GetValue(obj);
-                    if (value != null && pro.PropertyType == typeof(DateTime))
+                    try
                     {
-                        try
-                        {
-                            // FIX: 这样会丢失时区信息
-                            value = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
-                        }
-                        catch
-                        {
-                            value = string.Empty;
-                        }
+                        // FIX: 这样会丢失时区信息
+                        value = ((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss");
                     }
-
-                    keyValues.Add(new KeyValuePair<string, string>(pro.Name, value?.ToString() ?? string.Empty));
+                    catch
+                    {
+                        value = string.Empty;
+                    }
                 }
+
+                keyValues.Add(new KeyValuePair<string, string>(pro.Name, value?.ToString() ?? string.Empty));
             }
             return keyValues;
         }
