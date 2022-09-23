@@ -364,3 +364,5 @@ FodyWeavers.xsd
 /Gardener.HttpApi.Host/Gardener.HttpApi.Host.xml
 
 Gardener.HttpApi.Host/appsettings.Development.json
+
+./.idea
