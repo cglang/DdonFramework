@@ -15,7 +15,7 @@ namespace Ddon.Core.Use.Socket
             return Pairs.ContainsKey(socketId) ? Pairs[socketId] : null;
         }
 
-        public static IEnumerable<DdonSocketCore>? GetClients(IEnumerable<Guid> socketIds)
+        public static IEnumerable<DdonSocketCore> GetClients(IEnumerable<Guid> socketIds)
         {
             return Pairs.Values.Where(x => socketIds.Contains(x.SocketId));
         }

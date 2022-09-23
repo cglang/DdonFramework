@@ -12,22 +12,16 @@ namespace Ddon.Core.Use.Socket
 
         protected Stream Stream => TcpClient.GetStream();
 
-        public DdonSocketBase(TcpClient tcpClient)
+        protected DdonSocketBase(TcpClient tcpClient)
         {
             TcpClient = tcpClient;
             SocketId = Guid.NewGuid();
-            ConsecutiveReadStream();
         }
-
-        protected abstract void ConsecutiveReadStream();
 
         public void Dispose()
         {
-            if (TcpClient is not null)
-            {
-                TcpClient.Dispose();
-                //TcpClient.Close();
-            }
+            TcpClient.Close();
+            TcpClient.Dispose();
             GC.SuppressFinalize(this);
         }
     }

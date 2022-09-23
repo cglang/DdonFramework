@@ -12,61 +12,64 @@ namespace Ddon.Core.Use.Socket
 {
     public class DdonSocketCore : DdonSocketBase
     {
-        protected Func<DdonSocketCore, byte[], Task>? _byteHandler;
-        protected Func<DdonSocketCore, string, Task>? _stringHandler;
-        protected Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
-        private readonly string host = string.Empty;
+        private Func<DdonSocketCore, byte[], Task>? _byteHandler;
+        private Func<DdonSocketCore, string, Task>? _stringHandler;
+        private Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
 
         public DdonSocketCore(
             TcpClient tcpClient,
-            Func<DdonSocketCore, byte[], Task> byteHandler,
+            Func<DdonSocketCore, byte[], Task>? byteHandler,
             Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null) : base(tcpClient)
         {
             _byteHandler += byteHandler;
             _exceptionHandler += exceptionHandler;
+            ConsecutiveReadStream();
         }
 
-        public DdonSocketCore(TcpClient tcpClient) : base(tcpClient) { }
+        public DdonSocketCore(TcpClient tcpClient) : base(tcpClient)
+        {
+            ConsecutiveReadStream();
+        }
 
         public DdonSocketCore(string host, int port) : base(new TcpClient(host, port))
         {
-            this.host = host;
+            ConsecutiveReadStream();
         }
 
-        protected override void ConsecutiveReadStream()
+        private void ConsecutiveReadStream()
         {
-            var newThread = new Thread(async () =>
-            {
-                try
-                {
-                    while (true)
-                    {
-                        if (!TcpClient.Connected) throw new Exception("客户端已正常断开");
-
-                        var dataSize = await Stream.ReadLengthBytesAsync(sizeof(int));
-                        var length = BitConverter.ToInt32(dataSize);
-                        var initialBytes = await Stream.ReadLengthBytesAsync(length);
-                        if (_byteHandler != null)
-                        {
-                            await _byteHandler(this, initialBytes);
-                        }
-                        if (_stringHandler != null)
-                        {
-                            var data = Encoding.UTF8.GetString(initialBytes);
-                            await _stringHandler(this, data ?? string.Empty);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (_exceptionHandler != null)
-                    {
-                        var socketEx = new DdonSocketException(ex, SocketId);
-                        await _exceptionHandler(this, socketEx);
-                    }
-                }
-            });
+            var newThread = new Thread(Start);
             newThread.Start();
+        }
+
+        private async void Start()
+        {
+            try
+            {
+                while (true)
+                {
+                    if (!TcpClient.Connected) throw new Exception("客户端已正常断开");
+
+                    var dataSize = await Stream.ReadLengthBytesAsync(sizeof(int));
+                    var length = BitConverter.ToInt32(dataSize);
+                    var initialBytes = await Stream.ReadLengthBytesAsync(length);
+
+                    if (_byteHandler == null) continue;
+                    await _byteHandler(this, initialBytes);
+
+                    if (_stringHandler == null) continue;
+                    var data = Encoding.UTF8.GetString(initialBytes);
+                    await _stringHandler(this, data);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (_exceptionHandler != null)
+                {
+                    var socketEx = new DdonSocketException(ex, SocketId);
+                    await _exceptionHandler(this, socketEx);
+                }
+            }
         }
 
         /// <summary>
@@ -111,7 +114,7 @@ namespace Ddon.Core.Use.Socket
 
         public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task>? byteHandler)
         {
-            _byteHandler += byteHandler;
+            this._byteHandler += byteHandler;
             return this;
         }
 

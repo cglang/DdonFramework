@@ -10,10 +10,10 @@ namespace Ddon.Core.Use.Socket
     {
         private readonly TcpListener _listener;
 
-        protected Func<DdonSocketCore, Task>? _connectHandler;
-        protected Func<DdonSocketCore, byte[], Task>? _byteHandler;
-        protected Func<DdonSocketCore, string, Task>? _stringHandler;
-        protected Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
+        private Func<DdonSocketCore, Task>? _connectHandler;
+        private Func<DdonSocketCore, byte[], Task>? _byteHandler;
+        private Func<DdonSocketCore, string, Task>? _stringHandler;
+        private Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
 
         public DdonSocketServer(string host, int port)
         {
@@ -47,26 +47,27 @@ namespace Ddon.Core.Use.Socket
         public void Start()
         {
             _listener.Start();
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    var client = _listener.AcceptTcpClient();
-                    var session = new DdonSocketCore(client);
-                    session.ByteHandler(_byteHandler);
-                    session.StringHandler(_stringHandler);
-                    session.ExceptionHandler(_exceptionHandler);
-                    session.ExceptionHandler(_defaultExceptionHandler);
-
-                    DdonSocketStorage.Add(session);
-
-                    if (_connectHandler != null)
-                        await _connectHandler(session);
-                }
-            });
+            Task.Run(Function);
         }
 
-        private static readonly Func<DdonSocketCore, DdonSocketException, Task>? _defaultExceptionHandler = (conn, ex) =>
+        private async Task Function()
+        {
+            while (true)
+            {
+                var client = await _listener.AcceptTcpClientAsync();
+                var session = new DdonSocketCore(client);
+                session.ByteHandler(_byteHandler);
+                session.StringHandler(_stringHandler);
+                session.ExceptionHandler(_exceptionHandler);
+                session.ExceptionHandler(DefaultExceptionHandler);
+
+                DdonSocketStorage.Add(session);
+
+                if (_connectHandler != null) await _connectHandler(session);
+            }
+        }
+
+        private static readonly Func<DdonSocketCore, DdonSocketException, Task>? DefaultExceptionHandler = (conn, ex) =>
         {
             DdonSocketStorage.Remove(ex.SocketId);
             Console.WriteLine($"移除一个：{ex.SocketId}");

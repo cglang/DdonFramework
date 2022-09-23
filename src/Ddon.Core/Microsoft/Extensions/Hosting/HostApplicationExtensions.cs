@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.Hosting
 {
     public static class HostApplicationExtensions
@@ -16,7 +17,7 @@ namespace Microsoft.Extensions.Hosting
 
         public static IHostBuilder CreateApplication<TMoudle>(this IHostBuilder hostBuilder, Action<IServiceCollection> configureDelegate) where TMoudle : Module, new()
         {
-            hostBuilder.ConfigureServices((x, services) =>
+            hostBuilder.ConfigureServices((_, services) =>
             {
                 configureDelegate(services);
                 var configuration = (IConfiguration)services.Single(p => p.ServiceType == typeof(IConfiguration)).ImplementationInstance!;
