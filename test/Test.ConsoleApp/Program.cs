@@ -1,4 +1,5 @@
-﻿using Ddon.Core.Use.Socket;
+﻿using System.Text;
+using Ddon.Core.Use.Socket;
 
 DdonSocket.CreateServer("0.0.0.0", 12333)
     .ConnectHandler(async conn =>
@@ -8,7 +9,7 @@ DdonSocket.CreateServer("0.0.0.0", 12333)
     })
     .ByteHandler(async (c, b) =>
     {
-        Console.WriteLine("byte数据");
+        Console.WriteLine(@"byte数据:{}");
         await Task.CompletedTask;
     })
     .StringHandler(async (c, t) =>
@@ -18,7 +19,7 @@ DdonSocket.CreateServer("0.0.0.0", 12333)
     })
     .ExceptionHandler((c, e) =>
     {
-        Console.WriteLine($"自定义异常{e}");
+        Console.WriteLine($"自定义异常:{e.Message}");
         return Task.CompletedTask;
     })
     .Start();
@@ -27,9 +28,7 @@ DdonSocket.CreateServer("0.0.0.0", 12333)
 using (var conn = DdonSocket.CreateClient("127.0.0.1", 12333))
 {
     await conn.SendStringAsync("abc");
+    await conn.SendBytesAsync(Encoding.UTF8.GetBytes("abc"));
 }
 
-
 await Task.Delay(1000);
-
-Console.ReadLine();
