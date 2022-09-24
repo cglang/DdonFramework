@@ -18,11 +18,18 @@ DdonSocket.CreateServer("0.0.0.0", 12333)
     })
     .ExceptionHandler((c, e) =>
     {
-        Console.WriteLine("自定义异常");
+        Console.WriteLine($"自定义异常{e}");
         return Task.CompletedTask;
     })
     .Start();
 
-await Task.Delay(10000);
+
+using (var conn = DdonSocket.CreateClient("127.0.0.1", 12333))
+{
+    await conn.SendStringAsync("abc");
+}
+
+
+await Task.Delay(1000);
 
 Console.ReadLine();

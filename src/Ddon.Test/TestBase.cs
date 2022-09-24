@@ -4,13 +4,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Test.Repository
+namespace Ddon.Test
 {
     public class TestBase<TModule> where TModule : Module, new()
     {
-        protected ILazyServiceProvider ServiceProvider { get; set; }
+        protected ILazyServiceProvider ServiceProvider { get; }
 
-        public TestBase()
+        protected TestBase()
         {
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             IConfiguration configuration = configurationBuilder.Build();
@@ -18,7 +18,7 @@ namespace Test.Repository
             var services = new ServiceCollection();
 
             services.LoadModule<CoreModule>(configuration);
-            services.LoadModule<TModule>(configuration);           
+            services.LoadModule<TModule>(configuration);
 
             ServiceProvider = services.BuildServiceProvider().GetService<ILazyServiceProvider>()!;
         }

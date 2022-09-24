@@ -1,10 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ddon.Core.Use
 {
     public static class DdonArray
     {
+        /// <summary>
+        /// 合并多个byte[]，
+        /// </summary>
+        /// <param name="arrays"></param>
+        /// <returns></returns>
+        public static byte[] MergeArrays(params byte[][] arrays)
+        {
+            var arrayLength = arrays.Sum(array => array.Length);
+
+            var contentBytes = new byte[arrayLength];
+
+            var startIndex = 0;
+            foreach (var array in arrays)
+            {
+                Array.Copy(array, 0, contentBytes, startIndex, array.Length);
+                startIndex += array.Length;
+            }
+            return contentBytes;
+        }
+
         /// <summary>
         /// 合并两个byte[]，
         /// </summary>
@@ -16,7 +37,7 @@ namespace Ddon.Core.Use
         {
             if (array1Length == default) array1Length = array1.Length;
 
-            byte[] contentBytes = new byte[array1Length + array2.Length];
+            var contentBytes = new byte[array1Length + array2.Length];
             Array.Copy(array1, contentBytes, array1.Length);
             Array.Copy(array2, 0, contentBytes, array1Length, array2.Length);
             return contentBytes;
@@ -36,11 +57,13 @@ namespace Ddon.Core.Use
                 if (list[i] == cut)
                     list.RemoveAt(i);
             }
+
             var lastbyte = new byte[list.Count];
             for (var i = 0; i < list.Count; i++)
             {
                 lastbyte[i] = list[i];
             }
+
             return lastbyte;
         }
     }
