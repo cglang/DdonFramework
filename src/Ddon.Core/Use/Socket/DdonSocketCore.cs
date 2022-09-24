@@ -5,18 +5,15 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ddon.Core.Use.Socket
 {
     public class DdonSocketCore : IDisposable
     {
-        public const byte Close = 0xC0; // 关闭
-        public const byte Text = 0x0A; // 文本
+        private const byte Text = 0x0A; // 文本
 
-        public const byte Byte = 0x0B; // 字节流
-        // public const byte File = 0x0C; // 文件
+        private const byte Byte = 0x0B; // 字节流
 
 
         private readonly TcpClient _tcpClient;
@@ -51,28 +48,27 @@ namespace Ddon.Core.Use.Socket
 
         private void ConsecutiveReadStream()
         {
-            var newThread = new Thread(Start);
-            newThread.Start();
+            Task.Run(Start);
         }
 
-        private async void Start()
+        private async Task Start()
         {
             try
             {
                 while (true)
                 {
-                    var typeBytes = await _stream.ReadLengthBytesAsync(sizeof(byte));
-                    if (typeBytes[0] == Close) throw new Exception("客户端关闭连接");
+                    var lengthBytes = await _stream.ReadLengthBytesAsync(sizeof(int) + sizeof(byte));
 
-                    var lengthBytes = await _stream.ReadLengthBytesAsync(sizeof(int));
-                    var length = BitConverter.ToInt32(lengthBytes);
+                    var length = BitConverter.ToInt32(lengthBytes[..sizeof(int)]);
+                    if (length == 0) throw new Exception("客户端关闭连接");
+
                     var initialBytes = await _stream.ReadLengthBytesAsync(length);
-
-                    if (_byteHandler != null && typeBytes[0] == Byte)
+                    var type = lengthBytes[sizeof(int)];
+                    if (_byteHandler != null && type == Byte)
                     {
                         await _byteHandler(this, initialBytes);
                     }
-                    else if (_stringHandler != null && typeBytes[0] == Text)
+                    else if (_stringHandler != null && type == Text)
                     {
                         var data = Encoding.UTF8.GetString(initialBytes);
                         await _stringHandler(this, data);
@@ -100,7 +96,7 @@ namespace Ddon.Core.Use.Socket
         {
             var typeByte = new[] { type };
             var lengthByte = BitConverter.GetBytes(data.Length);
-            var contentBytes = DdonArray.MergeArrays(typeByte, lengthByte, data);
+            var contentBytes = DdonArray.MergeArrays(lengthByte, typeByte, data);
 
             await _stream.WriteAsync(contentBytes);
             return data.Length;
@@ -152,7 +148,6 @@ namespace Ddon.Core.Use.Socket
 
         public void Dispose()
         {
-            _stream.Write(BitConverter.GetBytes(Close));
             _tcpClient.Close();
             _tcpClient.Dispose();
             GC.SuppressFinalize(this);

@@ -13,6 +13,7 @@ namespace System.IO
             {
                 stream.Position = 0;
             }
+
             stream.CopyTo(memoryStream);
             return memoryStream.ToArray();
         }
@@ -25,18 +26,20 @@ namespace System.IO
         /// <returns></returns>
         public static async Task<byte[]> ReadLengthBytesAsync(this Stream stream, int length)
         {
-            byte[] bytes = new byte[length];
-            await stream.ReadAsync(bytes.AsMemory(0, length));
+            var bytes = new byte[length];
+            _ = await stream.ReadAsync(bytes.AsMemory(0, length));
             return bytes;
         }
 
-        public static async Task<byte[]> ReadAllBytesAsync(this Stream stream, CancellationToken cancellationToken = default)
+        public static async Task<byte[]> ReadAllBytesAsync(this Stream stream,
+            CancellationToken cancellationToken = default)
         {
             using var memoryStream = new MemoryStream();
             if (stream.CanSeek)
             {
                 stream.Position = 0;
             }
+
             await stream.CopyToAsync(memoryStream, cancellationToken);
             return memoryStream.ToArray();
         }
@@ -47,6 +50,7 @@ namespace System.IO
             {
                 stream.Position = 0;
             }
+
             return stream.CopyToAsync(
                 destination,
                 81920, //this is already the default value, but needed to set to be able to pass the cancellationToken
