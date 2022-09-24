@@ -7,11 +7,11 @@ namespace Ddon.Core.Use.Reflection;
 
 public class DdonServiceInvoke : IDdonServiceInvoke
 {
-    private readonly IServiceProvider serviceProvider;
+    private readonly IServiceProvider _serviceProvider;
 
     public DdonServiceInvoke(IServiceProvider serviceProvider)
     {
-        this.serviceProvider = serviceProvider;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task<dynamic?> InvokeAsync(string className, string methodName, params object[] parameter)
@@ -35,7 +35,7 @@ public class DdonServiceInvoke : IDdonServiceInvoke
     private (object, MethodInfo) GetInVokeInfo(string className, string methodName)
     {
         var classType = DdonType.GetTypeByName(className);
-        var instance = serviceProvider.GetService(classType) ??
+        var instance = _serviceProvider.GetService(classType) ??
             throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
         var method = DdonType.GetMothodByName(instance.GetType(), methodName);

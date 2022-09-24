@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>

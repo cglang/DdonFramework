@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -10,7 +11,8 @@ namespace Ddon.Core.Use
 {
     public class DdonDictionary<TValue> : Dictionary<string, TValue>
     {
-        private readonly JsonSerializerOptions jsonSerializerOptions = new() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
+        private readonly JsonSerializerOptions _jsonSerializerOptions =
+            new() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) };
 
         private readonly string _persistDataFullName;
 
@@ -27,12 +29,11 @@ namespace Ddon.Core.Use
 
         private void Initial()
         {
-            if (!File.Exists(_persistDataFullName))
-            {
-                var baseDirectory = Path.GetDirectoryName(_persistDataFullName) ?? throw new Exception("文件路径有误");
-                Directory.CreateDirectory(baseDirectory);
-                File.Create(_persistDataFullName).Close();
-            }
+            if (File.Exists(_persistDataFullName)) return;
+
+            var baseDirectory = Path.GetDirectoryName(_persistDataFullName) ?? throw new Exception("文件路径有误");
+            Directory.CreateDirectory(baseDirectory);
+            File.Create(_persistDataFullName).Close();
         }
 
         public async Task<bool> SaveAsync()
@@ -40,20 +41,21 @@ namespace Ddon.Core.Use
             using var ddonLock = new LocalSpinLock();
             if (!await ddonLock.GetLock("save")) throw new Exception("保存失败");
 
-            using var stream = new StreamWriter(_persistDataFullName);
-            foreach (var value in this)
-            {
-                var kv = $"{value.Key}\t{JsonSerializer.Serialize(value.Value, jsonSerializerOptions)}{Environment.NewLine}";
-                await stream.WriteAsync(kv);
-            }
+            await using var stream = new StreamWriter(_persistDataFullName);
+
+            var enumerable = this.Select(value =>
+                    $"{value.Key}\t{JsonSerializer.Serialize(value.Value, _jsonSerializerOptions)}{Environment.NewLine}")
+                .ToList();
+
+            await Parallel.ForEachAsync(enumerable, async (value, _) => { await stream.WriteAsync(value); });
+
             return true;
         }
 
         private async Task LoadAsync()
         {
             using var stream = new StreamReader(_persistDataFullName);
-            string? text;
-            while ((text = await stream.ReadLineAsync()) is not null)
+            while (await stream.ReadLineAsync() is { } text)
             {
                 var kv = text.Split("\t");
                 var value = JsonSerializer.Deserialize<TValue>(kv[1]);

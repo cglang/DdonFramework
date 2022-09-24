@@ -7,7 +7,7 @@ namespace Ddon.Core.Use.Reflection
 {
     public static class DdonType
     {
-        private readonly static IEnumerable<Type> Types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes());
+        private static readonly IEnumerable<Type> Types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes());
 
         /// <summary>
         /// 通过类型名称寻找类型

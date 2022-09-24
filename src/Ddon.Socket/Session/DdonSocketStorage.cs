@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Ddon.Socket.Session
 {
-    public class DdonSocketStorage
+    internal class DdonSocketStorage
     {
         private static readonly object _lock = new();
 

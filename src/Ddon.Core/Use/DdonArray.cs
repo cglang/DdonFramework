@@ -1,10 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ddon.Core.Use
 {
     public static class DdonArray
     {
+        /// <summary>
+        /// 合并多个byte[]，
+        /// </summary>
+        /// <param name="arrays"></param>
+        /// <returns></returns>
+        public static byte[] MergeArrays(params byte[][] arrays)
+        {
+            var arrayLength = arrays.Sum(array => array.Length);
+
+            var contentBytes = new byte[arrayLength];
+
+            var startIndex = 0;
+            foreach (var array in arrays)
+            {
+                Array.Copy(array, 0, contentBytes, startIndex, array.Length);
+                startIndex += array.Length;
+            }
+            return contentBytes;
+        }
+
         /// <summary>
         /// 合并两个byte[]，
         /// </summary>
@@ -16,7 +37,7 @@ namespace Ddon.Core.Use
         {
             if (array1Length == default) array1Length = array1.Length;
 
-            byte[] contentBytes = new byte[array1Length + array2.Length];
+            var contentBytes = new byte[array1Length + array2.Length];
             Array.Copy(array1, contentBytes, array1.Length);
             Array.Copy(array2, 0, contentBytes, array1Length, array2.Length);
             return contentBytes;
@@ -28,19 +49,21 @@ namespace Ddon.Core.Use
         /// <param name="bytes"> 需要处理的byte[]</param>
         /// <param name="cut">byte[] 中需要除去的特定 byte (此处: byte cut = 0x00 ;) </param>
         /// <returns> 返回处理完毕的byte[] </returns>
-        public static byte[] ByteCut(byte[] bytes, byte cut = 0x00)
+        public static byte[] ByteCut(IEnumerable<byte> bytes, byte cut = 0x00)
         {
             List<byte> list = new(bytes);
-            for (int i = list.Count - 1; i >= 0; i--)
+            for (var i = list.Count - 1; i >= 0; i--)
             {
                 if (list[i] == cut)
                     list.RemoveAt(i);
             }
-            byte[] lastbyte = new byte[list.Count];
-            for (int i = 0; i < list.Count; i++)
+
+            var lastbyte = new byte[list.Count];
+            for (var i = 0; i < list.Count; i++)
             {
                 lastbyte[i] = list[i];
             }
+
             return lastbyte;
         }
     }
