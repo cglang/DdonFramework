@@ -50,7 +50,7 @@ namespace Ddon.Core.Use.Socket
             Task.Run(Function);
         }
 
-        private async Task Function()
+        private async void Function()
         {
             while (true)
             {
@@ -67,10 +67,12 @@ namespace Ddon.Core.Use.Socket
             }
         }
 
-        private static readonly Func<DdonSocketCore, DdonSocketException, Task>? DefaultExceptionHandler = (conn, ex) =>
+        private static readonly Func<DdonSocketCore, DdonSocketException, Task>? DefaultExceptionHandler = (_, ex) =>
         {
             DdonSocketStorage.Remove(ex.SocketId);
+#if DEBUG
             Console.WriteLine($"移除一个：{ex.SocketId}");
+#endif
             return Task.CompletedTask;
         };
     }
