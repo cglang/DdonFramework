@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyVersion>$(Version)</AssemblyVersion>
+        <FileVersion>$(Version)</FileVersion>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageIcon>icon.nuget.jpg</PackageIcon>
+    </PropertyGroup>
+
+    <Import Project="../../common.props" />
+	
+    <ItemGroup>
+        <ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
+    </ItemGroup>
+	
+    <ItemGroup>
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.23.1" />
+    </ItemGroup>
+
+</Project>

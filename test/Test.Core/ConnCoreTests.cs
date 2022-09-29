@@ -1,11 +1,11 @@
-using Ddon.Core.Use.Socket;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Ddon.Core.Use.Socket;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Test.Ddon.Socket
+namespace Test.Core
 {
     [TestClass]
     public class ConnCoreTests
