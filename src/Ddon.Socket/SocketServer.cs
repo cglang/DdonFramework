@@ -57,7 +57,7 @@ namespace Ddon.Socket
 
         private Func<DdonSocketCore, DdonSocketException, Task> ExceptionHandler => async (conn, ex) =>
         {
-            Logger?.LogWarning(ex, $"Scoket 客户端断开:{ex.SocketId}");
+            Logger?.LogWarning(ex, "Scoket 客户端断开:{0}", ex.SocketId);
 
             SocketStorage.Remove(ex.SocketId);
 
@@ -76,7 +76,7 @@ namespace Ddon.Socket
         {
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();
-            return new SocketServer(serviceProvider, "127.0.0.1", post);
+            return new SocketServer(serviceProvider, "0.0.0.0", post);
         }
     }
 }

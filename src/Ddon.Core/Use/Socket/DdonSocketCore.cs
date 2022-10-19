@@ -130,7 +130,7 @@ namespace Ddon.Core.Use.Socket
 
         public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task>? byteHandler)
         {
-            this._byteHandler += byteHandler;
+            _byteHandler += byteHandler;
             return this;
         }
 
