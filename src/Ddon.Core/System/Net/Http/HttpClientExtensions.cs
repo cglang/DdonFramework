@@ -114,7 +114,7 @@ namespace Ddon.Core.System.Net.Http
         }
     }
 
-    public abstract class HttpKeyValue : Collection<KeyValuePair<string, string>>
+    public class HttpKeyValue : Collection<KeyValuePair<string, string>>
     {
         public string GetStringQueryData()
         {
