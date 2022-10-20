@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
 {
-    public class SocketSession
+    public class SocketSession : IDisposable
     {
         public DdonSocketCore Conn { get; }
 
@@ -37,14 +37,14 @@ namespace Ddon.Socket.Session
             var id = info.Head.Id;
             if (pairs.ContainsKey(id))
             {
-                var res = JsonSerializer.Deserialize<DdonSocketResponse<object>>(info.Data);
+                var res = DdonSocketCore.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
 
                 if (res != null)
                 {
                     if (res.Code == DdonSocketResponseCode.OK)
-                        pairs[id].ActionThen?.Invoke(JsonSerializer.Serialize(res.Data));
+                        pairs[id].ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
                     else if (res.Code == DdonSocketResponseCode.Error)
-                        pairs[id].ExceptionThen?.Invoke(JsonSerializer.Serialize(res.Data));
+                        pairs[id].ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
                 }
 
                 pairs[id].ExceptionThen?.Invoke("响应数据错误");
@@ -56,7 +56,7 @@ namespace Ddon.Socket.Session
             var headBytes = DdonArray.ByteCut(bytes[0..DdonSocketConst.HeadLength]);
             var dataBytes = bytes[DdonSocketConst.HeadLength..];
 
-            var head = JsonSerializer.Deserialize<DdonSocketRequest>(Encoding.UTF8.GetString(headBytes)) ?? throw new Exception("消息中不包含消息头");
+            var head = DdonSocketCore.JsonDeserialize<DdonSocketRequest>(Encoding.UTF8.GetString(headBytes)) ?? throw new Exception("消息中不包含消息头");
             if (head.Mode == DdonSocketMode.Response)
             {
                 var textData = Encoding.UTF8.GetString(dataBytes);
@@ -70,12 +70,12 @@ namespace Ddon.Socket.Session
             if (head.Mode == DdonSocketMode.String)
             {
                 var data = Encoding.UTF8.GetString(dataBytes);
-                await SocketInvoke.IvnvokeAsync(route.Value, data, this, head);
+                await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, data, this, head);
             }
             else if (head.Mode == DdonSocketMode.Byte)
             {
                 var data = Encoding.UTF8.GetString(dataBytes);
-                await SocketInvoke.IvnvokeAsync(route.Value, data, this, head);
+                await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, data, this, head);
             }
             else if (head.Mode == DdonSocketMode.File)
             {
@@ -85,7 +85,7 @@ namespace Ddon.Socket.Session
                 if (head.IsEnd)
                 {
                     var jsonData = Encoding.UTF8.GetString(dataBytes);
-                    var fileinfo = JsonSerializer.Deserialize<DdonSocketFileInfo>(jsonData);
+                    var fileinfo = DdonSocketCore.JsonDeserialize<DdonSocketFileInfo>(jsonData);
 
                     Directory.CreateDirectory(filePath);
 
@@ -102,7 +102,7 @@ namespace Ddon.Socket.Session
 
                     Directory.Delete(tmpPath, true);
 
-                    await SocketInvoke.IvnvokeAsync(route.Value, "", this, head);
+                    await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, "", this, head);
                 }
                 else
                 {
@@ -118,13 +118,13 @@ namespace Ddon.Socket.Session
             else if (head.Mode == DdonSocketMode.Request)
             {
                 var jsonData = Encoding.UTF8.GetString(dataBytes);
-                var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value, jsonData, this, head);
+                var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, jsonData, this, head);
 
-                var responseData = new DdonSocketResponse<dynamic>(DdonSocketResponseCode.OK, methodReturn);
-                var methodReturnJsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(responseData));
+                var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
+                var methodReturnJsonBytes = DdonSocketCore.JsonSerialize(responseData).GetBytes();
                 var responseHeadBytes = head.Response().GetBytes();
 
-                var sendBytes = DdonArray.MergeArrays(responseHeadBytes, methodReturnJsonBytes, DdonSocketConst.HeadLength);
+                DdonArray.MergeArrays(out var sendBytes, responseHeadBytes, methodReturnJsonBytes, DdonSocketConst.HeadLength);
                 await Conn.SendBytesAsync(sendBytes);
             }
         };
@@ -138,10 +138,33 @@ namespace Ddon.Socket.Session
         public async Task SendAsync(string route, object data)
         {
             var requetBytes = new DdonSocketRequest(default, DdonSocketMode.String, route).GetBytes();
-            var json = JsonSerializer.Serialize(data);
-            var dataBytes = Encoding.UTF8.GetBytes(json);
-            byte[] contentBytes = DdonArray.MergeArrays(requetBytes, dataBytes, DdonSocketConst.HeadLength);
+            var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
+            DdonArray.MergeArrays(out byte[] contentBytes, requetBytes, dataBytes, DdonSocketConst.HeadLength);
             await Conn.SendBytesAsync(contentBytes);
+        }
+
+        /// <summary>
+        /// 异步请求等待结果
+        /// </summary>
+        /// <param name="route">路由</param>
+        /// <param name="data">数据</param>
+        /// <returns></returns>
+        /// <exception cref="DdonSocketRequestException">请求超时异样</exception>
+        public async Task<string> RequestAsync(string route, object data)
+        {
+            var taskCompletion = new TaskCompletionSource<string>();
+
+            var id = Guid.NewGuid();
+            var response = new DdonSocketResponseHandler(id);
+            response.Then(info => { taskCompletion.SetResult(info); });
+            response.Exception(info => { taskCompletion.SetException(new DdonSocketRequestException()); });
+
+            var requetBytes = new DdonSocketRequest(id, DdonSocketMode.Request, route).GetBytes();
+            var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
+            DdonArray.MergeArrays(out var contentBytes, requetBytes, dataBytes, DdonSocketConst.HeadLength);
+            await Conn.SendBytesAsync(contentBytes);
+
+            return await taskCompletion.Task;
         }
 
         /// <summary>
@@ -153,22 +176,8 @@ namespace Ddon.Socket.Session
         /// <exception cref="DdonSocketRequestException">请求超时异样</exception>
         public async Task<T?> RequestAsync<T>(string route, object data)
         {
-            var taskCompletion = new TaskCompletionSource<string>();
-
-            var id = Guid.NewGuid();
-            var response = new DdonSocketResponseBody(id);
-            response.Then(info => { taskCompletion.SetResult(info); })
-                .Exception(info => { taskCompletion.SetException(new DdonSocketRequestException()); });
-
-            var requetBytes = new DdonSocketRequest(id, DdonSocketMode.Request, route).GetBytes();
-            var json = JsonSerializer.Serialize(data);
-            var dataBytes = Encoding.UTF8.GetBytes(json);
-            byte[] contentBytes = DdonArray.MergeArrays(requetBytes, dataBytes, DdonSocketConst.HeadLength);
-            await Conn.SendBytesAsync(contentBytes);
-
-            var result = await taskCompletion.Task;
-
-            return JsonSerializer.Deserialize<T>(result);
+            var resData = await RequestAsync(route, data);
+            return DdonSocketCore.JsonDeserialize<T>(resData);
         }
 
         public async Task SendFileAsync(string route, string filePath)
@@ -190,7 +199,7 @@ namespace Ddon.Socket.Session
                 }
                 requetBytes = request.CountAddOne().GetBytes();
 
-                var cb = DdonArray.MergeArrays(requetBytes, bytes, DdonSocketConst.HeadLength);
+                DdonArray.MergeArrays(out var cb, requetBytes, bytes, DdonSocketConst.HeadLength);
                 await Conn.SendBytesAsync(cb);
             }
 
@@ -201,9 +210,15 @@ namespace Ddon.Socket.Session
                 FileSize = source.Length
             };
 
-            var filbytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(fileinfo));
-            var contentBytes = DdonArray.MergeArrays(requetBytes, filbytes, DdonSocketConst.HeadLength);
+            var filbytes = DdonSocketCore.JsonSerialize(fileinfo).GetBytes();
+            DdonArray.MergeArrays(out var contentBytes, requetBytes, filbytes, DdonSocketConst.HeadLength);
             await Conn.SendBytesAsync(contentBytes);
+        }
+
+        public void Dispose()
+        {
+            Conn.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

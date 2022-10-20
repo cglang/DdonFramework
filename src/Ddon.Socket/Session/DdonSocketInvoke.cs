@@ -17,15 +17,6 @@ namespace Ddon.Socket.Session
         }
 
         public async Task<dynamic?> IvnvokeAsync(
-            (string, string) methodinfo,
-            string parameter,
-            SocketSession connection,
-            DdonSocketRequest head)
-        {
-            return await IvnvokeAsync(methodinfo.Item1, methodinfo.Item2, parameter, connection, head);
-        }
-
-        public async Task<dynamic?> IvnvokeAsync(
             string className,
             string methodName,
             string parameter,

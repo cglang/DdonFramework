@@ -14,24 +14,24 @@ namespace Ddon.Socket.Session
         private static readonly object _lock = new();
         private static DdonSocketResponsePool? obj;
 
-        public readonly Dictionary<Guid, DdonSocketResponseBody> Pairs = new();
+        public readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs = new();
 
         private DdonSocketResponsePool()
         {
-            STimer timer = new() { Enabled = true, Interval = 10000 };
-            timer.Elapsed += (_, _) =>
-            {
-                lock (_lock)
-                {
-                    var removeIds = Pairs.Values.Where(x => x.Time.AddMinutes(5) < DateTime.Now).Select(x => x.Id);
-                    Parallel.ForEach(removeIds, id =>
-                    {
-                        Pairs[id].ExceptionThen?.Invoke(string.Empty);
-                        Pairs.Remove(id);
-                    });
-                }
-            };
-            timer.Start();
+            //STimer timer = new() { Enabled = true, Interval = 10000 };
+            //timer.Elapsed += (_, _) =>
+            //{
+            //    lock (_lock)
+            //    {
+            //        var removeIds = Pairs.Values.Where(x => x.Time.AddSeconds(10) < DateTime.Now).Select(x => x.Id);
+            //        Parallel.ForEach(removeIds, id =>
+            //        {
+            //            Pairs.Remove(id);
+            //            Pairs[id].ExceptionThen?.Invoke(string.Empty);
+            //        });
+            //    }
+            //};
+            //timer.Start();
         }
 
         public static DdonSocketResponsePool GetInstance()
@@ -41,7 +41,7 @@ namespace Ddon.Socket.Session
             return obj;
         }
 
-        public void Add(Guid id, DdonSocketResponseBody response)
+        public void Add(Guid id, DdonSocketResponseHandler response)
         {
             Pairs.Add(id, response);
         }

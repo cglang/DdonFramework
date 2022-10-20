@@ -11,11 +11,11 @@ namespace Ddon.Core.Use
         /// </summary>
         /// <param name="arrays"></param>
         /// <returns></returns>
-        public static byte[] MergeArrays(params byte[][] arrays)
+        public static void MergeArrays(out byte[] contentBytes, params byte[][] arrays)
         {
             var arrayLength = arrays.Sum(array => array.Length);
 
-            var contentBytes = new byte[arrayLength];
+            contentBytes = new byte[arrayLength];
 
             var startIndex = 0;
             foreach (var array in arrays)
@@ -23,24 +23,22 @@ namespace Ddon.Core.Use
                 Array.Copy(array, 0, contentBytes, startIndex, array.Length);
                 startIndex += array.Length;
             }
-            return contentBytes;
         }
 
         /// <summary>
-        /// 合并两个byte[]，
+        /// 合并两个byte[]
         /// </summary>
         /// <param name="array1"></param>
         /// <param name="array2"></param>
         /// <param name="array1Length">指定多少数组之后再合并array2，中间使用0补位</param>
         /// <returns></returns>
-        public static byte[] MergeArrays(byte[] array1, byte[] array2, int array1Length = default)
+        public static void MergeArrays(out byte[] contentBytes, byte[] array1, byte[] array2, int array1Length = default)
         {
             if (array1Length == default) array1Length = array1.Length;
 
-            var contentBytes = new byte[array1Length + array2.Length];
+            contentBytes = new byte[array1Length + array2.Length];
             Array.Copy(array1, contentBytes, array1.Length);
             Array.Copy(array2, 0, contentBytes, array1Length, array2.Length);
-            return contentBytes;
         }
 
         /// <summary>

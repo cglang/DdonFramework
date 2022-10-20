@@ -117,7 +117,7 @@ namespace Ddon.Core.Use.Reflection
         /// <param name="instance">类的对象</param>
         /// <param name="method">方法元数据</param>
         /// <param name="parameter">参数列表</param>
-        /// <returns>当方法返回值为 viod 或 Task 时，返回 null</returns>
+        /// <returns>当方法返回值为 void 或 Task 时，返回 null</returns>
         public static async Task<dynamic?> InvokeAsync(object? instance, MethodInfo method, params object[] parameter)
         {
             dynamic? invokeResult = method.Invoke(instance, parameter);

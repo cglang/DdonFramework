@@ -3,8 +3,10 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace Ddon.Core.Use.Socket
@@ -57,21 +59,22 @@ namespace Ddon.Core.Use.Socket
             {
                 while (true)
                 {
-                    var lengthBytes = await _stream.ReadLengthBytesAsync(sizeof(int) + sizeof(byte));
+                    var headBytes = await _stream.ReadLengthBytesAsync(sizeof(int) + sizeof(byte));
 
-                    var length = BitConverter.ToInt32(lengthBytes[..sizeof(int)]);
+                    var length = BitConverter.ToInt32(headBytes.AsSpan()[..sizeof(int)]);
                     if (length == 0) throw new Exception("Socket 连接已断开");
 
                     var initialBytes = await _stream.ReadLengthBytesAsync(length);
-                    var type = lengthBytes[sizeof(int)];
+
+                    var type = headBytes[sizeof(int)];
+
                     if (_byteHandler != null && type == Byte)
                     {
                         await _byteHandler(this, initialBytes);
                     }
                     else if (_stringHandler != null && type == Text)
                     {
-                        var data = Encoding.UTF8.GetString(initialBytes);
-                        await _stringHandler(this, data);
+                        await _stringHandler(this, Encoding.UTF8.GetString(initialBytes));
                     }
                 }
             }
@@ -96,8 +99,8 @@ namespace Ddon.Core.Use.Socket
         {
             var typeByte = new[] { type };
             var lengthByte = BitConverter.GetBytes(data.Length);
-            var contentBytes = DdonArray.MergeArrays(lengthByte, typeByte, data);
 
+            DdonArray.MergeArrays(out byte[] contentBytes, lengthByte, typeByte, data);
             await _stream.WriteAsync(contentBytes);
             return data.Length;
         }
@@ -109,8 +112,7 @@ namespace Ddon.Core.Use.Socket
         /// <returns>发送的数据字节长度</returns>
         public async Task<int> SendStringAsync(string data)
         {
-            var dataBytes = Encoding.UTF8.GetBytes(data);
-            return await SendBytesAsync(dataBytes, Text);
+            return await SendBytesAsync(data.GetBytes(), Text);
         }
 
         /// <summary>
@@ -120,12 +122,7 @@ namespace Ddon.Core.Use.Socket
         /// <returns>发送的数据字节长度</returns>
         public async Task<int> SendJsonAsync<TData>(TData data)
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.IgnoreCycles
-            };
-            return await SendStringAsync(JsonSerializer.Serialize(data, options));
+            return await SendStringAsync(JsonSerialize(data));
         }
 
         public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task>? byteHandler)
@@ -151,6 +148,23 @@ namespace Ddon.Core.Use.Socket
             _tcpClient.Close();
             _tcpClient.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        private static readonly JsonSerializerOptions options = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
+        };
+
+        public static string JsonSerialize<T>(T data)
+        {
+            return JsonSerializer.Serialize(data, options);
+        }
+
+        public static T? JsonDeserialize<T>(string data)
+        {
+            return JsonSerializer.Deserialize<T>(data, options);
         }
     }
 }
