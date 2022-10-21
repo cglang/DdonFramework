@@ -1,4 +1,5 @@
 using Ddon.Socket;
+using Ddon.Socket.Hosting;
 using Test.WebApplication.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +20,22 @@ builder.Services.AddTransient<OpenSocketApi>();
 
 var app = builder.Build();
 
-SocketServer.CreateServer(app.Services, 2222).Start();
+var socketBuilder = SocketApplication.CreateBuilder(args, app.Services);
+socketBuilder.Configure(config =>
+{
+    config.SetListenerInfo(2222);
+    config.AddExceptionHandler(async (a, b) =>
+    {
+        Console.WriteLine("出现了异常");
+        await Task.CompletedTask;
+    });
+    config.AddSocketAccessHandler(async (a, b) =>
+    {
+        Console.WriteLine($"客户端接入{a.SocketId}");
+        await Task.CompletedTask;
+    });
+});
+socketBuilder.Build().Run();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
