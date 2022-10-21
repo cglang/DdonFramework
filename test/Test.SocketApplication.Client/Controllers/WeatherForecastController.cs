@@ -20,15 +20,30 @@ namespace Test.SocketApplication.Client.Controllers
         [HttpGet("Get")]
         public async Task<IEnumerable<int>> Get()
         {
-            var route = "OpenSocketApi::GetAnalysisByDayAsync";
-            var data = new { Count = 10 };
+            var route = "OpenSocketApi::GetTopSummariesWeekAsync";
+            var data = new { Count = 20 };
             var json = JsonSerializer.Serialize(data);
 
-            var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
+            using var client = SocketClient.CreateClient(_serviceProvider, "47.105.149.144", 10005);
 
-            var aaa = await client.RequestAsync<object>(route, data);
+            var aaa = await client.RequestAsync(route, data);
+            //Console.WriteLine(aaa);
 
-            Console.WriteLine(JsonSerializer.Serialize(aaa));
+            return Enumerable.Range(1, 5);
+        }
+
+        [HttpGet("GetAnalysisByDayAsync")]
+        public async Task<IEnumerable<int>> GetGetAnalysisByDayAsync()
+        {
+            var route = "OpenSocketApi::GetAnalysisByDayAsync";
+            var data = new { Count = 1000 };
+            var json = JsonSerializer.Serialize(data);
+
+            using var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
+
+            var aaa = await client.RequestAsync(route, data);
+            //Console.WriteLine(aaa);
+            Console.WriteLine(1);
 
             return Enumerable.Range(1, 5);
         }

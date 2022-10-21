@@ -17,25 +17,22 @@ namespace Test.Core
         public async Task CoreBaseTest()
         {
             var result = string.Empty;
-
-            var listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 5356);
-            listener.Start();
-            _ = Task.Run(() =>
-            {
-                var client = listener.AcceptTcpClient();
-                DdonSocketCore core = new(client, async (a, b) =>
+            DdonSocket.CreateServer("127.0.0.1", 5356)
+                .StringHandler(async (a, b) =>
+                {
+                    await Task.CompletedTask;
+                    result = b;
+                })
+                .ByteHandler(async (a, b) =>
                 {
                     await Task.CompletedTask;
                     result = Encoding.UTF8.GetString(b);
-                });
-            });
+                })
+                .Start();
 
-            var tcpClient = new TcpClient("127.0.0.1", 5356);
-            DdonSocketCore core = new(tcpClient, async (a, b) =>
-            {
-                await Task.CompletedTask;
-            });
-            string sendData = "test text";
+            var core = DdonSocket.CreateClient("127.0.0.1", 5356);
+
+            string sendData = "test texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest text";
             await core.SendStringAsync(sendData);
             await Task.Delay(100);
             Assert.AreEqual(sendData, result);
