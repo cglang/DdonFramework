@@ -18,18 +18,18 @@ namespace Ddon.Socket.Session
 
         private DdonSocketResponsePool()
         {
+            //TODO: 超时请求处理
+            //TODO: 超时移除应该用延时队列来做
+
             //STimer timer = new() { Enabled = true, Interval = 10000 };
             //timer.Elapsed += (_, _) =>
             //{
-            //    lock (_lock)
+            //    var removeIds = Pairs.Values.Where(x => x.Time.AddSeconds(10) < DateTime.Now).Select(x => x.Id);
+            //    Parallel.ForEach(removeIds, id =>
             //    {
-            //        var removeIds = Pairs.Values.Where(x => x.Time.AddSeconds(10) < DateTime.Now).Select(x => x.Id);
-            //        Parallel.ForEach(removeIds, id =>
-            //        {
-            //            Pairs.Remove(id);
-            //            Pairs[id].ExceptionThen?.Invoke(string.Empty);
-            //        });
-            //    }
+            //        Pairs.Remove(id);
+            //        Pairs[id].ExceptionThen?.Invoke(string.Empty);
+            //    });
             //};
             //timer.Start();
         }
@@ -39,11 +39,6 @@ namespace Ddon.Socket.Session
             if (obj != null) return obj;
             lock (_lock) obj ??= new DdonSocketResponsePool();
             return obj;
-        }
-
-        public void Add(Guid id, DdonSocketResponseHandler response)
-        {
-            Pairs.Add(id, response);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.IO
@@ -37,6 +38,7 @@ namespace System.IO
                 var readLength = stream.Read(buffer, 0, bufferSize);
                 Array.Copy(buffer, 0, data, index, readLength);
                 index += readLength;
+                if (bufferSize != 0 && index == 0) break;
             }
         }
 
@@ -48,21 +50,26 @@ namespace System.IO
         /// <returns></returns>
         public static async Task<byte[]> ReadLengthBytesAsync(this Stream stream, int length)
         {
+            if (length <= 0) throw new ArgumentException("参数 length 必须大于 0");
             var data = new byte[length];
-            var bufferSize = length < BUFFER_SIZE ? length : BUFFER_SIZE;
+
+            int bufferSize = length < BUFFER_SIZE ? length : BUFFER_SIZE;
             var buffer = new byte[bufferSize];
             var index = 0;
-            while (index != length)
+
+            int readLength;
+            do
             {
-                var readLength = await stream.ReadAsync(buffer.AsMemory(0, bufferSize));
+                readLength = await stream.ReadAsync(buffer.AsMemory(0, bufferSize));
                 Array.Copy(buffer, 0, data, index, readLength);
                 index += readLength;
             }
+            while (index != length && readLength != 0);
+
             return data;
         }
 
-        public static async Task<byte[]> ReadAllBytesAsync(this Stream stream,
-            CancellationToken cancellationToken = default)
+        public static async Task<byte[]> ReadAllBytesAsync(this Stream stream, CancellationToken cancellationToken = default)
         {
             using var memoryStream = new MemoryStream();
             if (stream.CanSeek)

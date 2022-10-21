@@ -11,7 +11,6 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
@@ -26,7 +25,7 @@ namespace Ddon.Socket.Session
 
         private static ILogger Logger => ServiceProvider.GetRequiredService<ILogger<SocketSession>>();
 
-        public SocketSession(TcpClient tcpClient, Func<DdonSocketCore, DdonSocketException, Task> exceptionHandler)
+        public SocketSession(TcpClient tcpClient, Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
         {
             Conn = new DdonSocketCore(tcpClient, ByteHandler, exceptionHandler);
         }
