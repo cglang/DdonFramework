@@ -61,7 +61,7 @@ namespace Ddon.Core.Use.Socket
                 {
                     var headBytes = await _stream.ReadLengthBytesAsync(sizeof(int) + sizeof(byte));
 
-                    var length = BitConverter.ToInt32(headBytes.AsSpan()[..sizeof(int)]);
+                    var length = BitConverter.ToInt32(headBytes[..sizeof(int)]);
                     if (length == 0) throw new Exception("Socket 连接已断开");
 
                     var initialBytes = await _stream.ReadLengthBytesAsync(length);
