@@ -35,9 +35,15 @@ namespace Ddon.Socket
 
         private Func<DdonSocketCore, DdonSocketException, Task> ExceptionHandler => async (conn, ex) =>
         {
-            //Console.WriteLine("Scoket 异常");
-            Logger?.LogError(ex, "Scoket 异常");
-            await Task.CompletedTask;
+            if (ex.InnerException is ObjectDisposedException)
+            {
+                Console.WriteLine("连接断开异常");
+            }
+            else
+            {
+                Logger?.LogError(ex, "Scoket 异常");
+                await Task.CompletedTask;
+            }
         };
     }
 

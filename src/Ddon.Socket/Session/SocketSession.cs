@@ -46,8 +46,10 @@ namespace Ddon.Socket.Session
                     else if (res.Code == DdonSocketResponseCode.Error)
                         pairs[id].ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
                 }
+                else
+                    pairs[id].ExceptionThen?.Invoke("响应数据错误");
 
-                pairs[id].ExceptionThen?.Invoke("响应数据错误");
+                pairs.Remove(id);
             }
         }
 
