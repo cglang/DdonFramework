@@ -24,7 +24,7 @@ namespace Test.SocketApplication.Client.Controllers
             var data = new { Count = 20 };
             var json = JsonSerializer.Serialize(data);
 
-            using var client = SocketClient.CreateClient(_serviceProvider, "47.105.149.144", 10005);            
+            using var client = SocketClient.CreateClient(_serviceProvider, "47.105.149.144", 10005);
             var aaa = await client.RequestAsync(route, data);
 
             return Enumerable.Range(1, 5);
