@@ -11,17 +11,17 @@ namespace Ddon.Core.Use.DelayQueue
     /// <typeparam name="T"></typeparam>
     public class DelayQueue<T> where T : class, IDelayItem
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
 
         /// <summary>
         /// 有序列表
         /// </summary>
-        private readonly SortedQueue<T> _sortedList = new SortedQueue<T>();
+        private readonly SortedQueue<T> _sortedList = new();
 
         /// <summary>
         /// 当前排队等待取元素的线程
         /// </summary>
-        private Thread _waitThread = null;
+        private Thread? _waitThread = null;
 
         /// <summary>
         /// 队列当前元素数量

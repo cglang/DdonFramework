@@ -32,23 +32,25 @@ namespace Ddon.Socket.Session
 
         private static void ResponseHandle(DdonSocketPackageInfo<string> info)
         {
-            var pairs = DdonSocketResponsePool.GetInstance().Pairs;
             var id = info.Head.Id;
-            if (pairs.ContainsKey(id))
+            if (DdonSocketResponsePool.ContainsKey(id))
             {
                 var res = DdonSocketCore.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
 
                 if (res != null)
                 {
+                    if (!DdonSocketResponsePool.Get(id).IsCompleted) return;
                     if (res.Code == DdonSocketResponseCode.OK)
-                        pairs[id].ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    {
+                        DdonSocketResponsePool.Get(id).ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    }
                     else if (res.Code == DdonSocketResponseCode.Error)
-                        pairs[id].ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    {
+                        DdonSocketResponsePool.Get(id).ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    }
                 }
-                else
-                    pairs[id].ExceptionThen?.Invoke("响应数据错误");
 
-                pairs.Remove(id);
+                DdonSocketResponsePool.Remove(id);
             }
         }
 
@@ -155,16 +157,14 @@ namespace Ddon.Socket.Session
         {
             var taskCompletion = new TaskCompletionSource<string>();
 
-            var id = Guid.NewGuid();
-            var response = new DdonSocketResponseHandler(id);
-            response.Then(info => { taskCompletion.SetResult(info); });
-            response.Exception(info => { taskCompletion.SetException(new DdonSocketRequestException()); });
+            var response = new DdonSocketResponseHandler((info) => taskCompletion.SetResult(info),
+                (info) => taskCompletion.SetException(new DdonSocketRequestException()));
+            DdonSocketResponsePool.Add(response);
 
-            var requetBytes = new DdonSocketRequest(id, DdonSocketMode.Request, route).GetBytes();
+            var requetBytes = new DdonSocketRequest(response.Id, DdonSocketMode.Request, route).GetBytes();
             var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
             DdonArray.MergeArrays(out var contentBytes, requetBytes, dataBytes, DdonSocketConst.HeadLength);
             await Conn.SendBytesAsync(contentBytes);
-
             return await taskCompletion.Task;
         }
 
