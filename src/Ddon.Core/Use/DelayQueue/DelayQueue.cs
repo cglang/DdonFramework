@@ -156,7 +156,7 @@ namespace Ddon.Core.Use.DelayQueue
         /// 非阻塞获取项
         /// </summary>
         /// <returns></returns>
-        public bool TryTakeNoBlocking(out T item)
+        public bool TryTakeNoBlocking(out T? item)
         {
             lock (_lock)
             {
@@ -175,7 +175,7 @@ namespace Ddon.Core.Use.DelayQueue
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool TryTake(out T item)
+        public bool TryTake(out T? item)
         {
             return TryTake(out item, CancellationToken.None);
         }
@@ -186,7 +186,7 @@ namespace Ddon.Core.Use.DelayQueue
         /// <param name="item"></param>
         /// <param name="cancelToken"></param>
         /// <returns></returns>
-        public bool TryTake(out T item, CancellationToken cancelToken)
+        public bool TryTake(out T? item, CancellationToken cancelToken)
         {
             item = null;
 
@@ -272,7 +272,7 @@ namespace Ddon.Core.Use.DelayQueue
         /// <param name="timeout">该方法执行超时时间，注意，实际超时时间可能大于指定值</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public bool TryTake(out T item, TimeSpan timeout)
+        public bool TryTake(out T? item, TimeSpan timeout)
         {
             return TryTake(out item, timeout, CancellationToken.None);
         }
@@ -285,7 +285,7 @@ namespace Ddon.Core.Use.DelayQueue
         /// <param name="cancelToken"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        public bool TryTake(out T item, TimeSpan timeout, CancellationToken cancelToken)
+        public bool TryTake(out T? item, TimeSpan timeout, CancellationToken cancelToken)
         {
             item = null;
 

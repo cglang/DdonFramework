@@ -40,7 +40,7 @@ namespace Ddon.Core.Use.DelayQueue
             Item = item;
         }
 
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
         {
             if (obj == null)
             {
