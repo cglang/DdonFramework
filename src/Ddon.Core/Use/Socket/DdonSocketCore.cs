@@ -166,5 +166,10 @@ namespace Ddon.Core.Use.Socket
         {
             return JsonSerializer.Deserialize<T>(data, options);
         }
+
+        public static T? JsonDeserialize<T>(byte[] data)
+        {
+            return JsonSerializer.Deserialize<T>(data, options);
+        }
     }
 }

@@ -30,23 +30,26 @@ namespace Ddon.Socket.Session
             Conn = new DdonSocketCore(tcpClient, ByteHandler, exceptionHandler);
         }
 
-        private static void ResponseHandle(DdonSocketPackageInfo<string> info)
+        private static void ResponseHandle(DdonSocketPackageInfo<byte[]> info)
         {
             var id = info.Head.Id;
-            if (DdonSocketResponsePool.ContainsKey(id))
+
+            if (!DdonSocketResponsePool.ContainsKey(id)) return;
+
+            var responseHandle = DdonSocketResponsePool.Get(id);
+            if (!responseHandle.IsCompleted)
             {
                 var res = DdonSocketCore.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
 
                 if (res != null)
                 {
-                    if (!DdonSocketResponsePool.Get(id).IsCompleted) return;
                     if (res.Code == DdonSocketResponseCode.OK)
                     {
-                        DdonSocketResponsePool.Get(id).ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                        responseHandle.ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
                     }
                     else if (res.Code == DdonSocketResponseCode.Error)
                     {
-                        DdonSocketResponsePool.Get(id).ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                        responseHandle.ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
                     }
                 }
 
@@ -59,11 +62,11 @@ namespace Ddon.Socket.Session
             var headBytes = DdonArray.ByteCut(bytes[0..DdonSocketConst.HeadLength]);
             var dataBytes = bytes[DdonSocketConst.HeadLength..];
 
-            var head = DdonSocketCore.JsonDeserialize<DdonSocketRequest>(Encoding.UTF8.GetString(headBytes)) ?? throw new Exception("消息中不包含消息头");
+            var head = DdonSocketCore.JsonDeserialize<DdonSocketRequest>(headBytes) ?? throw new Exception("消息中不包含消息头");
             if (head.Mode == DdonSocketMode.Response)
             {
-                var textData = Encoding.UTF8.GetString(dataBytes);
-                ResponseHandle(new DdonSocketPackageInfo<string>(conn, head, textData));
+                //var textData = Encoding.UTF8.GetString(dataBytes);
+                ResponseHandle(new DdonSocketPackageInfo<byte[]>(conn, head,ref dataBytes));
                 return;
             }
 
