@@ -4,30 +4,19 @@ namespace Ddon.Socket.Session
 {
     internal class DdonSocketResponseHandler
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; } = Guid.NewGuid();
+        public bool IsCompleted { get; private set; }
 
-        public DateTime Time { get; set; }
+        public Action<string> ActionThen;
+        public Action<string> ExceptionThen;
 
-        public Action<string>? ActionThen;
-        public Action<string>? ExceptionThen;
-
-        public DdonSocketResponseHandler(Guid id)
+        public DdonSocketResponseHandler(Action<string> action, Action<string> exception)
         {
-            Id = id;
-            Time = DateTime.Now;
-        }
+            ActionThen = _ => IsCompleted = true;
+            ExceptionThen = _ => IsCompleted = true;
 
-        public DdonSocketResponseHandler Then(Action<string> action)
-        {
-            ActionThen = action;
-            DdonSocketResponsePool.GetInstance().Pairs.Add(Id, this);
-            return this;
-        }
-
-        public DdonSocketResponseHandler Exception(Action<string> action)
-        {
-            ExceptionThen = action;
-            return this;
+            ActionThen += action;
+            ExceptionThen += exception;
         }
     }
 }

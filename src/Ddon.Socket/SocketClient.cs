@@ -37,7 +37,7 @@ namespace Ddon.Socket
         {
             if (ex.InnerException is ObjectDisposedException)
             {
-                Console.WriteLine("连接断开异常");
+                Logger?.LogWarning(ex.InnerException, "远程连接已断开");
             }
             else
             {

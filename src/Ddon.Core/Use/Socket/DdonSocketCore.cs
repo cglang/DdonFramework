@@ -61,7 +61,7 @@ namespace Ddon.Core.Use.Socket
                 {
                     var headBytes = await _stream.ReadLengthBytesAsync(sizeof(int) + sizeof(byte));
 
-                    var length = BitConverter.ToInt32(headBytes[..sizeof(int)]);
+                    var length = BitConverter.ToInt32(headBytes.AsSpan()[..sizeof(int)]);
                     if (length == 0) throw new Exception("Socket 连接已断开");
 
                     var initialBytes = await _stream.ReadLengthBytesAsync(length);
@@ -163,6 +163,11 @@ namespace Ddon.Core.Use.Socket
         }
 
         public static T? JsonDeserialize<T>(string data)
+        {
+            return JsonSerializer.Deserialize<T>(data, options);
+        }
+
+        public static T? JsonDeserialize<T>(byte[] data)
         {
             return JsonSerializer.Deserialize<T>(data, options);
         }

@@ -1,49 +1,62 @@
-﻿using System;
+﻿using Ddon.Core.Use.DelayQueue;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using STimer = System.Timers.Timer;
 
 namespace Ddon.Socket.Session
 {
     /// <summary>
     /// 响应集合
     /// </summary>
-    internal class DdonSocketResponsePool
+    internal static class DdonSocketResponsePool
     {
-        private static readonly object _lock = new();
-        private static DdonSocketResponsePool? obj;
+        private static readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs = new();
 
-        public readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs = new();
+        private static readonly DelayQueue<DelayItem<DdonSocketResponseHandler>> DelayQueue = new();
 
-        private DdonSocketResponsePool()
+        internal static void Add(DdonSocketResponseHandler ddonSocketResponseHandler)
         {
-            //STimer timer = new() { Enabled = true, Interval = 10000 };
-            //timer.Elapsed += (_, _) =>
-            //{
-            //    lock (_lock)
-            //    {
-            //        var removeIds = Pairs.Values.Where(x => x.Time.AddSeconds(10) < DateTime.Now).Select(x => x.Id);
-            //        Parallel.ForEach(removeIds, id =>
-            //        {
-            //            Pairs.Remove(id);
-            //            Pairs[id].ExceptionThen?.Invoke(string.Empty);
-            //        });
-            //    }
-            //};
-            //timer.Start();
+            Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
+            DelayQueue.TryAdd(new(TimeSpan.FromSeconds(1), ddonSocketResponseHandler));
+            Start();
         }
 
-        public static DdonSocketResponsePool GetInstance()
+        internal static bool ContainsKey(Guid id)
         {
-            if (obj != null) return obj;
-            lock (_lock) obj ??= new DdonSocketResponsePool();
-            return obj;
+            return Pairs.ContainsKey(id);
         }
 
-        public void Add(Guid id, DdonSocketResponseHandler response)
+        internal static DdonSocketResponseHandler Get(Guid id)
         {
-            Pairs.Add(id, response);
+            return Pairs[id];
+        }
+
+        internal static void Remove(Guid id)
+        {
+            Pairs.Remove(id);
+        }
+
+        private static bool state = false;
+        private static void Start()
+        {
+            if (state) return;
+            Task.Run(() =>
+            {
+                state = true;
+
+                while (DelayQueue.Count > 0)
+                {
+                    if (DelayQueue.TryTake(out var task))
+                    {
+                        Console.WriteLine("啦啦啦");
+                        if (!task.Item.IsCompleted)
+                            task.Item.ExceptionThen.Invoke("请求超时");
+                    }
+                }
+
+                state = false;
+            });
         }
     }
 }

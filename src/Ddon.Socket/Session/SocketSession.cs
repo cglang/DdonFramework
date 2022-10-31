@@ -11,7 +11,6 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
@@ -26,30 +25,35 @@ namespace Ddon.Socket.Session
 
         private static ILogger Logger => ServiceProvider.GetRequiredService<ILogger<SocketSession>>();
 
-        public SocketSession(TcpClient tcpClient, Func<DdonSocketCore, DdonSocketException, Task> exceptionHandler)
+        public SocketSession(TcpClient tcpClient, Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
         {
             Conn = new DdonSocketCore(tcpClient, ByteHandler, exceptionHandler);
         }
 
-        private static void ResponseHandle(DdonSocketPackageInfo<string> info)
+        private static void ResponseHandle(DdonSocketPackageInfo<byte[]> info)
         {
-            var pairs = DdonSocketResponsePool.GetInstance().Pairs;
             var id = info.Head.Id;
-            if (pairs.ContainsKey(id))
+
+            if (!DdonSocketResponsePool.ContainsKey(id)) return;
+
+            var responseHandle = DdonSocketResponsePool.Get(id);
+            if (!responseHandle.IsCompleted)
             {
                 var res = DdonSocketCore.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
 
                 if (res != null)
                 {
                     if (res.Code == DdonSocketResponseCode.OK)
-                        pairs[id].ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    {
+                        responseHandle.ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    }
                     else if (res.Code == DdonSocketResponseCode.Error)
-                        pairs[id].ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    {
+                        responseHandle.ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                    }
                 }
-                else
-                    pairs[id].ExceptionThen?.Invoke("响应数据错误");
 
-                pairs.Remove(id);
+                DdonSocketResponsePool.Remove(id);
             }
         }
 
@@ -58,11 +62,11 @@ namespace Ddon.Socket.Session
             var headBytes = DdonArray.ByteCut(bytes[0..DdonSocketConst.HeadLength]);
             var dataBytes = bytes[DdonSocketConst.HeadLength..];
 
-            var head = DdonSocketCore.JsonDeserialize<DdonSocketRequest>(Encoding.UTF8.GetString(headBytes)) ?? throw new Exception("消息中不包含消息头");
+            var head = DdonSocketCore.JsonDeserialize<DdonSocketRequest>(headBytes) ?? throw new Exception("消息中不包含消息头");
             if (head.Mode == DdonSocketMode.Response)
             {
-                var textData = Encoding.UTF8.GetString(dataBytes);
-                ResponseHandle(new DdonSocketPackageInfo<string>(conn, head, textData));
+                //var textData = Encoding.UTF8.GetString(dataBytes);
+                ResponseHandle(new DdonSocketPackageInfo<byte[]>(conn, head,ref dataBytes));
                 return;
             }
 
@@ -156,16 +160,14 @@ namespace Ddon.Socket.Session
         {
             var taskCompletion = new TaskCompletionSource<string>();
 
-            var id = Guid.NewGuid();
-            var response = new DdonSocketResponseHandler(id);
-            response.Then(info => { taskCompletion.SetResult(info); });
-            response.Exception(info => { taskCompletion.SetException(new DdonSocketRequestException()); });
+            var response = new DdonSocketResponseHandler((info) => taskCompletion.SetResult(info),
+                (info) => taskCompletion.SetException(new DdonSocketRequestException()));
+            DdonSocketResponsePool.Add(response);
 
-            var requetBytes = new DdonSocketRequest(id, DdonSocketMode.Request, route).GetBytes();
+            var requetBytes = new DdonSocketRequest(response.Id, DdonSocketMode.Request, route).GetBytes();
             var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
             DdonArray.MergeArrays(out var contentBytes, requetBytes, dataBytes, DdonSocketConst.HeadLength);
             await Conn.SendBytesAsync(contentBytes);
-
             return await taskCompletion.Task;
         }
 
