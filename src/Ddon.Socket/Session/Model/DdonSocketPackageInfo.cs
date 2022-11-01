@@ -10,7 +10,7 @@ namespace Ddon.Socket.Session.Model
 
         public TData Data { get; set; }
 
-        public DdonSocketPackageInfo(DdonSocketCore connection, DdonSocketRequest head, TData data)
+        public DdonSocketPackageInfo(DdonSocketCore connection, DdonSocketRequest head,ref TData data)
         {
             Connection = connection;
             Head = head;
