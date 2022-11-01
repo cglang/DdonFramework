@@ -1,9 +1,7 @@
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using Ddon.Core.Use.Socket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Test.Core
 {
@@ -26,7 +24,7 @@ namespace Test.Core
                 .ByteHandler(async (a, b) =>
                 {
                     await Task.CompletedTask;
-                    result = Encoding.UTF8.GetString(b);
+                    result = Encoding.UTF8.GetString(b.Span);
                 })
                 .Start();
 

@@ -13,23 +13,30 @@ namespace Ddon.Core.Use.Socket
 {
     public class DdonSocketCore : IDisposable
     {
-        private const byte Text = 0x0A; // 文本
+        private static class Config
+        {
+            public const byte Text = 0x0A; // 文本
+            public const byte Byte = 0x0B; // 字节流
 
-        private const byte Byte = 0x0B; // 字节流
+            public const int DATA_LENGTH_SIZE = sizeof(int);
+
+            public const int TYPE_LENGTH_SIZE = sizeof(byte);
+
+            public const int HEAD_LENGTH = DATA_LENGTH_SIZE + TYPE_LENGTH_SIZE;
+        }
 
 
         private readonly TcpClient _tcpClient;
         private readonly Stream _stream;
 
-        private Func<DdonSocketCore, byte[], Task>? _byteHandler;
+        private Func<DdonSocketCore, Memory<byte>, Task>? _byteHandler;
         private Func<DdonSocketCore, string, Task>? _stringHandler;
         private Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
 
-        public Guid SocketId { get; }
+        public Guid SocketId { get; } = Guid.NewGuid();
 
         public DdonSocketCore(TcpClient tcpClient)
         {
-            SocketId = Guid.NewGuid();
             _tcpClient = tcpClient;
             _stream = _tcpClient.GetStream();
             ConsecutiveReadStream();
@@ -41,7 +48,7 @@ namespace Ddon.Core.Use.Socket
 
         public DdonSocketCore(
             TcpClient tcpClient,
-            Func<DdonSocketCore, byte[], Task>? byteHandler,
+            Func<DdonSocketCore, Memory<byte>, Task>? byteHandler,
             Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null) : this(tcpClient)
         {
             _byteHandler += byteHandler;
@@ -59,23 +66,15 @@ namespace Ddon.Core.Use.Socket
             {
                 while (true)
                 {
-                    var headBytes = await _stream.ReadLengthBytesAsync(sizeof(int) + sizeof(byte));
+                    var head = await _stream.ReadLengthAsync(Config.HEAD_LENGTH);
 
-                    var length = BitConverter.ToInt32(headBytes.AsSpan()[..sizeof(int)]);
-                    if (length == 0) throw new Exception("Socket 连接已断开");
+                    var dataLength = BitConverter.ToInt32(head.Span[..Config.DATA_LENGTH_SIZE]);
+                    var type = head.Span[Config.DATA_LENGTH_SIZE];
 
-                    var initialBytes = await _stream.ReadLengthBytesAsync(length);
+                    if (dataLength == 0) throw new Exception("Socket 连接已断开");
 
-                    var type = headBytes[sizeof(int)];
-
-                    if (_byteHandler != null && type == Byte)
-                    {
-                        await _byteHandler(this, initialBytes);
-                    }
-                    else if (_stringHandler != null && type == Text)
-                    {
-                        await _stringHandler(this, Encoding.UTF8.GetString(initialBytes));
-                    }
+                    var initial = await _stream.ReadLengthAsync(dataLength);
+                    await InitialHandle(initial, type);
                 }
             }
             catch (Exception ex)
@@ -88,6 +87,18 @@ namespace Ddon.Core.Use.Socket
             }
         }
 
+        private async Task InitialHandle(Memory<byte> data, byte type)
+        {
+            if (_byteHandler != null && type == Config.Byte)
+            {
+                await _byteHandler(this, data);
+            }
+            else if (_stringHandler != null && type == Config.Text)
+            {
+                await _stringHandler(this, Encoding.UTF8.GetString(data.Span));
+            }
+        }
+
 
         /// <summary>
         /// 发送Byte数组
@@ -95,7 +106,7 @@ namespace Ddon.Core.Use.Socket
         /// <param name="data">数据</param>
         /// <param name="type">发送类型</param>
         /// <returns>发送的数据字节长度</returns>
-        public async Task<int> SendBytesAsync(byte[] data, byte type = Byte)
+        public async Task<int> SendBytesAsync(byte[] data, byte type = Config.Byte)
         {
             var typeByte = new[] { type };
             var lengthByte = BitConverter.GetBytes(data.Length);
@@ -112,7 +123,7 @@ namespace Ddon.Core.Use.Socket
         /// <returns>发送的数据字节长度</returns>
         public async Task<int> SendStringAsync(string data)
         {
-            return await SendBytesAsync(data.GetBytes(), Text);
+            return await SendBytesAsync(data.GetBytes(), Config.Text);
         }
 
         /// <summary>
@@ -125,7 +136,7 @@ namespace Ddon.Core.Use.Socket
             return await SendStringAsync(JsonSerialize(data));
         }
 
-        public DdonSocketCore ByteHandler(Func<DdonSocketCore, byte[], Task>? byteHandler)
+        public DdonSocketCore ByteHandler(Func<DdonSocketCore, Memory<byte>, Task>? byteHandler)
         {
             _byteHandler += byteHandler;
             return this;

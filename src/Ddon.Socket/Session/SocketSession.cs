@@ -57,10 +57,10 @@ namespace Ddon.Socket.Session
             }
         }
 
-        private Func<DdonSocketCore, byte[], Task> ByteHandler => async (conn, bytes) =>
+        private Func<DdonSocketCore, Memory<byte>, Task> ByteHandler => async (conn, bytes) =>
         {
-            var headBytes = DdonArray.ByteCut(bytes[0..DdonSocketConst.HeadLength]);
-            var dataBytes = bytes[DdonSocketConst.HeadLength..];
+            var headBytes = DdonArray.ByteCut(bytes.Span[0..DdonSocketConst.HeadLength]);
+            var dataBytes = bytes[DdonSocketConst.HeadLength..].ToArray();
 
             var head = DdonSocketCore.JsonDeserialize<DdonSocketRequest>(headBytes) ?? throw new Exception("消息中不包含消息头");
             if (head.Mode == DdonSocketMode.Response)

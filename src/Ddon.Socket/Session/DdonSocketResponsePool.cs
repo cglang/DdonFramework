@@ -18,7 +18,7 @@ namespace Ddon.Socket.Session
         internal static void Add(DdonSocketResponseHandler ddonSocketResponseHandler)
         {
             Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
-            DelayQueue.TryAdd(new(TimeSpan.FromSeconds(1), ddonSocketResponseHandler));
+            DelayQueue.TryAdd(new(TimeSpan.FromSeconds(100), ddonSocketResponseHandler));
             Start();
         }
 

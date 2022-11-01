@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.IO
@@ -24,48 +23,31 @@ namespace System.IO
         /// 从流中读取指定长度bytes
         /// </summary>
         /// <param name="stream">要读取的流</param>
-        /// <param name="data">数据</param>
         /// <param name="length">读取长度</param>
         /// <returns></returns>
-        public static void ReadLengthBytes(this Stream stream, out byte[] data, int length)
-        {
-            data = new byte[length];
-            var bufferSize = length < BUFFER_SIZE ? length : BUFFER_SIZE;
-            var buffer = new byte[bufferSize];
-            var index = 0;
-            while (index != length)
-            {
-                var readLength = stream.Read(buffer, 0, bufferSize);
-                Array.Copy(buffer, 0, data, index, readLength);
-                index += readLength;
-                if (bufferSize != 0 && index == 0) break;
-            }
-        }
-
-        /// <summary>
-        /// 从流中读取指定长度bytes
-        /// </summary>
-        /// <param name="stream">要读取的流</param>
-        /// <param name="length">读取长度</param>
-        /// <returns></returns>
-        public static async Task<byte[]> ReadLengthBytesAsync(this Stream stream, int length)
+        public static async Task<Memory<byte>> ReadLengthAsync(this Stream stream, int length)
         {
             if (length <= 0) throw new ArgumentException("参数 length 必须大于 0");
-            var data = new byte[length];
 
-            int bufferSize = length < BUFFER_SIZE ? length : BUFFER_SIZE;
-            var buffer = new byte[bufferSize];
+            var data = new byte[length].AsMemory();
+
             var index = 0;
-
-            int readLength;
-            do
+            if (length < BUFFER_SIZE)
             {
-                readLength = await stream.ReadAsync(buffer.AsMemory(0, bufferSize));
-                Array.Copy(buffer, 0, data, index, readLength);
-                index += readLength;
+                await stream.ReadAsync(data.Slice(index, length));
             }
-            while (index != length && readLength != 0);
+            else
+            {
+                var buffsize = BUFFER_SIZE;
+                do
+                {
+                    if (index + buffsize > length) buffsize = length - index;
+                    await stream.ReadAsync(data.Slice(index, buffsize));
 
+                    index += buffsize;
+                }
+                while (index < length);
+            }
             return data;
         }
 
