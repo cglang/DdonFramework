@@ -1,4 +1,5 @@
-using Ddon.Core.Use.DelayQueue;
+//using Ddon.Core.Use.DelayQueue;
+using Ddon.Core.Use.Queue;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Concurrent;
@@ -24,21 +25,22 @@ namespace DelayQueue.UnitTest
             // 添加任务
             var item1 = new DelayItem<Action>(TimeSpan.FromSeconds(5), () => { outputs.Add("50", DateTime.Now); });
             var item2 = new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { outputs.Add("20", DateTime.Now); });
-            delayQueue.TryAdd(item1);
-            delayQueue.TryAdd(item2);
-            delayQueue.TryAdd(item2);
+            delayQueue.Add(item1);
+            delayQueue.Add(item2);
+            delayQueue.Add(item2);
 
-            delayQueue.TryAdd(new DelayItem<Action>(TimeSpan.FromSeconds(12), () => { outputs.Add("120", DateTime.Now); }));
-            delayQueue.TryAdd(new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { outputs.Add("21", DateTime.Now); }));
+            delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(12), () => { outputs.Add("120", DateTime.Now); }));
+            delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { outputs.Add("21", DateTime.Now); }));
 
             Assert.AreEqual(4, delayQueue.Count);
 
             // 获取任务
             while (delayQueue.Count > 0)
             {
-                if (delayQueue.TryTake(out var task))
+                var item = delayQueue.Take(CancellationToken.None);
+                if (item != null)
                 {
-                    task.Item.Invoke();
+                    item.Item.Invoke();
                 }
             }
 
@@ -63,7 +65,7 @@ namespace DelayQueue.UnitTest
             var taskCount = 20;
             for (int i = 0; i < taskCount; i++)
             {
-                delayQueue.TryAdd(new DelayItem<int>(TimeSpan.FromSeconds(i + 2), i));
+                delayQueue.Add(new DelayItem<int>(TimeSpan.FromSeconds(i + 2), i));
             }
 
             Assert.AreEqual(taskCount, delayQueue.Count);
@@ -77,7 +79,8 @@ namespace DelayQueue.UnitTest
                 {
                     while (delayQueue.Count > 0)
                     {
-                        if (delayQueue.TryTake(out var task, TimeSpan.FromSeconds(5)))
+                        var task = delayQueue.Take(CancellationToken.None);
+                        if (task != null)
                         {
                             outputs.TryAdd(task.Item, Thread.CurrentThread.ManagedThreadId);
                         }

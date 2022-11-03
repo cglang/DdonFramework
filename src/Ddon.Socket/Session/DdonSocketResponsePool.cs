@@ -1,7 +1,6 @@
-﻿using Ddon.Core.Use.DelayQueue;
+﻿using Ddon.Core.Use.Queue;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
@@ -18,7 +17,7 @@ namespace Ddon.Socket.Session
         internal static void Add(DdonSocketResponseHandler ddonSocketResponseHandler)
         {
             Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
-            DelayQueue.TryAdd(new(TimeSpan.FromSeconds(100), ddonSocketResponseHandler));
+            DelayQueue.Add(new(TimeSpan.FromSeconds(100), ddonSocketResponseHandler));
             Start();
         }
 
@@ -45,11 +44,11 @@ namespace Ddon.Socket.Session
             {
                 state = true;
 
-                while (DelayQueue.Count > 0)
+                while (DelayQueue.IsEmpty)
                 {
-                    if (DelayQueue.TryTake(out var task))
+                    var task = DelayQueue.Take();
+                    if (task != null)
                     {
-                        Console.WriteLine("啦啦啦");
                         if (!task.Item.IsCompleted)
                             task.Item.ExceptionThen.Invoke("请求超时");
                     }

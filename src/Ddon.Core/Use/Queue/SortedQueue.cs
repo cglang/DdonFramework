@@ -1,35 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Ddon.Core.Use.Queue
 {
     public class SortedQueue<T> : SortedSet<T> where T : class, IDelayItem
     {
-        protected internal readonly object _lock = new();
-
-        public new int Count
-        {
-            get
-            {
-                lock (_lock)
-                {
-                    return Count;
-                }
-            }
-        }
-
         public bool IsEmpty => Count == 0;
 
         public SortedQueue() : base(new SortComparer()) { }
-
-        public T? Peek()
-        {
-            lock (_lock)
-            {
-                return this.FirstOrDefault();
-            }
-        }
 
         private sealed class SortComparer : Comparer<T>
         {

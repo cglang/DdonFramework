@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 
 namespace Ddon.Core.Use.Queue
 {
@@ -10,7 +9,23 @@ namespace Ddon.Core.Use.Queue
         /// </summary>
         public readonly long TimeoutMilliseconds;
 
-        public TimeSpan DelaySpan { get; private set; }
+        public TimeSpan DelaySpan => TimeSpan.FromMilliseconds(Math.Max(TimeoutMilliseconds - GetTimestamp(), 0));
+
+        /// <summary>
+        /// 延时对象
+        /// </summary>
+        public readonly T Item;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="timeoutSpan">过期时间，相对时间</param>
+        /// <param name="item">延时对象</param>
+        public DelayItem(TimeSpan timeoutSpan, T item)
+        {
+            TimeoutMilliseconds = (long)timeoutSpan.TotalMilliseconds + GetTimestamp();
+            Item = item;
+        }
 
         public int CompareTo(object? obj)
         {
@@ -25,6 +40,15 @@ namespace Ddon.Core.Use.Queue
             }
 
             throw new ArgumentException($"Object is not a {nameof(DelayItem<T>)}");
+        }
+
+        /// <summary>
+        /// 获取当前时间戳
+        /// </summary>
+        /// <returns></returns>
+        private long GetTimestamp()
+        {
+            return new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds();
         }
     }
 }

@@ -1,5 +1,6 @@
-﻿using Ddon.Core.Use.DelayQueue;
+﻿using Ddon.Core.Use.Queue;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,21 +21,67 @@ namespace Test.ConsoleApp
             // 添加任务
             var item1 = new DelayItem<Action>(TimeSpan.FromSeconds(5), () => { Console.WriteLine(50); });
             var item2 = new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { Console.WriteLine(20); });
-            delayQueue.TryAdd(item1);
-            delayQueue.TryAdd(item2);
-            delayQueue.TryAdd(item2);
+            delayQueue.Add(item1);
+            delayQueue.Add(item2);
+            delayQueue.Add(item2);
 
-            delayQueue.TryAdd(new DelayItem<Action>(TimeSpan.FromSeconds(8), () => { Console.WriteLine(80); }));
-            delayQueue.TryAdd(new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { Console.WriteLine(20); }));
+            delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(8), () => { Console.WriteLine(80); }));
+            delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { Console.WriteLine(20); }));
 
             // 获取任务
             while (delayQueue.Count > 0)
             {
-                if (delayQueue.TryTake(out var task))
+                var task = delayQueue.Take(CancellationToken.None);
+                if (task != null)
                 {
                     task.Item.Invoke();
                 }
             }
+        }
+
+        public static async Task SRun()
+        {
+            var delayQueue = new DelayQueue<DelayItem<Action>>();
+
+            // 添加任务
+            var taskCount = 20;
+            for (int i = 0; i < taskCount; i++)
+            {
+                delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(i + 2), () => { Console.WriteLine(i); }));
+            }
+
+
+            // 10个线程来消费
+            var outputs = new ConcurrentDictionary<int, int>();
+            var tasks = new List<Task>();
+            for (int i = 0; i < 10; i++)
+            {
+                tasks.Add(Task.Factory.StartNew(() =>
+                {
+                    var g = Guid.NewGuid();
+                    while (delayQueue.Count > 0)
+                    {
+                        var task = delayQueue.Take(CancellationToken.None);
+                        if (task != null)
+                        {
+                            Console.WriteLine("线程:" + g);
+                            task.Item.Invoke();
+                        }
+                    }
+                }, TaskCreationOptions.LongRunning));
+            }
+
+            await Task.WhenAll(tasks);
+
+            var preKey = -1;
+            foreach (var output in outputs)
+            {
+                preKey = output.Key;
+            }
+
+            // 打印每个线程消费的任务数量
+            Console.WriteLine(string.Join(Environment.NewLine,
+                outputs.GroupBy(o => o.Value).Select(g => $"{g.Key}, {g.Count()}")));
         }
     }
 }
