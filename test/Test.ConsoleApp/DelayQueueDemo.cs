@@ -29,7 +29,7 @@ namespace Test.ConsoleApp
             delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { Console.WriteLine(20); }));
 
             // 获取任务
-            while (delayQueue.Count > 0)
+            while (delayQueue.IsEmpty)
             {
                 var task = delayQueue.Take(CancellationToken.None);
                 if (task != null)
@@ -41,13 +41,16 @@ namespace Test.ConsoleApp
 
         public static async Task SRun()
         {
-            var delayQueue = new DelayQueue<DelayItem<Action>>();
+            var delayQueue = new DelayQueue<DelayItem<Action<int>>>();
 
             // 添加任务
-            var taskCount = 20;
+            var taskCount = 5;
             for (int i = 0; i < taskCount; i++)
             {
-                delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(i + 2), () => { Console.WriteLine(i); }));
+                delayQueue.Add(new DelayItem<Action<int>>(TimeSpan.FromSeconds(i + 2), (aa) =>
+                {
+                    Console.WriteLine(aa);
+                }));
             }
 
 
@@ -56,7 +59,7 @@ namespace Test.ConsoleApp
             var tasks = new List<Task>();
             for (int i = 0; i < 10; i++)
             {
-                tasks.Add(Task.Factory.StartNew(() =>
+                tasks.Add(Task.Run(() =>
                 {
                     var g = Guid.NewGuid();
                     while (delayQueue.Count > 0)
@@ -65,10 +68,10 @@ namespace Test.ConsoleApp
                         if (task != null)
                         {
                             Console.WriteLine("线程:" + g);
-                            task.Item.Invoke();
+                            task.Item.Invoke(task.GetHashCode());
                         }
                     }
-                }, TaskCreationOptions.LongRunning));
+                }));
             }
 
             await Task.WhenAll(tasks);

@@ -40,7 +40,7 @@ namespace Ddon.Core.Use.Queue
             {
                 while (!cancelToken.Value.IsCancellationRequested)
                 {
-                    if (!this.Any()) return item;
+                    if (!this.Any()) return null;
 
                     item = this.First();
 
