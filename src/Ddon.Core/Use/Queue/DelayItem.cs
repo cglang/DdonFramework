@@ -1,17 +1,15 @@
-﻿using Ddon.Core.Use.DelayQueue.Interfaces;
-using System;
+﻿using System;
 
-namespace Ddon.Core.Use.DelayQueue
+namespace Ddon.Core.Use.Queue
 {
-    /// <summary>
-    /// 默认延时对象
-    /// </summary>
     public class DelayItem<T> : IDelayItem
     {
         /// <summary>
         /// 过期时间戳，绝对时间
         /// </summary>
-        public readonly long TimeoutMs;
+        public readonly long TimeoutMilliseconds;
+
+        public TimeSpan DelaySpan => TimeSpan.FromMilliseconds(Math.Max(TimeoutMilliseconds - GetTimestamp(), 0));
 
         /// <summary>
         /// 延时对象
@@ -25,22 +23,11 @@ namespace Ddon.Core.Use.DelayQueue
         /// <param name="item">延时对象</param>
         public DelayItem(TimeSpan timeoutSpan, T item)
         {
-            TimeoutMs = (long)timeoutSpan.TotalMilliseconds + GetTimestamp();
+            TimeoutMilliseconds = (long)timeoutSpan.TotalMilliseconds + GetTimestamp();
             Item = item;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeoutMs">过期时间戳，绝对时间</param>
-        /// <param name="item">延时对象</param>
-        public DelayItem(long timeoutMs, T item)
-        {
-            TimeoutMs = timeoutMs;
-            Item = item;
-        }
-
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
         {
             if (obj == null)
             {
@@ -49,16 +36,10 @@ namespace Ddon.Core.Use.DelayQueue
 
             if (obj is DelayItem<T> value)
             {
-                return TimeoutMs.CompareTo(value.TimeoutMs);
+                return TimeoutMilliseconds.CompareTo(value.TimeoutMilliseconds);
             }
 
             throw new ArgumentException($"Object is not a {nameof(DelayItem<T>)}");
-        }
-
-        public TimeSpan GetDelaySpan()
-        {
-            var delayMs = Math.Max(TimeoutMs - GetTimestamp(), 0);
-            return TimeSpan.FromMilliseconds(delayMs);
         }
 
         /// <summary>

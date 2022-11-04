@@ -1,6 +1,8 @@
 ﻿using Test.ConsoleApp;
 
-DelayQueueDemo.Run();
+//DelayQueueDemo.Run();
+
+await DelayQueueDemo.SRun();
 
 
 Console.WriteLine("=======结束=======");

@@ -47,9 +47,10 @@ namespace Ddon.Core.Use
         /// <param name="bytes"> 需要处理的byte[]</param>
         /// <param name="cut">byte[] 中需要除去的特定 byte (此处: byte cut = 0x00 ;) </param>
         /// <returns> 返回处理完毕的byte[] </returns>
-        public static byte[] ByteCut(IEnumerable<byte> bytes, byte cut = 0x00)
+        public static byte[] ByteCut(Span<byte> bytes, byte cut = 0x00)
         {
-            List<byte> list = new(bytes);
+            // TODO : 优化
+            List<byte> list = new(bytes.ToArray());
             for (var i = list.Count - 1; i >= 0; i--)
             {
                 if (list[i] == cut)

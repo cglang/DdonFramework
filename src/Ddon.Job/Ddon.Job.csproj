@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
@@ -12,8 +12,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 		<ProjectReference Include="..\Ddon.EventBus.Memory\Ddon.EventBus.Memory.csproj" />
-		<ProjectReference Include="..\Ddon.EventBus\Ddon.EventBus.csproj" />
-		<ProjectReference Include="..\Ddon.KeyValueStorage\Ddon.KeyValueStorage.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

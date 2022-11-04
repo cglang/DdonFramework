@@ -11,7 +11,7 @@ namespace Ddon.Core.Use.Socket
         private readonly TcpListener _listener;
 
         private Func<DdonSocketCore, Task>? _connectHandler;
-        private Func<DdonSocketCore, byte[], Task>? _byteHandler;
+        private Func<DdonSocketCore, Memory<byte>, Task>? _byteHandler;
         private Func<DdonSocketCore, string, Task>? _stringHandler;
         private Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
 
@@ -20,7 +20,7 @@ namespace Ddon.Core.Use.Socket
             _listener = new TcpListener(IPAddress.Parse(host), port);
         }
 
-        public DdonSocketServer ByteHandler(Func<DdonSocketCore, byte[], Task>? byteHandler)
+        public DdonSocketServer ByteHandler(Func<DdonSocketCore, Memory<byte>, Task>? byteHandler)
         {
             _byteHandler = byteHandler;
             return this;

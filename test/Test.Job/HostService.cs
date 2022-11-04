@@ -48,9 +48,9 @@ namespace Test
             //}
 
 
-            var aaa = await _missionManager.GetAllAsync();
-            var aa = aaa.FirstOrDefault();
-            Console.WriteLine(aa!.State);
+            //var aaa = await _missionManager.GetAllAsync();
+            //var aa = aaa.FirstOrDefault();
+            //Console.WriteLine(aa!.State);
 
             await Task.CompletedTask;
         }

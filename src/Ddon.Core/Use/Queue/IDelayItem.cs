@@ -1,16 +1,13 @@
 ﻿using System;
 
-namespace Ddon.Core.Use.DelayQueue.Interfaces
+namespace Ddon.Core.Use.Queue
 {
-    /// <summary>
-    /// 延时队列任务项
-    /// </summary>
     public interface IDelayItem : IComparable
     {
         /// <summary>
         /// 获取剩余延时
         /// </summary>
         /// <returns></returns>
-        TimeSpan GetDelaySpan();
+        public TimeSpan DelaySpan { get; }
     }
 }

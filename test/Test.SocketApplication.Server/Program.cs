@@ -26,7 +26,7 @@ socketBuilder.Configure(config =>
     config.SetListenerInfo(2222);
     config.AddExceptionHandler(async (a, b) =>
     {
-        Console.WriteLine("出现了异常");
+        Console.WriteLine($"出现了异常:{b.Message}");
         await Task.CompletedTask;
     });
     config.AddSocketAccessHandler(async (a, b) =>
