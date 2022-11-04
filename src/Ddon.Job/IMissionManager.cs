@@ -16,10 +16,6 @@ namespace Ddon.Job
 
         Task RemoveRangeAsync(IEnumerable<Guid> missionIds);
 
-        Task UpdateAsync(Mission mission);
-
-        Task UpdateRangeAsync(IEnumerable<Mission> missions);
-
         Task<Mission?> GetAsync(Guid missionId);
 
         Task<IEnumerable<Mission>> GetRangeAsync(IEnumerable<Guid> missionIds);

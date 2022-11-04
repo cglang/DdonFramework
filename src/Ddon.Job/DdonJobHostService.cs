@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Ddon.Core.Services.LazyService.Static;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.Core.Services.LazyService.Static;
-using Ddon.KeyValueStorage;
-using Microsoft.Extensions.Hosting;
 
 namespace Ddon.Job
 {
@@ -25,17 +25,22 @@ namespace Ddon.Job
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var missions = await _missionManager.GetAllAsync();
+            var baseType = typeof(IJobElement);
 
-            foreach (var mission in missions)
+            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes())
+                .Where(type => type != baseType && baseType.IsAssignableFrom(type)).ToList();
+
+            var implementTypes = types.Where(x => x.IsClass).ToList();
+
+            foreach (var implementType in implementTypes)
             {
-                if (mission.State == MissionState.Started)
+                var element = (IJobElement?)Activator.CreateInstance(implementType);
+                if (element != null)
                 {
-                    await _missionManager.StartAsync(mission.Id);
+                    var mis = new Mission(element.Rule, element.Action);
+                    await _missionManager.AddAsync(mis);
                 }
             }
-
-            await Task.CompletedTask;
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

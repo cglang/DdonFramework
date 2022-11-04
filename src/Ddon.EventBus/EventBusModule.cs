@@ -10,6 +10,7 @@ namespace Ddon.EventBus
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
+            Load<CoreModule>(services, configuration);
             services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
         }
     }

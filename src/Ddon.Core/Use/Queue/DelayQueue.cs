@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ddon.Core.Use.Queue
 {
@@ -22,12 +23,6 @@ namespace Ddon.Core.Use.Queue
             }
         }
 
-        /// <summary>
-        /// 取出项，如果未到期，则阻塞
-        /// </summary>
-        /// <param name="item"></param>
-        /// <param name="cancelToken"></param>
-        /// <returns></returns>
         public T? Take(CancellationToken? cancelToken = null)
         {
             if (cancelToken == null)
@@ -59,6 +54,12 @@ namespace Ddon.Core.Use.Queue
             {
                 Monitor.Exit(_lock);
             }
+        }
+
+        public bool TryTake(out T? item)
+        {
+            item = Take();
+            return item != null;
         }
     }
 }

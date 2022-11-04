@@ -1,33 +1,30 @@
-﻿using Ddon.KeyValueStorage;
+﻿using Ddon.Core.Services.LazyService;
+using Ddon.Core.Use.Queue;
+using Ddon.EventBus.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ddon.Job
 {
     public class MissionManager : IMissionManager
     {
-        private readonly IDdonKeyValueManager<Mission, JobOptions> _keyValueManager;
+        private readonly ILazyServiceProvider _lazyServiceProvider;
 
-        public MissionManager(IDdonKeyValueManager<Mission, JobOptions> keyValueManager)
-        {
-            _keyValueManager = keyValueManager;
-        }
+        public int Count => MissionData.Missions.Count;
 
-        public int Count
+        public MissionManager(ILazyServiceProvider lazyServiceProvider)
         {
-            get
-            {
-                var keysTask = _keyValueManager.GetAllKeyAsync();
-                keysTask.Wait();
-                return keysTask.Result.Count();
-            }
+            _lazyServiceProvider = lazyServiceProvider;
         }
 
         public async Task AddAsync(Mission mission)
         {
-            await _keyValueManager.SetValueAsync(mission.Id, mission);
+            await Task.CompletedTask;
+            MissionData.Missions.Add(mission.Id, mission);
+            MissionData.DelayQueue.Add(new(mission.Rule.Interval, mission.Id));
+            _ = Start();
         }
 
         public async Task AddRangeAsync(IEnumerable<Mission> missions)
@@ -40,12 +37,16 @@ namespace Ddon.Job
 
         public async Task<IEnumerable<Mission>> GetAllAsync()
         {
-            return await _keyValueManager.GetAllValueAsync();
+            await Task.CompletedTask;
+            return MissionData.Missions.Values;
         }
 
         public async Task<Mission?> GetAsync(Guid missionId)
         {
-            return await _keyValueManager.GetValueAsync(missionId.ToString());
+            await Task.CompletedTask;
+            if (MissionData.Missions.ContainsKey(missionId))
+                return MissionData.Missions[missionId];
+            return null;
         }
 
         public async Task<IEnumerable<Mission>> GetRangeAsync(IEnumerable<Guid> missionIds)
@@ -66,7 +67,7 @@ namespace Ddon.Job
         {
             var mission = await GetAsync(missionId);
             mission?.Stop();
-            await _keyValueManager.DeleteValueAsync(missionId.ToString());
+            MissionData.Missions.Remove(missionId);
         }
 
         public async Task RemoveRangeAsync(IEnumerable<Guid> missionIds)
@@ -81,8 +82,6 @@ namespace Ddon.Job
         {
             var mission = await GetAsync(missionId);
             mission?.Start();
-
-            await _keyValueManager.SaveAsync();
         }
 
         public async Task StartRangeAsync(IEnumerable<Guid> missionIds)
@@ -92,16 +91,12 @@ namespace Ddon.Job
                 var mission = await GetAsync(missionId);
                 mission?.Start();
             }
-
-            await _keyValueManager.SaveAsync();
         }
 
         public async Task StopAsync(Guid missionId)
         {
             var mission = await GetAsync(missionId);
             mission?.Stop();
-
-            await _keyValueManager.SaveAsync();
         }
 
         public async Task StopRangeAsync(IEnumerable<Guid> missionIds)
@@ -111,21 +106,29 @@ namespace Ddon.Job
                 var mission = await GetAsync(missionId);
                 mission?.Stop();
             }
-
-            await _keyValueManager.SaveAsync();
         }
 
-        public async Task UpdateAsync(Mission mission)
+        private bool state = false;
+        private async Task Start()
         {
-            await _keyValueManager.SetValueAsync(mission.Id, mission);
-        }
+            if (state) return;
 
-        public async Task UpdateRangeAsync(IEnumerable<Mission> missions)
-        {
-            foreach (var mission in missions)
+            state = true;
+            var tasks = new List<Task>();
+            for (int i = 0; i < 10; i++)
             {
-                await UpdateAsync(mission);
+                tasks.Add(Task.Run(async () =>
+                {
+                    while (MissionData.DelayQueue.TryTake(out var item))
+                    {
+                        MissionData.Missions[item!.Item].Action.Invoke();
+                        await AddAsync(MissionData.Missions[item!.Item]);
+                    }
+                }));
             }
+
+            await Task.WhenAll(tasks);
+            state = false;
         }
     }
 }
