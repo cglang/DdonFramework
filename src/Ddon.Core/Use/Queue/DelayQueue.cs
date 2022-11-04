@@ -30,7 +30,7 @@ namespace Ddon.Core.Use.Queue
         /// <returns></returns>
         public T? Take(CancellationToken? cancelToken = null)
         {
-            if (cancelToken == null) 
+            if (cancelToken == null)
                 cancelToken = CancellationToken.None;
 
             T? item = null;
@@ -40,12 +40,7 @@ namespace Ddon.Core.Use.Queue
             {
                 while (!cancelToken.Value.IsCancellationRequested)
                 {
-                    if (!this.Any())
-                    {
-                        Monitor.Pulse(_lock);
-                        Monitor.Wait(_lock);
-                        continue;
-                    }
+                    if (!this.Any()) return item;
 
                     item = this.First();
 
@@ -54,6 +49,10 @@ namespace Ddon.Core.Use.Queue
                         Remove(item);
                         return item;
                     }
+
+                    Monitor.Pulse(_lock);
+                    Monitor.Wait(_lock);
+                    Thread.Sleep(1);
                 }
 
                 return item;
