@@ -32,8 +32,6 @@ namespace Ddon.Core.Use.Queue
         {
             if (cancelToken == null)
                 cancelToken = CancellationToken.None;
-
-            T? item = null;
             Monitor.Enter(_lock);
 
             try
@@ -42,7 +40,7 @@ namespace Ddon.Core.Use.Queue
                 {
                     if (!this.Any()) return null;
 
-                    item = this.First();
+                    T? item = this.First();
 
                     if (item.DelaySpan <= TimeSpan.Zero)
                     {
@@ -55,7 +53,7 @@ namespace Ddon.Core.Use.Queue
                     Thread.Sleep(1);
                 }
 
-                return item;
+                return null;
             }
             finally
             {
