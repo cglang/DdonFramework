@@ -66,8 +66,7 @@ namespace Ddon.Socket.Session
             var head = DdonSocketCore.JsonDeserialize<DdonSocketRequest>(headBytes) ?? throw new Exception("消息中不包含消息头");
             if (head.Mode == DdonSocketMode.Response)
             {
-                //var textData = Encoding.UTF8.GetString(dataBytes);
-                ResponseHandle(new DdonSocketPackageInfo<byte[]>(conn, head,ref dataBytes));
+                ResponseHandle(new DdonSocketPackageInfo<byte[]>(conn, head, ref dataBytes));
                 return;
             }
 
@@ -161,8 +160,9 @@ namespace Ddon.Socket.Session
         {
             var taskCompletion = new TaskCompletionSource<string>();
 
-            var response = new DdonSocketResponseHandler((info) => taskCompletion.SetResult(info),
-                (info) => taskCompletion.SetException(new DdonSocketRequestException()));
+            var response = new DdonSocketResponseHandler(
+                (info) => taskCompletion.SetResult(info),
+                (info) => taskCompletion.SetException(new DdonSocketRequestException("请求超时")));
             DdonSocketResponsePool.Add(response);
 
             var requetBytes = new DdonSocketRequest(response.Id, DdonSocketMode.Request, route).GetBytes();
@@ -178,13 +178,21 @@ namespace Ddon.Socket.Session
         /// <param name="route">路由</param>
         /// <param name="data">数据</param>
         /// <returns></returns>
-        /// <exception cref="DdonSocketRequestException">请求超时异样</exception>
+        /// <exception cref="DdonSocketRequestException">进行Socket请求是发生异常</exception>
         public async Task<T?> RequestAsync<T>(string route, object data)
         {
             var resData = await RequestAsync(route, data);
-            return DdonSocketCore.JsonDeserialize<T>(resData);
+            try
+            {
+                return DdonSocketCore.JsonDeserialize<T>(resData);
+            }
+            catch (Exception ex)
+            {
+                throw new DdonSocketRequestException(resData, "响应结果反序列化失败", ex);
+            }
         }
 
+        // TODO: 这里还没有写完善
         public async Task SendFileAsync(string route, string filePath)
         {
             var request = new DdonSocketRequest(Guid.NewGuid(), DdonSocketMode.File, route);
