@@ -20,7 +20,7 @@ namespace Test.WebApplication.Controllers
         [SocketApi]
         public async Task<IEnumerable<string>> GetAnalysisByDayAsync(AnalysisByDayInput input)
         {
-            await Task.Delay(100);
+            await Task.Delay(20000);
 
             return Enumerable.Range(0, input.Count).Select(x => x.ToString());
         }

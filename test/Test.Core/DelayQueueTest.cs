@@ -14,23 +14,20 @@ namespace DelayQueue.UnitTest
     public class DelayQueueTest
     {
         [TestMethod]
-        public void TestDelayQueue()
+        public async void TestDelayQueue()
         {
-            var delayQueue = new DelayQueue<DelayItem<Action>>();
+            var delayQueue = new DelayQueue<Action>();
 
             // 输出列表
             var outputs = new Dictionary<string, DateTime>();
             outputs.Add("00", DateTime.Now);
 
             // 添加任务
-            var item1 = new DelayItem<Action>(TimeSpan.FromSeconds(5), () => { outputs.Add("50", DateTime.Now); });
-            var item2 = new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { outputs.Add("20", DateTime.Now); });
-            delayQueue.Add(item1);
-            delayQueue.Add(item2);
-            delayQueue.Add(item2);
-
-            delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(12), () => { outputs.Add("120", DateTime.Now); }));
-            delayQueue.Add(new DelayItem<Action>(TimeSpan.FromSeconds(2), () => { outputs.Add("21", DateTime.Now); }));
+            await delayQueue.AddAsync(() => { outputs.Add("50", DateTime.Now); }, TimeSpan.FromSeconds(5));
+            await delayQueue.AddAsync(() => { outputs.Add("20", DateTime.Now); }, TimeSpan.FromSeconds(2));
+            await delayQueue.AddAsync(() => { outputs.Add("20", DateTime.Now); }, TimeSpan.FromSeconds(2));
+            await delayQueue.AddAsync(() => { outputs.Add("120", DateTime.Now); }, TimeSpan.FromSeconds(12));
+            await delayQueue.AddAsync(() => { outputs.Add("21", DateTime.Now); }, TimeSpan.FromSeconds(2));
 
             Assert.AreEqual(4, delayQueue.Count);
 
@@ -40,7 +37,7 @@ namespace DelayQueue.UnitTest
                 var item = delayQueue.Take(CancellationToken.None);
                 if (item != null)
                 {
-                    item.Item.Invoke();
+                    item.Invoke();
                 }
             }
 
@@ -59,13 +56,13 @@ namespace DelayQueue.UnitTest
         [TestMethod]
         public async Task TestMultithreading()
         {
-            var delayQueue = new DelayQueue<DelayItem<int>>();
+            var delayQueue = new DelayQueue<int>();
 
             // 添加任务
             var taskCount = 20;
             for (int i = 0; i < taskCount; i++)
             {
-                delayQueue.Add(new DelayItem<int>(TimeSpan.FromSeconds(i + 2), i));
+                await delayQueue.AddAsync(i, TimeSpan.FromSeconds(i + 2));
             }
 
             Assert.AreEqual(taskCount, delayQueue.Count);
@@ -79,10 +76,10 @@ namespace DelayQueue.UnitTest
                 {
                     while (delayQueue.Count > 0)
                     {
-                        var task = delayQueue.Take(CancellationToken.None);
-                        if (task != null)
+                        var item = delayQueue.Take(CancellationToken.None);
+                        if (item != default)
                         {
-                            outputs.TryAdd(task.Item, Thread.CurrentThread.ManagedThreadId);
+                            outputs.TryAdd(item, Thread.CurrentThread.ManagedThreadId);
                         }
                     }
                 }, TaskCreationOptions.LongRunning));

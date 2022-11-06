@@ -1,5 +1,6 @@
 using Ddon.Core.Use;
 using Ddon.Socket;
+using Ddon.Socket.Session;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Text.Json;
@@ -68,6 +69,7 @@ namespace Test.SocketApplication.Client.Controllers
 
             Console.WriteLine(size);
             Console.WriteLine("½áÊø");
+            await Task.CompletedTask;
             return Enumerable.Range(1, 5);
         }
 

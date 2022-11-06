@@ -23,7 +23,7 @@ namespace Ddon.Job
         {
             await Task.CompletedTask;
             MissionData.Missions.Add(mission.Id, mission);
-            MissionData.DelayQueue.Add(new(mission.Rule.Interval, mission.Id));
+            MissionData.DelayQueue.AddAsync(mission.Id, mission.Rule.Interval).Wait();
             _ = Start();
         }
 
@@ -119,10 +119,11 @@ namespace Ddon.Job
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    while (MissionData.DelayQueue.TryTake(out var item))
+                    var item = await MissionData.DelayQueue.TakeAsync();
+                    while (item != default)
                     {
-                        MissionData.Missions[item!.Item].Action.Invoke();
-                        await AddAsync(MissionData.Missions[item!.Item]);
+                        MissionData.Missions[item].Action.Invoke();
+                        await AddAsync(MissionData.Missions[item]);
                     }
                 }));
             }
