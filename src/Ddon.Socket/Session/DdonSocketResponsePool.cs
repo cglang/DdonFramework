@@ -1,6 +1,7 @@
 ﻿using Ddon.Core.Use.Queue;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
@@ -8,54 +9,72 @@ namespace Ddon.Socket.Session
     /// <summary>
     /// 响应集合
     /// </summary>
-    internal static class DdonSocketResponsePool
+    internal class DdonSocketResponsePool : IDisposable
     {
-        private static readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs = new();
+        private DdonSocketResponsePool()
+        {
+            DelayQueue = new();
+            Pairs = new();
+        }
 
-        private static readonly DelayQueue<DelayItem<DdonSocketResponseHandler>> DelayQueue = new();
+        public static DdonSocketResponsePool Instance = new Lazy<DdonSocketResponsePool>(() => new DdonSocketResponsePool()).Value;
+
+        public readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs;
+        public readonly DelayQueue<Guid> DelayQueue;
 
         internal static void Add(DdonSocketResponseHandler ddonSocketResponseHandler)
         {
-            Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
-            DelayQueue.Add(new(TimeSpan.FromSeconds(100), ddonSocketResponseHandler));
-            Start();
+            Instance.Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
+            Instance.DelayQueue.AddAsync(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(1)).Wait();
         }
 
-        internal static bool ContainsKey(Guid id)
+        internal bool ContainsKey(Guid id)
         {
             return Pairs.ContainsKey(id);
         }
 
-        internal static DdonSocketResponseHandler Get(Guid id)
+        internal DdonSocketResponseHandler Get(Guid id)
         {
             return Pairs[id];
         }
 
-        internal static void Remove(Guid id)
+        internal void Remove(Guid id)
         {
             Pairs.Remove(id);
         }
 
-        private static bool state = false;
-        private static void Start()
+        internal void Start()
         {
-            if (state) return;
-            Task.Run(() =>
+            Task.Run(async () =>
             {
-                state = true;
-
-                while (DelayQueue.IsEmpty)
+                try
                 {
-                    var task = DelayQueue.Take();
-                    if (task != null)
+                    while (true)
                     {
-                        if (!task.Item.IsCompleted)
-                            task.Item.ExceptionThen.Invoke("请求超时");
+                        while (!Instance.DelayQueue.IsEmpty)
+                        {
+                            var item = await Instance.DelayQueue.TakeAsync();
+                            if (item != default)
+                            {
+                                var handle = Instance.Get(item);
+                                if (!handle.IsCompleted)
+                                    handle.ExceptionThen.Invoke("请求超时");
+                            }
+                        }
+                        Thread.Sleep(1);
                     }
                 }
-
-                state = false;
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    Console.WriteLine("出错了");
+                }
             });
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -28,15 +28,16 @@ namespace Ddon.Socket.Session
         public SocketSession(TcpClient tcpClient, Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
         {
             Conn = new DdonSocketCore(tcpClient, ByteHandler, exceptionHandler);
+            DdonSocketResponsePool.Instance.Start();
         }
 
         private static void ResponseHandle(DdonSocketPackageInfo<byte[]> info)
         {
             var id = info.Head.Id;
 
-            if (!DdonSocketResponsePool.ContainsKey(id)) return;
+            if (!DdonSocketResponsePool.Instance.ContainsKey(id)) return;
 
-            var responseHandle = DdonSocketResponsePool.Get(id);
+            var responseHandle = DdonSocketResponsePool.Instance.Get(id);
             if (!responseHandle.IsCompleted)
             {
                 var res = DdonSocketCore.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
@@ -53,7 +54,7 @@ namespace Ddon.Socket.Session
                     }
                 }
 
-                DdonSocketResponsePool.Remove(id);
+                DdonSocketResponsePool.Instance.Remove(id);
             }
         }
 
@@ -146,7 +147,7 @@ namespace Ddon.Socket.Session
             var requetBytes = new DdonSocketRequest(default, DdonSocketMode.String, route).GetBytes();
             var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
             DdonArray.MergeArrays(out byte[] contentBytes, requetBytes, dataBytes, DdonSocketConst.HeadLength);
-            await Conn.SendBytesAsync(contentBytes);
+            await Conn.SendBytesAsync(contentBytes);            
         }
 
         /// <summary>
@@ -222,6 +223,7 @@ namespace Ddon.Socket.Session
         public void Dispose()
         {
             Conn.Dispose();
+            DdonSocketResponsePool.Instance.Dispose();
             GC.SuppressFinalize(this);
         }
     }

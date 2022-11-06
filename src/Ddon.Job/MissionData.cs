@@ -7,6 +7,6 @@ namespace Ddon.Job
     internal static class MissionData
     {
         public static readonly Dictionary<Guid, Mission> Missions = new();
-        public static readonly DelayQueue<DelayItem<Guid>> DelayQueue = new();
+        public static readonly DelayQueue<Guid> DelayQueue = new();
     }
 }

@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ddon.Core.Use.Queue
 {
-    public class SortedQueue<T> : SortedSet<T> where T : class, IDelayItem
+    public class SortedQueue<T> : ConcurrentObservableSortedSet<T> where T : class, IDelayItem
     {
         public bool IsEmpty => Count == 0;
 
