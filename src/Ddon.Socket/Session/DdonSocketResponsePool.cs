@@ -9,91 +9,87 @@ namespace Ddon.Socket.Session
     /// <summary>
     /// 响应集合
     /// </summary>
-    internal class DdonSocketResponsePool : IDisposable
+    internal class DdonSocketResponsePool
     {
-        private DdonSocketResponsePool()
-        {
-            DelayQueue = new();
-            Pairs = new();
-        }
-
-        public static DdonSocketResponsePool Instance = new Lazy<DdonSocketResponsePool>(() => new DdonSocketResponsePool()).Value;
-
-        public readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs;
-        public readonly DelayQueue<Guid> DelayQueue;
-
         internal static void Add(DdonSocketResponseHandler ddonSocketResponseHandler)
         {
-            Instance.Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
-            Instance.DelayQueue.AddAsync(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(1)).Wait();
+            Datas.Instance.Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
+            Datas.Instance.DelayQueue.AddAsync(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(1)).Wait();
         }
 
-        internal bool ContainsKey(Guid id)
-        {
-            return Pairs.ContainsKey(id);
-        }
+        internal static bool ContainsKey(Guid id) => Datas.Instance.Pairs.ContainsKey(id);
 
-        internal DdonSocketResponseHandler Get(Guid id)
-        {
-            return Pairs[id];
-        }
+        internal static DdonSocketResponseHandler Get(Guid id) => Datas.Instance.Pairs[id];
 
-        internal void Remove(Guid id)
-        {
-            Pairs.Remove(id);
-        }
+        internal static void Remove(Guid id) => Datas.Instance.Pairs.Remove(id);
 
-        internal void Start()
+        internal static void Start() => Datas.Instance.Start();
+
+        internal static void Dispose() => Datas.Instance.Dispose();
+
+        internal class Datas : IDisposable
         {
-            Task.Run(async () =>
+            private Datas()
             {
-                try
+                DelayQueue = new();
+                Pairs = new();
+            }
+
+            public static Datas Instance = new Lazy<Datas>(() => new Datas()).Value;
+
+            public readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs;
+            public readonly DelayQueue<Guid> DelayQueue;
+
+            internal void Start()
+            {
+                Task.Run(async () =>
                 {
-                    while (_disposed == false)
+                    try
                     {
-                        while (!Instance.DelayQueue.IsEmpty)
+                        while (_disposed == false)
                         {
-                            var item = await Instance.DelayQueue.TakeAsync();
-                            if (item != default)
+                            while (!Instance.DelayQueue.IsEmpty)
                             {
-                                var handle = Instance.Get(item);
-                                if (!handle.IsCompleted)
-                                    handle.ExceptionThen.Invoke("请求超时");
+                                var item = await Instance.DelayQueue.TakeAsync();
+                                if (item != default && !Pairs[item].IsCompleted)
+                                {
+                                    Pairs[item].ExceptionThen.Invoke("请求超时");
+                                }
                             }
+                            Thread.Sleep(1);
                         }
-                        Thread.Sleep(1);
                     }
-                }
-                catch (Exception ex)
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        Console.WriteLine("出错了");
+                    }
+                });
+            }
+
+            private bool _disposed;
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            public void Dispose(bool disposing)
+            {
+                if (_disposed)
                 {
-                    Console.WriteLine(ex);
-                    Console.WriteLine("出错了");
+                    return;
                 }
-            });
-        }
 
-        private bool _disposed;
+                if (disposing)
+                {
+                }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+                DelayQueue.Clear();
 
-        public void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
+                _disposed = true;
             }
-
-            if (disposing)
-            {
-            }
-
-            Instance.DelayQueue.Clear();
-
-            _disposed = true;
         }
     }
 }

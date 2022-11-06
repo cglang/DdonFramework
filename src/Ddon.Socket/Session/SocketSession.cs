@@ -28,16 +28,16 @@ namespace Ddon.Socket.Session
         public SocketSession(TcpClient tcpClient, Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
         {
             Conn = new DdonSocketCore(tcpClient, ByteHandler, exceptionHandler);
-            DdonSocketResponsePool.Instance.Start();
+            DdonSocketResponsePool.Start();
         }
 
         private static void ResponseHandle(DdonSocketPackageInfo<byte[]> info)
         {
             var id = info.Head.Id;
 
-            if (!DdonSocketResponsePool.Instance.ContainsKey(id)) return;
+            if (!DdonSocketResponsePool.ContainsKey(id)) return;
 
-            var responseHandle = DdonSocketResponsePool.Instance.Get(id);
+            var responseHandle = DdonSocketResponsePool.Get(id);
             if (!responseHandle.IsCompleted)
             {
                 var res = DdonSocketCore.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
@@ -54,7 +54,7 @@ namespace Ddon.Socket.Session
                     }
                 }
 
-                DdonSocketResponsePool.Instance.Remove(id);
+                DdonSocketResponsePool.Remove(id);
             }
         }
 
@@ -249,7 +249,7 @@ namespace Ddon.Socket.Session
             {
                 // 清理托管资源
                 Conn.Dispose();
-                DdonSocketResponsePool.Instance.Dispose();
+                DdonSocketResponsePool.Dispose();
             }
 
             // 清理非托管资源
