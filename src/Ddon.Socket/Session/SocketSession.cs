@@ -147,7 +147,7 @@ namespace Ddon.Socket.Session
             var requetBytes = new DdonSocketRequest(default, DdonSocketMode.String, route).GetBytes();
             var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
             DdonArray.MergeArrays(out byte[] contentBytes, requetBytes, dataBytes, DdonSocketConst.HeadLength);
-            await Conn.SendBytesAsync(contentBytes);            
+            await Conn.SendBytesAsync(contentBytes);
         }
 
         /// <summary>
@@ -220,11 +220,33 @@ namespace Ddon.Socket.Session
             await Conn.SendBytesAsync(contentBytes);
         }
 
+        private bool _disposed;
+
+        ~SocketSession() { Dispose(false); }
+
         public void Dispose()
         {
-            Conn.Dispose();
-            DdonSocketResponsePool.Instance.Dispose();
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // 清理托管资源
+                Conn.Dispose();
+                DdonSocketResponsePool.Instance.Dispose();
+            }
+
+            // 清理非托管资源
+
+            _disposed = true;
         }
     }
 }

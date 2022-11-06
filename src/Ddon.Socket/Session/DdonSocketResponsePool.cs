@@ -49,7 +49,7 @@ namespace Ddon.Socket.Session
             {
                 try
                 {
-                    while (true)
+                    while (_disposed == false)
                     {
                         while (!Instance.DelayQueue.IsEmpty)
                         {
@@ -72,9 +72,28 @@ namespace Ddon.Socket.Session
             });
         }
 
+        private bool _disposed;
+
         public void Dispose()
         {
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+            }
+
+            Instance.DelayQueue.Clear();
+
+            _disposed = true;
         }
     }
 }

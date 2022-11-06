@@ -82,5 +82,10 @@ namespace Ddon.Core.Use.Queue
             }
             return true;
         }
+
+        public void Clear()
+        {
+            values.Clear();
+        }
     }
 }

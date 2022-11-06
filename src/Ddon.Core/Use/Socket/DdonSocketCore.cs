@@ -154,11 +154,35 @@ namespace Ddon.Core.Use.Socket
             return this;
         }
 
+        private bool _disposed;
+
         public void Dispose()
         {
-            _tcpClient.Close();
-            _tcpClient.Dispose();
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // 清理托管资源
+                _stream.Dispose();
+                _tcpClient.Close();
+                _tcpClient.Dispose();
+            }
+
+            // 清理非托管资源
+            _byteHandler = null;
+            _exceptionHandler = null;
+            _stringHandler = null;
+
+            _disposed = true;
         }
 
         private static readonly JsonSerializerOptions options = new()
