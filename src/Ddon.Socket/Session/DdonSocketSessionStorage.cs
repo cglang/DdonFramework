@@ -4,24 +4,16 @@ using System.Linq;
 
 namespace Ddon.Socket.Session
 {
-    internal class DdonSocketStorage
+    internal class DdonSocketSessionStorage
     {
-        private static readonly object _lock = new();
+        private DdonSocketSessionStorage() { }
+
+        public static DdonSocketSessionStorage Instance = new Lazy<DdonSocketSessionStorage>(() => new DdonSocketSessionStorage()).Value;
 
         private readonly Dictionary<Guid, SocketSession> Pairs = new();
 
-        private static DdonSocketStorage? ddonSocketClientConnection;
-
         public IEnumerable<SocketSession> Clients => Pairs.Values;
 
-        public static DdonSocketStorage GetInstance()
-        {
-            if (ddonSocketClientConnection != null) return ddonSocketClientConnection;
-
-            lock (_lock) ddonSocketClientConnection ??= new DdonSocketStorage();
-
-            return ddonSocketClientConnection;
-        }
 
         public SocketSession? GetClient(Guid socketId)
         {
