@@ -24,7 +24,7 @@ namespace Ddon.Socket.Hosting
         {
             var session = new SocketSession(tcpClient, exceptionHandler);
             // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
-            Session.DdonSocketStorage.GetInstance().Add(session);
+            DdonSocketSessionStorage.Instance.Add(session);
             socketAccessHandler?.Invoke(session.Conn, serviceProvider);
         };
 
