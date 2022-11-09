@@ -19,13 +19,16 @@ namespace Ddon.AspNetCore
             services.AddHttpContextAccessor();
 
             var cors = configuration.GetSection("Cors").GetChildren().Select(c => c.Value).ToArray();
-            services.AddCors(options =>
+            if (cors is not null)
             {
-                options.AddPolicy(name: "DefaultCors", builder =>
+                services.AddCors(options =>
                 {
-                    builder.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins(cors);
+                    options.AddPolicy(name: "DefaultCors", builder =>
+                    {
+                        builder.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins(cors);
+                    });
                 });
-            });
+            }
         }
     }
 }
