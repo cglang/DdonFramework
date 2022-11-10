@@ -14,7 +14,7 @@ namespace Ddon.Socket.Session
         internal static void Add(DdonSocketResponseHandler ddonSocketResponseHandler)
         {
             Datas.Instance.Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
-            Datas.Instance.DelayQueue.AddAsync(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(1)).Wait();
+            Datas.Instance.DelayQueue.AddAsync(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(10)).Wait();
         }
 
         internal static bool ContainsKey(Guid id) => Datas.Instance.Pairs.ContainsKey(id);
