@@ -14,18 +14,18 @@ namespace Ddon.Socket.Hosting
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger? _logger;
         private readonly Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
-        private readonly Func<DdonSocketCore, IServiceProvider, Task>? _socketAccessHandler;
+        private readonly Func<SocketSession, IServiceProvider, Task>? _socketAccessHandler;
         private readonly TcpListener _listener;
 
         private readonly Action<TcpClient, IServiceProvider, ILogger?, 
             Func<DdonSocketCore, DdonSocketException, Task>?, 
-            Func<DdonSocketCore, IServiceProvider, Task>?> acceptTcpClientHandler =
+            Func<SocketSession, IServiceProvider, Task>?> acceptTcpClientHandler =
             (tcpClient, serviceProvider, logger, exceptionHandler, socketAccessHandler) =>
         {
             var session = new SocketSession(tcpClient, exceptionHandler);
             // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
             DdonSocketSessionStorage.Instance.Add(session);
-            socketAccessHandler?.Invoke(session.Conn, serviceProvider);
+            socketAccessHandler?.Invoke(session, serviceProvider);
         };
 
         public SocketApplication(
@@ -33,7 +33,7 @@ namespace Ddon.Socket.Hosting
             TcpListener listener,
             ILogger? Logger,
             Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler,
-            Func<DdonSocketCore, IServiceProvider, Task>? socketAccessHandler)
+            Func<SocketSession, IServiceProvider, Task>? socketAccessHandler)
         {
             _serviceProvider = serviceProvider;
             _listener = listener;

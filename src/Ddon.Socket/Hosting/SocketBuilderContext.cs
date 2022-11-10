@@ -1,5 +1,6 @@
 ﻿using Ddon.Core.Exceptions;
 using Ddon.Core.Use.Socket;
+using Ddon.Socket.Session;
 using System;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace Ddon.Socket.Hosting
 
         public Func<DdonSocketCore, DdonSocketException, Task>? ExceptionHandler { get; private set; }
 
-        public Func<DdonSocketCore, IServiceProvider, Task>? SocketAccessHandler { get; private set; }
+        public Func<SocketSession, IServiceProvider, Task>? SocketAccessHandler { get; private set; }
 
         public void SetListenerInfo(string host, int port)
         {
@@ -31,7 +32,7 @@ namespace Ddon.Socket.Hosting
             ExceptionHandler = exceptionHandler;
         }
 
-        public void AddSocketAccessHandler(Func<DdonSocketCore, IServiceProvider, Task> socketAccessHandler)
+        public void AddSocketAccessHandler(Func<SocketSession, IServiceProvider, Task> socketAccessHandler)
         {
             SocketAccessHandler = socketAccessHandler;
         }
