@@ -95,7 +95,7 @@ namespace Ddon.Socket.Session
 
                     Directory.CreateDirectory(filePath);
 
-                    var fileWrite = new FileStream(Path.Combine(filePath, $"{head.Id}.{fileinfo?.FileName ?? string.Empty}"), FileMode.OpenOrCreate);
+                    using var fileWrite = new FileStream(Path.Combine(filePath, $"{head.Id}.{fileinfo?.FileName ?? string.Empty}"), FileMode.OpenOrCreate);
 
                     foreach (var file in Directory.GetFiles(tmpPath, "*.tmp"))
                     {
