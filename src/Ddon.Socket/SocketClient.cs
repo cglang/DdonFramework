@@ -62,20 +62,22 @@ namespace Ddon.Socket
 
         private Func<DdonSocketCore, DdonSocketException, Task> ReconnectionHandler => async (a, b) =>
         {
-            int number = 1;
-            while (true)
+            Session.Dispose();
+
+            for (int number = 1; ; number++)
             {
                 try
                 {
                     Session = new SocketSession(new TcpClient(_host, _post), ExceptionHandler);
+                    Logger?.LogInformation("断线重连成功,重试次数:{0}", number);
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Logger?.LogWarning(ex, "正在尝试断线重连,已重试次数:{0}", number++);
+                    Logger?.LogWarning(ex, "正在尝试断线重连,已重试次数:{0}", number);
                     await Task.Delay(100);
                 }
-            }
+            }  
         };
     }
 
