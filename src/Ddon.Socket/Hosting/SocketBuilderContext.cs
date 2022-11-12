@@ -12,6 +12,10 @@ namespace Ddon.Socket.Hosting
 
         public int Port { get; private set; } = 6000;
 
+        /// 断开连接是否自动重连
+        /// </summary>
+        public bool IsReconnection { get; set; }
+
         public Func<DdonSocketCore, DdonSocketException, Task>? ExceptionHandler { get; private set; }
 
         public Func<SocketSession, IServiceProvider, Task>? SocketAccessHandler { get; private set; }

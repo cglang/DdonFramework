@@ -4,8 +4,10 @@ using Ddon.Core.Use.Socket;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -16,24 +18,36 @@ namespace Ddon.Socket
         private IServiceProvider ServiceProvider => LazyServiceProvider.LazyServicePrivider.ServiceProvider;
         private ILogger Logger => ServiceProvider.GetRequiredService<ILogger<SocketClient<TDdonSocketRouteMapLoadBase>>>();
 
-        protected readonly SocketSession session;
+        protected SocketSession Session { get; set; }
 
+        private readonly string _host;
+        private readonly int _post;
 
-        protected SocketClient(string host, int post)
+        protected SocketClient(string host, int post, bool isReconnection)
         {
-            var tcpClient = new TcpClient(host, post);
-            session = new SocketSession(tcpClient, ExceptionHandler);
+            _host = host;
+            _post = post;
+
+            if (isReconnection)
+            {
+                ExceptionHandler += ReconnectionHandler;
+            }
+            ExceptionHandler += DefaultExceptionHandler;
+
+            Session = new SocketSession(new TcpClient(host, post), ExceptionHandler);
         }
 
-        public static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post)
+        public static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post, bool isReconnection = true)
         {
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
-            var t = new SocketClient<TDdonSocketRouteMapLoadBase>(host, post);
-            return t.session;
+            var t = new SocketClient<TDdonSocketRouteMapLoadBase>(host, post, isReconnection);
+            return t.Session;
         }
 
-        private Func<DdonSocketCore, DdonSocketException, Task> ExceptionHandler => async (conn, ex) =>
+        private Func<DdonSocketCore, DdonSocketException, Task> ExceptionHandler { get; }
+
+        private Func<DdonSocketCore, DdonSocketException, Task> DefaultExceptionHandler => async (conn, ex) =>
         {
             if (ex.InnerException is ObjectDisposedException)
             {
@@ -45,20 +59,36 @@ namespace Ddon.Socket
                 await Task.CompletedTask;
             }
         };
+
+        private Func<DdonSocketCore, DdonSocketException, Task> ReconnectionHandler => async (a, b) =>
+        {
+            int number = 1;
+            while (true)
+            {
+                try
+                {
+                    Session = new SocketSession(new TcpClient(_host, _post), ExceptionHandler);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogWarning(ex, "正在尝试断线重连,已重试次数:{0}", number++);
+                    await Task.Delay(100);
+                }
+            }
+        };
     }
 
     public class SocketClient : SocketClient<DeafultDdonSocketRouteMap>
     {
-        protected SocketClient(string host, int post) : base(host, post)
-        {
-        }
+        protected SocketClient(string host, int post, bool isReconnection) : base(host, post, isReconnection) { }
 
-        public new static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post)
+        public new static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post, bool isReconnection = true)
         {
             LazyServiceProvider.InitServiceProvider(serviceProvider);
             DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();
-            var t = new SocketClient(host, post);
-            return t.session;
+            var t = new SocketClient(host, post, isReconnection);
+            return t.Session;
         }
     }
 }

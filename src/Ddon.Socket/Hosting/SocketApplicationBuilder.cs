@@ -11,22 +11,25 @@ namespace Ddon.Socket.Hosting
     public class SocketApplicationBuilder
     {
         private readonly SocketBuilderContext _socketBuilderContext = new();
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger? _logger;
+        private TcpListener? _tcpListener;
 
-        public IServiceProvider ServiceProvider { get; }
 
         public SocketApplicationBuilder(IServiceProvider serviceProvider)
         {
             _logger = serviceProvider.GetService<ILogger<SocketApplication>>();
-            ServiceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
         }
 
         public SocketApplication Build()
         {
-            LazyServiceProvider.InitServiceProvider(ServiceProvider);
+            LazyServiceProvider.InitServiceProvider(_serviceProvider);
             DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();
-            var tcpListener = new TcpListener(IPAddress.Parse(_socketBuilderContext.Host), _socketBuilderContext.Port);
-            return new(ServiceProvider, tcpListener, _logger, _socketBuilderContext.ExceptionHandler, _socketBuilderContext.SocketAccessHandler);
+
+            _tcpListener = new TcpListener(IPAddress.Parse(_socketBuilderContext.Host), _socketBuilderContext.Port);
+
+            return new(_serviceProvider, _tcpListener, _logger, _socketBuilderContext.ExceptionHandler, _socketBuilderContext.SocketAccessHandler);
         }
 
         public SocketApplicationBuilder Configure(Action<SocketBuilderContext> configureDelegate)
