@@ -8,7 +8,6 @@ namespace Test.WebApplication.Controllers
     /// </summary>
     public class OpenSocketApi : SocketApiCore, ITransientDependency
     {
-
         /// <summary>
         /// 开放 API
         /// </summary>
@@ -20,20 +19,20 @@ namespace Test.WebApplication.Controllers
         [SocketApi]
         public async Task<IEnumerable<string>> GetAnalysisByDayAsync(AnalysisByDayInput input)
         {
-            await Task.Delay(20000);
+            await Task.Delay(200);
 
             return Enumerable.Range(0, input.Count).Select(x => x.ToString());
         }
 
         /// <summary>
-        /// 测试2
+        /// 接收文件测试
         /// </summary>
-        [SocketApi("Test2")]
-        public async Task<IEnumerable<string>> GetAnalysisByDayDayAsync(AnalysisByDayInput input)
+        [SocketApi("ReceiveFile")]
+        public async Task<bool> ReceiveFile(string filePath)
         {
             await Task.Delay(100);
 
-            return Enumerable.Range(0, input.Count).Select(x => x.ToString()); ;
+            return true;
         }
     }
 }

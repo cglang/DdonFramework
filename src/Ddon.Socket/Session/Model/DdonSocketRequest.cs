@@ -16,6 +16,8 @@ namespace Ddon.Socket.Session.Model
 
         public int BlockIndex { get; set; } = 0;
 
+        public string? FileName { get; set; }
+
         public DdonSocketRequest(Guid id, DdonSocketMode mode, string api)
         {
             Id = id;
