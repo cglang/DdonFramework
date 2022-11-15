@@ -31,7 +31,7 @@ socketBuilder.Configure(config =>
     });
     config.AddSocketAccessHandler(async (a, b) =>
     {
-        Console.WriteLine($"客户端接入{a.Conn.SocketId}");
+        Console.WriteLine($"客户端接入{a.SessionId}");
         await Task.CompletedTask;
     });
 });

@@ -41,7 +41,7 @@ namespace Test.SocketApplication.Client.Controllers
         [HttpGet("SendFile")]
         public async Task<IEnumerable<int>> Get3(string filepath)
         {
-            var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
+            using var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
 
             var route = "OpenSocketApi::ReceiveFile";
             await client.SendFileAsync(route, filepath);

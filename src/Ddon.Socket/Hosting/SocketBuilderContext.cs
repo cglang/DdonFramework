@@ -16,7 +16,7 @@ namespace Ddon.Socket.Hosting
         /// </summary>
         public bool IsReconnection { get; set; }
 
-        public Func<DdonSocketCore, DdonSocketException, Task>? ExceptionHandler { get; private set; }
+        public Func<SocketSession, DdonSocketException, Task>? ExceptionHandler { get; private set; }
 
         public Func<SocketSession, IServiceProvider, Task>? SocketAccessHandler { get; private set; }
 
@@ -31,7 +31,7 @@ namespace Ddon.Socket.Hosting
             Port = port;
         }
 
-        public void AddExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task> exceptionHandler)
+        public void AddExceptionHandler(Func<SocketSession, DdonSocketException, Task> exceptionHandler)
         {
             ExceptionHandler = exceptionHandler;
         }

@@ -13,32 +13,6 @@ namespace Ddon.Core.Use.Socket
 {
     public class DdonSocketCore : IDisposable
     {
-        private struct Head
-        {
-            public int Length { get; }
-            public Type Type { get; }
-
-            public Head(Memory<byte> bytes)
-            {
-                Length = BitConverter.ToInt32(bytes.Span[..sizeof(int)]);
-                Type = (Type)bytes.Span[sizeof(int)];
-            }
-
-            public byte[] GetBytes()
-            {
-                DdonArray.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
-                return bytes;
-            }
-
-            public const int HeadLength = sizeof(int) + sizeof(Type);
-        }
-
-        public enum Type : byte
-        {
-            Text = 0,
-            Byte = 1
-        }
-
         private readonly TcpClient _tcpClient;
         private readonly Stream _stream;
 
@@ -55,9 +29,7 @@ namespace Ddon.Core.Use.Socket
             ConsecutiveReadStream();
         }
 
-        public DdonSocketCore(string host, int port) : this(new TcpClient(host, port))
-        {
-        }
+        public DdonSocketCore(string host, int port) : this(new TcpClient(host, port)) { }
 
         public DdonSocketCore(
             TcpClient tcpClient,
@@ -216,6 +188,37 @@ namespace Ddon.Core.Use.Socket
         public static T? JsonDeserialize<T>(byte[] data)
         {
             return JsonSerializer.Deserialize<T>(data, options);
+        }
+
+        public static T? JsonDeserialize<T>(Memory<byte> data)
+        {
+            return JsonSerializer.Deserialize<T>(data.Span, options);
+        }
+
+        private struct Head
+        {
+            public int Length { get; }
+            public Type Type { get; }
+
+            public Head(Memory<byte> bytes)
+            {
+                Length = BitConverter.ToInt32(bytes.Span[..sizeof(int)]);
+                Type = (Type)bytes.Span[sizeof(int)];
+            }
+
+            public byte[] GetBytes()
+            {
+                DdonArray.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
+                return bytes;
+            }
+
+            public const int HeadLength = sizeof(int) + sizeof(Type);
+        }
+
+        public enum Type : byte
+        {
+            Text = 0,
+            Byte = 1
         }
     }
 }

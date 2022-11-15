@@ -9,6 +9,6 @@ namespace Ddon.Socket.Session
         public virtual SocketSession Session { get; set; }
 
         [AllowNull]
-        public DdonSocketRequest Head { get; set; }
+        public DdonSocketSessionHeadInfo Head { get; set; }
     }
 }

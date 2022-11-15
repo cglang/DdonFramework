@@ -21,7 +21,7 @@ namespace Ddon.Socket.Session
             string methodName,
             string parameter,
             SocketSession connection,
-            DdonSocketRequest head)
+            DdonSocketSessionHeadInfo head)
         {
             using var scope = services.CreateScope();
             var classType = DdonType.GetTypeByName(className);
@@ -41,7 +41,7 @@ namespace Ddon.Socket.Session
             string methodName,
             T parameter,
             SocketSession connection,
-            DdonSocketRequest head) where T : notnull
+            DdonSocketSessionHeadInfo head) where T : notnull
         {
             using var scope = services.CreateScope();
             var classType = DdonType.GetTypeByName(className);

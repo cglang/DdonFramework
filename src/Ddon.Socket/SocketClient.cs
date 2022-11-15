@@ -1,13 +1,10 @@
 ﻿using Ddon.Core.Exceptions;
 using Ddon.Core.Services.LazyService.Static;
-using Ddon.Core.Use.Socket;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -45,9 +42,9 @@ namespace Ddon.Socket
             return t.Session;
         }
 
-        private Func<DdonSocketCore, DdonSocketException, Task> ExceptionHandler { get; }
+        private Func<SocketSession, DdonSocketException, Task> ExceptionHandler { get; }
 
-        private Func<DdonSocketCore, DdonSocketException, Task> DefaultExceptionHandler => async (conn, ex) =>
+        private Func<SocketSession, DdonSocketException, Task> DefaultExceptionHandler => async (conn, ex) =>
         {
             if (ex.InnerException is ObjectDisposedException)
             {
@@ -60,7 +57,7 @@ namespace Ddon.Socket
             }
         };
 
-        private Func<DdonSocketCore, DdonSocketException, Task> ReconnectionHandler => async (a, b) =>
+        private Func<SocketSession, DdonSocketException, Task> ReconnectionHandler => async (a, b) =>
         {
             Session.Dispose();
 
@@ -77,7 +74,7 @@ namespace Ddon.Socket
                     Logger?.LogWarning(ex, "正在尝试断线重连,已重试次数:{0}", number);
                     await Task.Delay(100);
                 }
-            }  
+            }
         };
     }
 

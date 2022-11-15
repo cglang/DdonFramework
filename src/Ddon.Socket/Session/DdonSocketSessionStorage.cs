@@ -12,29 +12,29 @@ namespace Ddon.Socket.Session
 
         private readonly Dictionary<Guid, SocketSession> Pairs = new();
 
-        public IEnumerable<SocketSession> Clients => Pairs.Values;
+        public IEnumerable<SocketSession> Sessions => Pairs.Values;
 
 
-        public SocketSession? GetClient(Guid socketId)
+        public SocketSession? GetClient(Guid sessionId)
         {
-            return Pairs.ContainsKey(socketId) ? Pairs[socketId] : null;
+            return Pairs.ContainsKey(sessionId) ? Pairs[sessionId] : null;
         }
 
-        public IEnumerable<SocketSession>? GetClients(IEnumerable<Guid> socketIds)
+        public IEnumerable<SocketSession>? GetClients(IEnumerable<Guid> sessionIds)
         {
-            return Pairs.Values.Where(x => socketIds.Contains(x.Conn.SocketId));
+            return Pairs.Values.Where(x => sessionIds.Contains(x.SessionId));
         }
 
         public void Add(SocketSession session)
         {
-            if (!Pairs.ContainsKey(session.Conn.SocketId))
-                Pairs.Add(session.Conn.SocketId, session);
+            if (!Pairs.ContainsKey(session.SessionId))
+                Pairs.Add(session.SessionId, session);
         }
 
-        public void Remove(Guid clientId)
+        public void Remove(Guid sessionId)
         {
-            if (Pairs.ContainsKey(clientId))
-                Pairs.Remove(clientId);
+            if (Pairs.ContainsKey(sessionId))
+                Pairs.Remove(sessionId);
         }
     }
 }
