@@ -69,87 +69,96 @@ namespace Ddon.Socket.Session
 
         private Func<DdonSocketCore, Memory<byte>, Task> ByteHandler => async (conn, bytes) =>
         {
-            var headLength = BitConverter.ToInt32(bytes.Span[..sizeof(int)]);
-            var headBytes = bytes.Slice(sizeof(int), headLength);
-            var dataBytes = bytes[(sizeof(int) + headLength)..];
-
-            var head = DdonSocketCore.JsonDeserialize<DdonSocketSessionHeadInfo>(headBytes) ?? throw new Exception("消息中不包含消息头");
-            if (head.Mode == DdonSocketMode.Response)
+            try
             {
-                ResponseHandle(new DdonSocketPackageInfo<Memory<byte>>(conn, head, dataBytes));
-                return;
+                var headLength = BitConverter.ToInt32(bytes.Span[..sizeof(int)]);
+                var headBytes = bytes.Slice(sizeof(int), headLength);
+                var dataBytes = bytes[(sizeof(int) + headLength)..];
+
+                var head = DdonSocketCore.JsonDeserialize<DdonSocketSessionHeadInfo>(headBytes) ?? throw new Exception("消息中不包含消息头");
+                if (head.Mode == DdonSocketMode.Response)
+                {
+                    ResponseHandle(new DdonSocketPackageInfo<Memory<byte>>(conn, head, dataBytes));
+                    return;
+                }
+
+                (string className, string methodName)? route = DdonSocketRouteMap.Get(head.Route);
+                if (route is null) return;
+
+                if (head.Mode == DdonSocketMode.String)
+                {
+                    var data = Encoding.UTF8.GetString(dataBytes.Span);
+                    await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, this, head);
+                }
+                else if (head.Mode == DdonSocketMode.Byte)
+                {
+                    var data = Encoding.UTF8.GetString(dataBytes.Span);
+                    await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, this, head);
+                }
+                else if (head.Mode == DdonSocketMode.File)
+                {
+                    var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File", DateTime.UtcNow.ToString("yyyy-MM-dd"));
+                    Directory.CreateDirectory(filePath);
+
+                    var fullName = Path.Combine(filePath, $"{head.Id}.{head.FileName ?? string.Empty}");
+                    using var fileStream = new FileStream(fullName, FileMode.CreateNew);
+                    fileStream.Position = fileStream.Length;
+                    fileStream.Write(dataBytes.Span);
+                    fileStream.Close();
+
+                    await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, fullName, this, head);
+
+                    //var tmpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "Tmp", head.Id.ToString());
+                    //var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File");
+
+                    //if (head.IsEnd)
+                    //{
+                    //    // TODO: 这里需要确保已经收到了全部的文件 也就是总大小与发送的一样
+                    //    var jsonData = Encoding.UTF8.GetString(dataBytes);
+                    //    var fileinfo = DdonSocketCore.JsonDeserialize<DdonSocketFileInfo>(jsonData);
+
+                    //    Directory.CreateDirectory(filePath);
+
+                    //    using var fileWrite = new FileStream(Path.Combine(filePath, $"{head.Id}.{fileinfo?.FileName ?? string.Empty}"), FileMode.OpenOrCreate);
+
+                    //    foreach (var file in Directory.GetFiles(tmpPath, "*.tmp"))
+                    //    {
+                    //        // TODO 这里还有很大的bug  传大文件的时候 合不起来 现在只能发送小于 DdonSocketConst.FileLength 的文件
+                    //        using var fs = new FileStream(file, FileMode.Open);
+                    //        fileWrite.Position = fileWrite.Length;
+                    //        fileWrite.Write(fs.ReadAllBytes());
+                    //        fs.Close();
+                    //    }
+
+                    //    Directory.Delete(tmpPath, true);
+                    //}
+                    //else
+                    //{
+                    //    Directory.CreateDirectory(tmpPath);
+
+                    //    var fullName = Path.Combine(tmpPath, $"{head.Id}.{head.BlockIndex}.tmp");
+                    //    using var fileStream = new FileStream(fullName, FileMode.CreateNew);
+                    //    fileStream.Position = fileStream.Length;
+                    //    fileStream.Write(dataBytes);
+                    //    fileStream.Close();
+                    //}
+                }
+                else if (head.Mode == DdonSocketMode.Request)
+                {
+                    var jsonData = Encoding.UTF8.GetString(dataBytes.Span);
+                    var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, jsonData, this, head);
+
+                    var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
+                    var methodReturnJsonBytes = DdonSocketCore.JsonSerialize(responseData).GetBytes();
+                    var responseHeadBytes = head.Response().GetBytes();
+
+                    DdonArray.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
+                    await _conn.SendBytesAsync(sendBytes);
+                }
             }
-
-            var route = DdonSocketRouteMap.Get(head.Route);
-            if (route is null) return;
-
-            if (head.Mode == DdonSocketMode.String)
+            catch (Exception ex)
             {
-                var data = Encoding.UTF8.GetString(dataBytes.Span);
-                await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, data, this, head);
-            }
-            else if (head.Mode == DdonSocketMode.Byte)
-            {
-                var data = Encoding.UTF8.GetString(dataBytes.Span);
-                await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, data, this, head);
-            }
-            else if (head.Mode == DdonSocketMode.File)
-            {
-                var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File");
-                Directory.CreateDirectory(filePath);
-
-                var fullName = Path.Combine(filePath, $"{head.Id}.{head.FileName ?? string.Empty}");
-                using var fileStream = new FileStream(fullName, FileMode.CreateNew);
-                fileStream.Position = fileStream.Length;
-                fileStream.Write(dataBytes.Span);
-                fileStream.Close();
-
-                //var tmpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "Tmp", head.Id.ToString());
-                //var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File");
-
-                //if (head.IsEnd)
-                //{
-                //    // TODO: 这里需要确保已经收到了全部的文件 也就是总大小与发送的一样
-                //    var jsonData = Encoding.UTF8.GetString(dataBytes);
-                //    var fileinfo = DdonSocketCore.JsonDeserialize<DdonSocketFileInfo>(jsonData);
-
-                //    Directory.CreateDirectory(filePath);
-
-                //    using var fileWrite = new FileStream(Path.Combine(filePath, $"{head.Id}.{fileinfo?.FileName ?? string.Empty}"), FileMode.OpenOrCreate);
-
-                //    foreach (var file in Directory.GetFiles(tmpPath, "*.tmp"))
-                //    {
-                //        // TODO 这里还有很大的bug  传大文件的时候 合不起来 现在只能发送小于 DdonSocketConst.FileLength 的文件
-                //        using var fs = new FileStream(file, FileMode.Open);
-                //        fileWrite.Position = fileWrite.Length;
-                //        fileWrite.Write(fs.ReadAllBytes());
-                //        fs.Close();
-                //    }
-
-                //    Directory.Delete(tmpPath, true);
-                //}
-                //else
-                //{
-                //    Directory.CreateDirectory(tmpPath);
-
-                //    var fullName = Path.Combine(tmpPath, $"{head.Id}.{head.BlockIndex}.tmp");
-                //    using var fileStream = new FileStream(fullName, FileMode.CreateNew);
-                //    fileStream.Position = fileStream.Length;
-                //    fileStream.Write(dataBytes);
-                //    fileStream.Close();
-                //}
-            }
-            else if (head.Mode == DdonSocketMode.Request)
-            {
-                var jsonData = Encoding.UTF8.GetString(dataBytes.Span);
-                var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, jsonData, this, head);
-
-                var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
-                var methodReturnJsonBytes = DdonSocketCore.JsonSerialize(responseData).GetBytes();
-                var responseHeadBytes = head.Response().GetBytes();
-
-                DdonArray.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
-                await _conn.SendBytesAsync(sendBytes);
+                Logger?.LogError(ex, "ByteHandler 错误");
             }
         };
 
