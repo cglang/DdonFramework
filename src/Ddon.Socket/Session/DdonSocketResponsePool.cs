@@ -51,7 +51,7 @@ namespace Ddon.Socket.Session
                             while (!Instance.DelayQueue.IsEmpty)
                             {
                                 var item = await Instance.DelayQueue.TakeAsync();
-                                if (item != default && !Pairs[item].IsCompleted)
+                                if (item != default && Pairs.ContainsKey(item) && !Pairs[item].IsCompleted)
                                 {
                                     Pairs[item].ExceptionThen.Invoke("请求超时");
                                 }
