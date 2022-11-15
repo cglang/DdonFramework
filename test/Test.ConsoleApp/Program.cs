@@ -1,30 +1,33 @@
-﻿//using Test.ConsoleApp;
+﻿
+using Ddon.Core.Use.Socket;
+using System.Text;
 
-//DelayQueueDemo.Run();
+var result = string.Empty;
+DdonSocket.CreateServer("127.0.0.1", 5356)
+    .StringHandler(async (a, b) =>
+    {
+        await Task.CompletedTask;
+        Console.WriteLine(b);
+    })
+    .ByteHandler(async (a, b) =>
+    {
+        await Task.CompletedTask;
+        result = Encoding.UTF8.GetString(b.Span);
+    })
+    .ExceptionHandler(async (a, b) =>
+    {
+        Console.WriteLine(b.Message);
+        //throw b;
+    })
+    .Start();
 
-//await DelayQueueDemo.SRun();
+var core = DdonSocket.CreateClient("127.0.0.1", 5356);
 
-SortedSet<long> longs = new();
+string sendData = "test texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest texttest text";
+await core.SendStringAsync(sendData);
 
-
-List<Task> ts = new();
-
-for (int i = 0; i < 2; i++)
-{
-    var t = Task.Run(() =>
-     {
-         Random random = new Random();
-         for (int i = 0; i < 100000; i++)
-         {
-             longs.Add(random.NextInt64(long.MinValue, long.MaxValue));
-             if (i % 1000 == 0) Console.WriteLine(i);
-         }
-     });
-    ts.Add(t);
-}
-
-await Task.WhenAll(ts);
-
+await Task.Delay(100);
+core.Dispose();
 
 Console.WriteLine("=======结束=======");
 Console.ReadKey();

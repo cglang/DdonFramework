@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,7 +7,7 @@ namespace Ddon.Core.Use.Socket
 {
     public static class DdonSocketStorage
     {
-        private static readonly Dictionary<Guid, DdonSocketCore> Pairs = new();
+        private static readonly ConcurrentDictionary<Guid, DdonSocketCore> Pairs = new();
 
         public static IEnumerable<DdonSocketCore> Clients => Pairs.Values;
 
@@ -20,16 +21,17 @@ namespace Ddon.Core.Use.Socket
             return Pairs.Values.Where(x => socketIds.Contains(x.SocketId));
         }
 
-        public static void Add(DdonSocketCore session)
+        public static bool Add(DdonSocketCore session)
         {
             if (!Pairs.ContainsKey(session.SocketId))
-                Pairs.Add(session.SocketId, session);
+                return Pairs.TryAdd(session.SocketId, session);
+            return false;
         }
 
         public static void Remove(Guid clientId)
         {
             if (Pairs.ContainsKey(clientId))
-                Pairs.Remove(clientId);
+                Pairs.Remove(clientId, out _);
         }
     }
 }

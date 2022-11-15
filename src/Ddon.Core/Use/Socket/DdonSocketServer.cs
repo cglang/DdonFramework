@@ -55,7 +55,7 @@ namespace Ddon.Core.Use.Socket
             Task.Run(Function);
         }
 
-        private async void Function()
+        private async Task Function()
         {
             while (true)
             {
