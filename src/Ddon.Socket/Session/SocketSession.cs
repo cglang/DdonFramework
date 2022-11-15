@@ -36,8 +36,7 @@ namespace Ddon.Socket.Session
         public SocketSession(TcpClient tcpClient, Func<SocketSession, DdonSocketException, Task>? exceptionHandler)
         {
             _exceptionHandler = exceptionHandler;
-            _conn = new DdonSocketCore(tcpClient, ByteHandler, ConnExceptionHandler);
-            DdonSocketResponsePool.Start();
+            _conn = new DdonSocketCore(tcpClient, ByteHandler, ConnExceptionHandler);            
         }
 
         private static void ResponseHandle(DdonSocketPackageInfo<Memory<byte>> info)

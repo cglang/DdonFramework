@@ -62,7 +62,9 @@ namespace Ddon.Socket.Session
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex);
-                        Console.WriteLine("出错了");
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(ex.Source);
+                        Console.WriteLine(ex.HelpLink);
                     }
                 });
             }

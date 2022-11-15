@@ -1,5 +1,4 @@
 ﻿using Ddon.Core.Exceptions;
-using Ddon.Core.Use.Socket;
 using Ddon.Socket.Session;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,6 +21,7 @@ namespace Ddon.Socket.Hosting
             Func<SocketSession, IServiceProvider, Task>?> acceptTcpClientHandler = (tcpClient, serviceProvider, logger, exceptionHandler, socketAccessHandler) =>
             {
                 var session = new SocketSession(tcpClient, exceptionHandler);
+                DdonSocketResponsePool.Start();
                 // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
                 DdonSocketSessionStorage.Instance.Add(session);
                 socketAccessHandler?.Invoke(session, serviceProvider);
@@ -40,7 +40,7 @@ namespace Ddon.Socket.Hosting
             _exceptionHandler = exceptionHandler;
             _exceptionHandler += async (session, ex) =>
             {
-                DdonSocketSessionStorage.Instance.Remove(session.SessionId);
+                await Task.Run(() => { DdonSocketSessionStorage.Instance.Remove(session.SessionId); });
             };
             _socketAccessHandler = socketAccessHandler;
         }
