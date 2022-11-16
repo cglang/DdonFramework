@@ -148,7 +148,7 @@ namespace Ddon.Socket.Session
                 else if (head.Mode == DdonSocketMode.Request)
                 {
                     var jsonData = Encoding.UTF8.GetString(dataBytes.Span);
-                    var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, jsonData, this, head);
+                    var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, this, head);
 
                     var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
                     var methodReturnJsonBytes = JsonSerialize(responseData).GetBytes();
