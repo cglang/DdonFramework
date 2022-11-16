@@ -11,6 +11,10 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace Ddon.Socket.Session
@@ -36,7 +40,7 @@ namespace Ddon.Socket.Session
         public SocketSession(TcpClient tcpClient, Func<SocketSession, DdonSocketException, Task>? exceptionHandler)
         {
             _exceptionHandler = exceptionHandler;
-            _conn = new DdonSocketCore(tcpClient, ByteHandler, ConnExceptionHandler);            
+            _conn = new DdonSocketCore(tcpClient, ByteHandler, ConnExceptionHandler);
         }
 
         private static void ResponseHandle(DdonSocketPackageInfo<Memory<byte>> info)
@@ -48,17 +52,17 @@ namespace Ddon.Socket.Session
             var responseHandle = DdonSocketResponsePool.Get(id);
             if (!responseHandle.IsCompleted)
             {
-                var res = DdonSocketCore.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
+                var res = JsonDeserialize<DdonSocketResponse<object>>(info.Data);
 
                 if (res != null)
                 {
                     if (res.Code == DdonSocketResponseCode.OK)
                     {
-                        responseHandle.ActionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                        responseHandle.ActionThen?.Invoke(JsonSerialize(res.Data));
                     }
                     else if (res.Code == DdonSocketResponseCode.Error)
                     {
-                        responseHandle.ExceptionThen?.Invoke(DdonSocketCore.JsonSerialize(res.Data));
+                        responseHandle.ExceptionThen?.Invoke(JsonSerialize(res.Data));
                     }
                 }
 
@@ -74,7 +78,7 @@ namespace Ddon.Socket.Session
                 var headBytes = bytes.Slice(sizeof(int), headLength);
                 var dataBytes = bytes[(sizeof(int) + headLength)..];
 
-                var head = DdonSocketCore.JsonDeserialize<DdonSocketSessionHeadInfo>(headBytes) ?? throw new Exception("消息中不包含消息头");
+                var head = JsonDeserialize<DdonSocketSessionHeadInfo>(headBytes) ?? throw new Exception("消息中不包含消息头");
                 if (head.Mode == DdonSocketMode.Response)
                 {
                     ResponseHandle(new DdonSocketPackageInfo<Memory<byte>>(conn, head, dataBytes));
@@ -99,9 +103,8 @@ namespace Ddon.Socket.Session
                     var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File", DateTime.UtcNow.ToString("yyyy-MM-dd"));
                     Directory.CreateDirectory(filePath);
 
-                    var fullName = Path.Combine(filePath, $"{head.Id}.{head.FileName ?? string.Empty}");
+                    var fullName = Path.Combine(filePath, $"{conn.SocketId}.{DateTime.UtcNow:mmssffff}.{head.FileName ?? string.Empty}");
                     using var fileStream = new FileStream(fullName, FileMode.CreateNew);
-                    fileStream.Position = fileStream.Length;
                     fileStream.Write(dataBytes.Span);
                     fileStream.Close();
 
@@ -148,7 +151,7 @@ namespace Ddon.Socket.Session
                     var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.Item1, route.Value.Item2, jsonData, this, head);
 
                     var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
-                    var methodReturnJsonBytes = DdonSocketCore.JsonSerialize(responseData).GetBytes();
+                    var methodReturnJsonBytes = JsonSerialize(responseData).GetBytes();
                     var responseHeadBytes = head.Response().GetBytes();
 
                     DdonArray.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
@@ -170,7 +173,7 @@ namespace Ddon.Socket.Session
         public async Task SendAsync(string route, object data)
         {
             var requetBytes = new DdonSocketSessionHeadInfo(default, DdonSocketMode.String, route).GetBytes();
-            var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
+            var dataBytes = JsonSerialize(data).GetBytes();
             DdonArray.MergeArrays(out byte[] contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
             await _conn.SendBytesAsync(contentBytes);
         }
@@ -190,7 +193,7 @@ namespace Ddon.Socket.Session
             DdonSocketResponsePool.Add(response);
 
             var requetBytes = new DdonSocketSessionHeadInfo(response.Id, DdonSocketMode.Request, route).GetBytes();
-            var dataBytes = DdonSocketCore.JsonSerialize(data).GetBytes();
+            var dataBytes = JsonSerialize(data).GetBytes();
             DdonArray.MergeArrays(out var contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
             await _conn.SendBytesAsync(contentBytes);
 
@@ -209,7 +212,7 @@ namespace Ddon.Socket.Session
             var resData = await RequestAsync(route, data);
             try
             {
-                return DdonSocketCore.JsonDeserialize<T>(resData);
+                return JsonDeserialize<T>(resData);
             }
             catch (Exception ex)
             {
@@ -261,6 +264,34 @@ namespace Ddon.Socket.Session
             //DdonArray.MergeArrays(out var contentBytes, requetBytes, filbytes, DdonSocketConst.HeadLength);
             //await Conn.SendBytesAsync(contentBytes);
         }
+
+        private static readonly JsonSerializerOptions options = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
+        };
+
+        public static string JsonSerialize<T>(T data)
+        {
+            return JsonSerializer.Serialize(data, options);
+        }
+
+        public static T? JsonDeserialize<T>(string data)
+        {
+            return JsonSerializer.Deserialize<T>(data, options);
+        }
+
+        public static T? JsonDeserialize<T>(byte[] data)
+        {
+            return JsonSerializer.Deserialize<T>(data, options);
+        }
+
+        public static T? JsonDeserialize<T>(Memory<byte> data)
+        {
+            return JsonSerializer.Deserialize<T>(data.Span, options);
+        }
+
 
         private bool _disposed;
 

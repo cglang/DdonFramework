@@ -36,7 +36,7 @@ namespace Ddon.Socket.Session.Model
 
         public byte[] GetBytes()
         {
-            return Encoding.UTF8.GetBytes(DdonSocketCore.JsonSerialize(this));
+            return Encoding.UTF8.GetBytes(SocketSession.JsonSerialize(this));
         }
     }
 }

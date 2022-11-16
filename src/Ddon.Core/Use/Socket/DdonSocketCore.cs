@@ -109,16 +109,6 @@ namespace Ddon.Core.Use.Socket
             return await SendBytesAsync(data.GetBytes(), Type.Text);
         }
 
-        /// <summary>
-        /// 发送Json字符串
-        /// </summary>
-        /// <param name="data">数据</param>
-        /// <returns>发送的数据字节长度</returns>
-        public async Task<int> SendJsonAsync<TData>(TData data)
-        {
-            return await SendStringAsync(JsonSerialize(data));
-        }
-
         public DdonSocketCore ByteHandler(Func<DdonSocketCore, Memory<byte>, Task>? byteHandler)
         {
             _byteHandler += byteHandler;
@@ -166,33 +156,6 @@ namespace Ddon.Core.Use.Socket
             _stringHandler = null;
 
             _disposed = true;
-        }
-
-        private static readonly JsonSerializerOptions options = new()
-        {
-            PropertyNameCaseInsensitive = true,
-            ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
-        };
-
-        public static string JsonSerialize<T>(T data)
-        {
-            return JsonSerializer.Serialize(data, options);
-        }
-
-        public static T? JsonDeserialize<T>(string data)
-        {
-            return JsonSerializer.Deserialize<T>(data, options);
-        }
-
-        public static T? JsonDeserialize<T>(byte[] data)
-        {
-            return JsonSerializer.Deserialize<T>(data, options);
-        }
-
-        public static T? JsonDeserialize<T>(Memory<byte> data)
-        {
-            return JsonSerializer.Deserialize<T>(data.Span, options);
         }
 
         private struct Head
