@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.IO
@@ -32,22 +33,17 @@ namespace System.IO
             var data = new byte[length].AsMemory();
 
             var index = 0;
-            if (length < BUFFER_SIZE)
+            var buffsize = BUFFER_SIZE;
+            do
             {
-                await stream.ReadAsync(data.Slice(index, length));
-            }
-            else
-            {
-                var buffsize = BUFFER_SIZE;
-                do
-                {
-                    if (index + buffsize > length) buffsize = length - index;
-                    await stream.ReadAsync(data.Slice(index, buffsize));
+                if (index + buffsize > length) buffsize = length - index;
+                int readLength = await stream.ReadAsync(data.Slice(index, buffsize));
+                index += readLength;
 
-                    index += buffsize;
-                }
-                while (index < length);
+                if (readLength == 0) throw new SocketException();
             }
+            while (index < length);
+
             return data;
         }
 
