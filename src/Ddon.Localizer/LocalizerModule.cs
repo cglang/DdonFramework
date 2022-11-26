@@ -13,7 +13,7 @@ namespace Ddon.Localizer
             Load<CoreModule>(services, configuration);
             Load<CacheModule>(services, configuration);
 
-            var localizerOptions = configuration.GetSection(nameof(JsonLocalizerOptions)).Get<JsonLocalizerOptions>();
+            var localizerOptions = configuration.GetSection(nameof(JsonLocalizerOptions)).Get<JsonLocalizerOptions>() ?? new();
             services.AddOptions().Configure<JsonLocalizerOptions>(options =>
             {
                 options.ResourcesPath = localizerOptions.ResourcesPath;
