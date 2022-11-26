@@ -9,25 +9,8 @@ namespace Ddon.Cache
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
-            var redisEnabled = configuration["Redis:IsEnabled"];
-            if (!redisEnabled.IsNullOrWhiteSpace() && bool.Parse(redisEnabled))
-            {
-                services.AddStackExchangeRedisCache(options =>
-                {
-                    var redisConfiguration = configuration["Redis:Configuration"];
-                    if (!redisConfiguration.IsNullOrEmpty())
-                    {
-                        options.Configuration = redisConfiguration;
-                    }
-                });
-
-                services.AddSingleton<ICache, Cache>();
-            }
-            else
-            {
-                services.AddDistributedMemoryCache();
-                services.AddSingleton<ICache, Cache>();
-            }
+            Load<CoreModule>(services, configuration);
+            services.AddSingleton<ICache, Cache>();
         }
     }
 }
