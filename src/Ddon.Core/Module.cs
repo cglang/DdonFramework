@@ -6,7 +6,7 @@ namespace Ddon.Core
 {
     public abstract class Module
     {
-        private static readonly HashSet<string> LoadedModule = new();
+        private readonly HashSet<string> LoadedModule = new();
 
         public abstract void Load(IServiceCollection services, IConfiguration configuration);
 
@@ -16,7 +16,7 @@ namespace Ddon.Core
         /// <typeparam name="TModule"></typeparam>
         /// <param name="services"></param>
         /// <param name="configuration"></param>
-        protected static void Load<TModule>(IServiceCollection services, IConfiguration configuration) where TModule : Module, new()
+        protected void Load<TModule>(IServiceCollection services, IConfiguration configuration) where TModule : Module, new()
         {
             if (LoadedModule.Contains(typeof(TModule).FullName ?? typeof(TModule).Name))
             {
