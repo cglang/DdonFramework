@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Cache
+namespace Ddon.Cache.Redis
 {
     public class Cache : ICache
     {

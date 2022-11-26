@@ -1,9 +1,8 @@
-﻿using Ddon.Cache.Redis;
-using Ddon.Core;
+﻿using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ddon.Cache
+namespace Ddon.Cache.Redis
 {
     public class CacheRedisModule : Module
     {
