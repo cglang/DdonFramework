@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DelayQueue.UnitTest
+namespace Test.Core.Tests
 {
     [TestClass]
     public class DelayQueueTest
@@ -115,7 +115,7 @@ namespace DelayQueue.UnitTest
         /// <returns></returns>
         private static DateTime CutOffMillisecond(DateTime dt)
         {
-            return new DateTime(dt.Ticks - (dt.Ticks % TimeSpan.TicksPerSecond), dt.Kind);
+            return new DateTime(dt.Ticks - dt.Ticks % TimeSpan.TicksPerSecond, dt.Kind);
         }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Test.Core
+namespace Test.Core.Tests
 {
     [TestClass]
     public class ConnCoreTests

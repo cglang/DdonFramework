@@ -1,4 +1,5 @@
 ﻿using Ddon.Core.Services.Guids;
+using Ddon.Core.Use.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,8 @@ namespace Ddon.Core
             {
                 options.DefaultSequentialGuidType = SequentialGuidType.SequentialAsString;
             });
+
+            //services.AddTransient<IDdonServiceInvoke, DdonServiceInvoke>();
         }
     }
 }

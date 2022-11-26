@@ -26,21 +26,6 @@ namespace Ddon.Core.Use.Reflection
         }
 
         /// <summary>
-        /// 通过类名和方法名执行方法中的代码
-        /// </summary>
-        /// <param name="className">类型名称</param>
-        /// <param name="methodName">方法名</param>
-        /// <param name="parameter">参数列表</param>
-        /// <returns></returns>
-        public static async Task<dynamic?> InvokeAsync(string className, string methodName, params object[] parameter)
-        {
-            var classType = DdonType.GetTypeByName(className);
-            var method = DdonType.GetMothodByName(classType, methodName);
-            var instance = Activator.CreateInstance(classType);
-            return await InvokeAsync(instance, method, parameter);
-        }
-
-        /// <summary>
         /// 执行方法中的代码
         /// </summary>
         /// <param name="instance">类的对象</param>
@@ -112,6 +97,21 @@ namespace Ddon.Core.Use.Reflection
         }
 
         /// <summary>
+        /// 通过类名和方法名执行方法中的代码
+        /// </summary>
+        /// <param name="className">类型名称</param>
+        /// <param name="methodName">方法名</param>
+        /// <param name="parameter">参数列表</param>
+        /// <returns></returns>
+        public static async Task<dynamic?> InvokeAsync(string className, string methodName, params object[] parameter)
+        {
+            var classType = DdonType.GetTypeByName(className);
+            var method = DdonType.GetMothodByName(classType, methodName);
+            var instance = Activator.CreateInstance(classType);
+            return await InvokeAsync(instance, method, parameter);
+        }
+
+        /// <summary>
         /// 执行方法中的代码
         /// </summary>
         /// <param name="instance">类的对象</param>
@@ -128,15 +128,5 @@ namespace Ddon.Core.Use.Reflection
 
             return invokeResult;
         }
-
-        // /// <summary>
-        // /// 是否为异步方法
-        // /// </summary>
-        // private static bool IsAsyncMethod(MethodInfo method)
-        // {
-        //     var atttype = typeof(AsyncStateMachineAttribute);
-        //     var attrib = (AsyncStateMachineAttribute?)method.GetCustomAttribute(atttype);
-        //     return attrib != null;
-        // }
     }
 }

@@ -4,26 +4,20 @@ namespace Test.Core.TestInvokeClasses
 {
     public class TestClass
     {
-        public async Task<string> TestMethod001(string a)
-        {
-            await Task.Delay(1);
-            return a;
-        }
+        public async Task<string> MethodAsync(string a) { await Task.Delay(1); return a; }
+        public string MethodSync(string value) => value;
 
-        public string TestMethod002(string a)
-        {
-            return a;
-        }
 
-        public UserInfo TestMethod003(string UserName, int Age)
-        {
-            return new() { UserName = UserName, Age = Age };
-        }
+        public int MethodSingleParameterInt(int number) => number;
+        public long MethodSingleParameterLong(long number) => number;
+        public short MethodSingleParameterShort(short number) => number;
+        public byte MethodSingleParameterByte(byte numbber) => numbber;
+        public string MethodSingleParameterString(string text) => text;
 
-        public UserInfo TestMethod004(UserInfo userInfo)
-        {
-            return userInfo;
-        }
+
+        public UserInfo MethodMultipleParameter(string UserName, int Age) => new() { UserName = UserName, Age = Age };
+
+        public UserInfo MethodClassObject(UserInfo userInfo) => userInfo;
     }
 
     public class UserInfo
