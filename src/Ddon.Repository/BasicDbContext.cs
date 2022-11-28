@@ -3,7 +3,6 @@ using Ddon.Core.Services.LazyService;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Entities.Auditing;
 using Ddon.Repositiry.Extensions;
-using Ddon.Repositiry.Uow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -17,7 +16,6 @@ namespace Ddon.Repositiry
         where TKey : IEquatable<TKey>
     {
         private readonly ILazyServiceProvider LazyServiceProvider;
-        private readonly IUnitOfWork _unitOfWork;
 
         private IGuidGenerator? GuidGenerator => LazyServiceProvider.LazyGetRequiredService<IGuidGenerator>();
 
@@ -25,8 +23,6 @@ namespace Ddon.Repositiry
         public BasicDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(options)
         {
             LazyServiceProvider = lazyServiceProvider;
-            _unitOfWork = lazyServiceProvider.LazyGetRequiredService<IUnitOfWork>();
-            _unitOfWork.Init(Database);
 
             Initialize();
         }

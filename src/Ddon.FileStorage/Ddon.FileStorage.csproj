@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageIcon>icon.nuget.jpg</PackageIcon>
+  </PropertyGroup>
+
+  <Import Project="../../common.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />    
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
+    <ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
+  </ItemGroup>
+</Project>
