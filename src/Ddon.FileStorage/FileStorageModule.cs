@@ -17,7 +17,9 @@ namespace Ddon.FileStorage
             Load<CoreModule>(services, configuration);
 
             services.AddDbContext<FileStorageDbContext>(options =>
-                options.UseSqlite($"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FileStorage", "FileStorage.db")}"));
+            {
+                options.UseSqlite($"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FileStorage", "FileStorage.db")}");
+            });
 
             services.AddHostedService<FileStorageHostService>();
 

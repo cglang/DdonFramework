@@ -1,3 +1,4 @@
+using Ddon.FileStorage;
 using Ddon.Socket;
 using Ddon.Socket.Hosting;
 using Test.WebApplication.Controllers;
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureServices((context, services) =>
 {
     services.LoadModule<SocketModule>(context.Configuration);
+    services.LoadModule<FileStorageModule>(context.Configuration);
 });
 
 builder.Services.AddControllers();

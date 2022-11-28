@@ -11,6 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\src\Ddon.FileStorage\Ddon.FileStorage.csproj" />
 		<ProjectReference Include="..\..\src\Ddon.Socket\Ddon.Socket.csproj" />
 	</ItemGroup>
 

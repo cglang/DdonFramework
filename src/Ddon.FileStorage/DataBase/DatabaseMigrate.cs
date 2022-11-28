@@ -1,8 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Ddon.FileStorage.DataBase
@@ -16,6 +12,13 @@ namespace Ddon.FileStorage.DataBase
             _dbContext = dbContext;
         }
 
-        public async Task MigrateAsync() => await _dbContext.Database.MigrateAsync();
+        public async Task MigrateAsync()
+        {
+            //_dbContext.Database
+            var aaa = await _dbContext.Database.GetAppliedMigrationsAsync();
+            await _dbContext.Database.MigrateAsync();
+
+            //_dbContext.Database.mi
+        }
     }
 }
