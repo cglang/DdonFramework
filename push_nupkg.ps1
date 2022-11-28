@@ -8,6 +8,7 @@ $projects = (
     "Ddon.Core",
     "Ddon.Application",
     "Ddon.AspNetCore",
+    "Ddon.Cache",
     "Ddon.Cache.Memory",
     "Ddon.Domain",
     "Ddon.EventBus",
