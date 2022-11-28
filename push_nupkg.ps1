@@ -8,7 +8,7 @@ $projects = (
     "Ddon.Core",
     "Ddon.Application",
     "Ddon.AspNetCore",
-    "Ddon.Cache",
+    "Ddon.Cache.Memory",
     "Ddon.Domain",
     "Ddon.EventBus",
     "Ddon.EventBus.Memory",
@@ -20,7 +20,7 @@ $projects = (
     "Ddon.Repository",
     "Ddon.Serilog",
     "Ddon.Socket",
-    "Ddon.UploadFile"
+    "Ddon.FileStorage"
 )
 
 [xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "common.props")

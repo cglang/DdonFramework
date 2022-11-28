@@ -5,8 +5,6 @@ using Gardener.HostService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.IO;
 
 namespace Ddon.FileStorage
 {
@@ -18,12 +16,13 @@ namespace Ddon.FileStorage
 
             services.AddDbContext<FileStorageDbContext>(options =>
             {
-                options.UseSqlite($"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FileStorage", "FileStorage.db")}");
+                options.UseSqlite($"Data Source={FileStorageConfig.DatabaseSource}");
             });
 
             services.AddHostedService<FileStorageHostService>();
 
             services.AddTransient<IFileStorageService, FileStorageService>();
+            services.AddTransient<IFileStorageRepository, FileStorageRepository>();
             services.AddTransient<DatabaseMigrate>();
         }
     }

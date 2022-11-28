@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Ddon.FileStorage.DataBase
@@ -14,11 +16,12 @@ namespace Ddon.FileStorage.DataBase
 
         public async Task MigrateAsync()
         {
-            //_dbContext.Database
-            var aaa = await _dbContext.Database.GetAppliedMigrationsAsync();
-            await _dbContext.Database.MigrateAsync();
+            var datasource = FileStorageConfig.DatabaseSource;
 
-            //_dbContext.Database.mi
+            Directory.CreateDirectory(FileStorageConfig.FileStorageFullPath);
+            if (!File.Exists(datasource)) File.WriteAllBytes(datasource, Array.Empty<byte>());
+
+            await _dbContext.Database.MigrateAsync();
         }
     }
 }

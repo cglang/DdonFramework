@@ -10,31 +10,36 @@ namespace Ddon.FileStorage.Service
 {
     public class FileStorageService : IFileStorageService
     {
-        private readonly FileStorageDbContext _dbContext;
+        private readonly IFileStorageRepository _repository;
 
-        public FileStorageService(FileStorageDbContext dbContext)
+        public FileStorageService(IFileStorageRepository repository)
         {
-            _dbContext = dbContext;
+            _repository = repository;
         }
 
         public async Task<FileEntity> SaveFileAsync(IFormFile file)
         {
-            var fileEntity = await SaveFile(file);
-            await _dbContext.AddAsync(fileEntity);
+            var fileEntity = BuildEntity(file, file.FileName);
+
+            var aa = Path.GetDirectoryName(fileEntity.FullPath);
+            Directory.CreateDirectory(aa!);
+            using var newstream = File.OpenWrite(fileEntity.FullPath);
+            await file.CopyToAsync(newstream);
+
+            await _repository.AddAsync(fileEntity, true);
+
             return fileEntity;
         }
 
-        public async Task<IEnumerable<FileEntity>> SaveFilesAsync(IEnumerable<IFormFile> files)
+        public async Task<IEnumerable<FileEntity>> SaveFileAsync(IEnumerable<IFormFile> files)
         {
             List<FileEntity> filesEntity = new();
             try
             {
                 foreach (var file in files)
                 {
-                    var fileEntity = await SaveFile(file);
-                    filesEntity.Add(fileEntity);
+                    await SaveFileAsync(file);
                 }
-                await _dbContext.AddAsync(filesEntity);
             }
             catch (ApplicationServiceException e)
             {
@@ -44,84 +49,70 @@ namespace Ddon.FileStorage.Service
             {
                 throw new ApplicationServiceException("文件上传失败");
             }
+            finally
+            {
+                await _repository.SaveChangesAsync();
+            }
 
             return filesEntity;
         }
 
         public async Task<FileEntity> SaveFileAsync(Stream file, string? filename)
         {
-            if (file.Length == 0)
-            {
-                throw new ApplicationServiceException("文件长度为0");
-            }
+            var fileEntity = BuildEntity(file, filename);
 
-            if (file.Length / 1024 / 1024 > 4)
-            {
-                throw new ApplicationServiceException("文件超过上限大小");
-            }
+            var aa = Path.GetDirectoryName(fileEntity.FullPath);
+            Directory.CreateDirectory(aa!);
+            using var newstream = File.OpenWrite(fileEntity.FullPath);
+            await file.CopyToAsync(newstream);
 
-            // 获取文件拓展名
-            var ext = Path.GetExtension(filename ?? string.Empty).ToLowerInvariant();
-            var path = Path.Combine("Files", $"{new Guid()}.{ext}");
-            var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+            await _repository.AddAsync(fileEntity, true);
 
-            var fileEntity = new FileEntity
-            {
-                Id = new Guid().ToString(),
-                Name = filename ?? string.Empty,
-                Path = path,
-                FullPath = fullPath,
-                Extension = ext,
-            };
-
-            try
-            {
-                using var stream = File.Create(fileEntity.FullPath);
-                await file.CopyToAsync(stream);
-                return fileEntity;
-            }
-            catch
-            {
-                throw new ApplicationServiceException("文件保存失败");
-            }
+            return fileEntity;
         }
 
-        private static async Task<FileEntity> SaveFile(IFormFile file)
+        private static FileEntity BuildEntity(object obj, string? filename)
         {
-            if (file.Length == 0)
+            if (obj is Stream stream)
             {
-                throw new ApplicationServiceException("文件错误");
+                if (stream.Length == 0) throw new ApplicationServiceException("文件长度为0");
+
+                if (stream.Length / 1024 / 1024 > 4) throw new ApplicationServiceException("文件超过上限大小");
+            }
+            else if (obj is IFormFile file)
+            {
+                if (file.Length == 0) throw new ApplicationServiceException("文件错误");
+
+                if (file.Length / 1024 / 1024 > 4) throw new ApplicationServiceException("文件超过上限大小");
+            }
+            else
+            {
+                throw new ApplicationServiceException("参数有误");
             }
 
-            if (file.Length / 1024 / 1024 > 4)
-            {
-                throw new ApplicationServiceException("文件超过上限大小");
-            }
 
-            // 获取文件拓展名
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            var path = Path.Combine("Files", $"{new Guid()}.{ext}");
-            var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+            // 文件拓展名
+            var ext = Path.GetExtension(filename ?? string.Empty).ToLowerInvariant();
+
+            // 文件存储位置
+            var savePath = Path.Combine(FileStorageConfig.FileStoragePath, DateTime.UtcNow.ToString("yyyy-MM"));
+            var saveFilename = $"{Guid.NewGuid()}{ext}";
+
+            var path = Path.Combine(savePath, saveFilename);
+            var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, savePath);
+            // 文件存储位置全路径名称
+            var fullName = Path.Combine(fullPath, saveFilename);
 
             var fileEntity = new FileEntity
             {
-                Id = new Guid().ToString(),
-                Name = file.FileName,
+                Id = Guid.NewGuid().ToString(),
+                Name = Path.GetFileName(filename),
                 Path = path,
-                FullPath = fullPath,
+                FullPath = fullName,
                 Extension = ext,
             };
 
-            try
-            {
-                using var stream = File.Create(fileEntity.FullPath);
-                await file.CopyToAsync(stream);
-                return fileEntity;
-            }
-            catch
-            {
-                throw new ApplicationServiceException("文件上传失败");
-            }
+            return fileEntity;
         }
 
     }

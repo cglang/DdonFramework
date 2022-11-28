@@ -10,7 +10,7 @@ namespace Ddon.FileStorage.Service
     {
         Task<FileEntity> SaveFileAsync(IFormFile file);
 
-        Task<IEnumerable<FileEntity>> SaveFilesAsync(IEnumerable<IFormFile> files);
+        Task<IEnumerable<FileEntity>> SaveFileAsync(IEnumerable<IFormFile> files);
 
         Task<FileEntity> SaveFileAsync(Stream file, string? filename);
     }
