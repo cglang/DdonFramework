@@ -13,7 +13,7 @@ namespace Ddon.AspNetCore
             // 向容器当中添加一些功能组成WebApi，包含AddControllers、AddHttpContextAccessor、AppSrtings
             services.AddControllers(options =>
             {
-                options.Filters.Add(typeof(GlobalExceptionFilter));
+                options.Filters.Add(typeof(GlobalResultFilter));
             });
 
             services.AddHttpContextAccessor();
