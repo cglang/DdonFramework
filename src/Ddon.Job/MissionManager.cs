@@ -1,7 +1,4 @@
 ﻿using Ddon.Core.Services.LazyService;
-using Ddon.Core.Use.Queue;
-using Ddon.EventBus.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

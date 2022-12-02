@@ -17,6 +17,7 @@ namespace Ddon.Test
 
             var services = new ServiceCollection();
 
+            services.LoadModule<CoreModule>(configuration);
             services.LoadModule<TModule>(configuration);
 
             ServiceProvider = services.BuildServiceProvider().GetService<ILazyServiceProvider>()!;

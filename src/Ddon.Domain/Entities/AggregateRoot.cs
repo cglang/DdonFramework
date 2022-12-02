@@ -4,12 +4,11 @@ using System.Collections.Generic;
 
 namespace Ddon.Domain.Entities
 {
-    public abstract class AggregateRoot<TKey> : Entity<TKey>, IAggregateRoot
-        where TKey : IEquatable<TKey>
+    public abstract class AggregateRoot<TKey> : Entity<TKey>, IAggregateRoot where TKey : IEquatable<TKey>
     {
         private readonly List<INotification> _domainEvents = new();
 
-        public IReadOnlyCollection<INotification> DomainEvents => _domainEvents.AsReadOnly();
+        public IEnumerable<INotification> DomainEvents => _domainEvents;
 
         public void AddDomainEvent(INotification eventItem) => _domainEvents.Add(eventItem);
 

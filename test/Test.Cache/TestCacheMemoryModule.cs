@@ -1,5 +1,4 @@
-﻿using Ddon.Cache;
-using Ddon.Cache.Memory;
+﻿using Ddon.Cache.Memory;
 using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

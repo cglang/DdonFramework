@@ -8,24 +8,23 @@ using System.Threading.Tasks;
 
 namespace Ddon.Application.Service
 {
-    public class CrudApplicationService<TEntity, TKey, TResponseDto, TRequestDto, TPageDto>
-        : UniversalCrudApplicationService<TEntity, TKey, TResponseDto, TRequestDto, TPageDto>
+    public class CrudApplicationService<TEntity, TKey, TResultDto, TRequestDto, TPage>
+        : UniversalCrudApplicationService<TEntity, TKey, TResultDto, TRequestDto, TPage>
         where TEntity : Entity<TKey>
         where TKey : IEquatable<TKey>
-        where TResponseDto : BaseDto<TKey>
+        where TResultDto : BaseDto<TKey>
         where TRequestDto : BaseDto<TKey>
-        where TPageDto : Page
+        where TPage : Page
     {
+        private readonly IRepository<TEntity, TKey> _repository;
 
         public CrudApplicationService(ILazyServiceProvider lazyServiceProvider, IRepository<TEntity, TKey> repository) : base(lazyServiceProvider, repository)
         {
-            Repository = repository;
+            _repository = repository;
         }
 
-        private IRepository<TEntity, TKey> Repository { get; }
+        protected override async Task DeleteByIdAsync(TKey id) => await _repository.DeleteAsync(id, true);
 
-        protected override async Task DeleteByIdAsync(TKey id, bool autoSave = false) => await Repository.DeleteAsync(id, autoSave);
-
-        protected override async Task<TEntity?> GetByIdAsync(TKey id) => await Repository.FirstOrDefaultAsync(id);
+        protected override async Task<TEntity?> GetByIdAsync(TKey id) => await _repository.FirstOrDefaultAsync(id);
     }
 }

@@ -1,5 +1,4 @@
-﻿using Ddon.Core.Use.Socket;
-using System;
+﻿using System;
 using System.Text;
 
 namespace Ddon.Socket.Session.Model

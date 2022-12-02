@@ -9,9 +9,13 @@
 
 	<Import Project="../../common.props" />
 
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+  </ItemGroup>
+  
 	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
-		<ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
+		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
-using System;
 using Ddon.Jwt;
 using Ddon.Jwt.Options;
 using NUnit.Framework;
+using System;
 
 namespace Test.Jwt;
 
@@ -25,7 +25,7 @@ public class JwtTests
         var token = jwt.GenerateJwtToken();
         Assert.True(!token.IsNullOrEmpty());
     }
-    
+
     [Test]
     public void CheckJwtTokenTest()
     {

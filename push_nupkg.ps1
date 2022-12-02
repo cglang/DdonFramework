@@ -19,7 +19,6 @@ $projects = (
     "Ddon.Localizer",
     "Ddon.Mail",
     "Ddon.Repository",
-    "Ddon.Serilog",
     "Ddon.Socket",
     "Ddon.FileStorage"
 )

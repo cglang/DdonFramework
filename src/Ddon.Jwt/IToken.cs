@@ -1,7 +1,7 @@
-﻿using System.Security.Claims;
-using System.Threading.Tasks;
-using Ddon.Jwt.Dtos;
+﻿using Ddon.Jwt.Dtos;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Ddon.Jwt
 {

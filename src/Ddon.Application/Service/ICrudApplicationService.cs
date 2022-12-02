@@ -1,19 +1,18 @@
-﻿using Ddon.Application.Dtos;
-using Ddon.Domain.Dtos;
+﻿using Ddon.Domain.Dtos;
 using System.Threading.Tasks;
 
 namespace Ddon.Application.Service
 {
-    public interface ICrudApplicationService<TKey, TResponseDto, TRequestDto, TPageDto> where TPageDto : Page
+    public interface ICrudApplicationService<TKey, TResultDto, TRequestDto, TPage> where TPage : Page
     {
-        Task<TResponseDto> CreateAsync(TRequestDto requestModel, bool autoSave = false);
+        Task<TResultDto> GetAsync(TKey id);
 
-        Task DeleteAsync(TKey id, bool autoSave = false);
+        Task<IPageResult<TResultDto>> GetListAsync(TPage page);
 
-        Task<TResponseDto> UpdateAsync(TRequestDto requestModel, bool autoSave = false);
+        Task<TResultDto> CreateAsync(TRequestDto model);
 
-        Task<TResponseDto> GetAsync(TKey id);
+        Task<TResultDto> UpdateAsync(TRequestDto model);
 
-        Task<IPageResult<TResponseDto>> GetListAsync(TPageDto requestModel);
+        Task DeleteAsync(TKey id);
     }
 }

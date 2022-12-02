@@ -24,7 +24,7 @@ namespace Ddon.Core.Use.Timers
             _timer.Elapsed += (sender, e) =>
             {
                 if (Elapsed is null || baseTime.AddMilliseconds(Interval.TotalMilliseconds) >= DateTime.UtcNow) return;
-                
+
                 Elapsed.Invoke(sender, e);
                 baseTime = baseTime.AddMilliseconds(Interval.TotalMilliseconds);
             };

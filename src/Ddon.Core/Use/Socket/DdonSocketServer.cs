@@ -16,7 +16,7 @@ namespace Ddon.Core.Use.Socket
         private Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
 
         public DdonSocketServer(string host, int port)
-        {            
+        {
             _listener = new TcpListener(IPAddress.Parse(host), port);
         }
 

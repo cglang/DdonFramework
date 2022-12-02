@@ -5,7 +5,7 @@ namespace Ddon.Domain.Entities
 {
     public interface IDomainEvents
     {
-        IReadOnlyCollection<INotification> DomainEvents { get; }
+        IEnumerable<INotification> DomainEvents { get; }
 
         void AddDomainEvent(INotification eventItem);
 

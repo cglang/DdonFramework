@@ -1,9 +1,8 @@
 using Ddon.Core.Use.Reflection;
+using Ddon.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Ddon.Test;
 using Test.Core.TestInvokeClasses;
 
 namespace Test.Core.Tests
@@ -72,7 +71,7 @@ namespace Test.Core.Tests
         {
             var userInfo = new UserInfo() { UserName = "cglang", Age = 22 };
             var userInfoJson = JsonSerializer.Serialize(userInfo);
-            
+
             var result = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodMultipleParameter), userInfoJson);
 
             var resultJson = JsonSerializer.Serialize(userInfo);
@@ -88,7 +87,7 @@ namespace Test.Core.Tests
         {
             var userInfo = new UserInfo() { UserName = "cglang", Age = 22 };
             var userInfoJson = JsonSerializer.Serialize(userInfo);
-            
+
             var result = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodClassObject), userInfoJson);
 
             var resultJson = JsonSerializer.Serialize(result);

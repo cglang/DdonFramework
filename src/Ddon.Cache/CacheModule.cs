@@ -1,7 +1,6 @@
 ﻿using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Ddon.Cache
 {
@@ -9,7 +8,7 @@ namespace Ddon.Cache
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
-            Load<CoreModule>(services, configuration);            
+            Load<CoreModule>(services, configuration);
         }
     }
 }

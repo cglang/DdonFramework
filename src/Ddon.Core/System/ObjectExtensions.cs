@@ -125,7 +125,7 @@ namespace System
 
             var properties = obj.GetType().GetProperties().ToList();
             if (!(properties.Count > 0)) return keyValues;
-            
+
             foreach (var pro in properties)
             {
                 var value = pro.GetValue(obj);
