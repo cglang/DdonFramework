@@ -18,7 +18,7 @@ namespace Ddon.AspNetCore
 
             services.AddHttpContextAccessor();
 
-            var cors = configuration.GetSection("Cors").GetChildren().Select(c => c.Value).ToArray();
+            var cors = configuration.GetSection("Cors").GetChildren().Select(c => c.Value ?? string.Empty).ToArray();
             if (cors is not null)
             {
                 services.AddCors(options =>

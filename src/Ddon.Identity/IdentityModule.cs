@@ -42,7 +42,7 @@ namespace Ddon.Identity
             services.AddScoped<ICurrentUserInfoAccessor<TKey>, CurrentUserInfoAccessor<TKey>>();
 
             var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
-            services.AddSingleton(appSettings);
+            services.AddSingleton(appSettings!);
 
             services.AddTransient<Auth<TKey>>();
 
@@ -51,14 +51,14 @@ namespace Ddon.Identity
 
 
             var jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>();
-            services.AddSingleton(jwtSettings);
+            services.AddSingleton(jwtSettings!);
 
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = false,      // 是否在令牌验证期间验证颁发者
                 ValidateAudience = false,   // 是否在令牌验证期间验证受众
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.SecurityKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings!.SecurityKey)),
                 ValidateLifetime = true,                    // 是否验证Token有效期
                 ClockSkew = TimeSpan.FromMilliseconds(5),   // Token缓冲过期时间
             };

@@ -1,7 +1,7 @@
 ﻿using Ddon.Domain.Entities;
 using System;
 
-namespace Ddon.Domain
+namespace Ddon.Domain.Dtos
 {
     public class Page
     {

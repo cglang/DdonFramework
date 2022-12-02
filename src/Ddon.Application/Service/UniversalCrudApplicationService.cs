@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Ddon.Application.Dtos;
 using Ddon.Core.Services.LazyService;
-using Ddon.Domain;
+using Ddon.Domain.Dtos;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Repositories;
 using System;
@@ -51,13 +51,10 @@ namespace Ddon.Application.Service
 
         protected abstract Task<TEntity?> GetByIdAsync(TKey id);
 
-        public virtual async Task<PageResult<TResponseDto>> GetListAsync(TPageDto requestDto)
+        public virtual async Task<IPageResult<TResponseDto>> GetListAsync(TPageDto requestDto)
         {
-            var entitiesTask = _repository.GetListAsync(requestDto);
-            var countTask = _repository.GetCountAsync();
-            var entityDtos = Mapper.Map<List<TResponseDto>>(await entitiesTask);
-
-            return new PageResult<TResponseDto>(await countTask, entityDtos);
+            var entities = await _repository.GetListAsync(requestDto);
+            return Mapper.Map<PageResult<TResponseDto>>(entities);
         }
 
         protected virtual IQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TPageDto requestDto)

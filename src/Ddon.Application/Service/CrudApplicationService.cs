@@ -1,6 +1,6 @@
 ﻿using Ddon.Application.Dtos;
 using Ddon.Core.Services.LazyService;
-using Ddon.Domain;
+using Ddon.Domain.Dtos;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Repositories;
 using System;

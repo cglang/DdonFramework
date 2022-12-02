@@ -13,8 +13,7 @@ namespace Ddon.Domain.Entities
         }
     }
 
-    public class Entity<TKey> : Entity, IEntity<TKey>
-        where TKey : IEquatable<TKey>
+    public class Entity<TKey> : Entity, IEntity<TKey> where TKey : IEquatable<TKey>
     {
         [Key]
         public TKey Id { get; set; } = default!;

@@ -1,4 +1,5 @@
-﻿using Ddon.Domain.Entities;
+﻿using Ddon.Domain.Dtos;
+using Ddon.Domain.Entities;
 using Ddon.Domain.Specifications;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,9 @@ namespace Ddon.Domain.Repositories
 
         Task<IEnumerable<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
-        Task<IEnumerable<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+        Task<IPageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+
+        Task<IPageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
         IAsyncQueryableProvider AsyncExecuter { get; }
 

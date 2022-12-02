@@ -1,4 +1,4 @@
-﻿using Ddon.Domain;
+﻿using Ddon.Domain.Dtos;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Repositories;
 using Ddon.Domain.Specifications;
@@ -166,19 +166,33 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             return await BuildQuery(propertySelectors).Where(predicate).ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+        public virtual async Task<IPageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            return await BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var entitiesTask = BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var countTask = GetCountAsync();
+            await Task.WhenAll(entitiesTask, countTask);
+            return new PageResult<TEntity>()
+            {
+                Total = countTask.Result,
+                Items = entitiesTask.Result
+            };
+        }
+
+        public virtual async Task<IPageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+        {
+            var entitiesTask = BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var countTask = GetCountAsync();
+            await Task.WhenAll(entitiesTask, countTask);
+            return new PageResult<TEntity>()
+            {
+                Total = countTask.Result,
+                Items = entitiesTask.Result
+            };
         }
 
         public virtual async Task<TEntity> FirstAsync(TKey id, CancellationToken cancellationToken = default)
         {
-            var entity = await BuildQuery().FirstAsync(e => e.Id!.Equals(id), cancellationToken);
-
-            if (entity is null)
-                throw new InvalidOperationException();
-
-            return entity;
+            return await BuildQuery().FirstAsync(e => e.Id!.Equals(id), cancellationToken);
         }
 
         public virtual async Task<TEntity?> FirstOrDefaultAsync(TKey id, CancellationToken cancellationToken = default)

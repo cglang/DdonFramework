@@ -5,7 +5,7 @@ namespace Ddon.Domain.Specifications.Builder
 {
     public class SpecificationBuilder<TEntity, TKey, TResult> : SpecificationBuilder<TEntity>, ISpecificationBuilder<TEntity, TKey, TResult>
         where TKey : IEquatable<TKey>
-        where TEntity : IMultTenant<TKey>
+        where TEntity : IEntity<TKey>
     {
         public new Specification<TEntity, TKey, TResult> Specification { get; }
 

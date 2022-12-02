@@ -18,6 +18,7 @@ DdonSocket.CreateServer("127.0.0.1", 5356)
     {
         Console.WriteLine(b.Message);
         //throw b;
+        await Task.Delay(100);
     })
     .Start();
 

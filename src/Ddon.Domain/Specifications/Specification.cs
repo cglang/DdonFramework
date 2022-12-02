@@ -1,4 +1,5 @@
-﻿using Ddon.Domain.Entities;
+﻿using Ddon.Domain.Dtos;
+using Ddon.Domain.Entities;
 using Ddon.Domain.Specifications.Builder;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace Ddon.Domain.Specifications
     }
 
     public abstract class Specification<T, TKey, TResult> : Specification<T>, ISpecification<T, TKey, TResult>
-        where T : IMultTenant<TKey>
+        where T : IEntity<TKey>
         where TKey : IEquatable<TKey>
     {
         protected new virtual ISpecificationBuilder<T, TKey, TResult> Query { get; }

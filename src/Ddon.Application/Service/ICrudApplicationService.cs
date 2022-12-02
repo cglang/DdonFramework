@@ -1,5 +1,5 @@
 ﻿using Ddon.Application.Dtos;
-using Ddon.Domain;
+using Ddon.Domain.Dtos;
 using System.Threading.Tasks;
 
 namespace Ddon.Application.Service
@@ -14,6 +14,6 @@ namespace Ddon.Application.Service
 
         Task<TResponseDto> GetAsync(TKey id);
 
-        Task<PageResult<TResponseDto>> GetListAsync(TPageDto requestModel);
+        Task<IPageResult<TResponseDto>> GetListAsync(TPageDto requestModel);
     }
 }

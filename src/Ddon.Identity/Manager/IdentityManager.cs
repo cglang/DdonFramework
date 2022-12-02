@@ -188,7 +188,7 @@ namespace Ddon.Identity.Manager
             if (user is null) return null;
 
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId.IsNullOrWhiteSpace()) return null;
+            if (string.IsNullOrWhiteSpace(userId)) return null;
 
             return await _userRepository.FirstOrDefaultAsync(x => x.Id.ToString() == userId);
         }

@@ -1,5 +1,5 @@
 ﻿using Ddon.Application.Dtos;
-using Ddon.Domain;
+using Ddon.Domain.Dtos;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 

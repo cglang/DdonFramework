@@ -1,4 +1,4 @@
-﻿using Ddon.Domain;
+﻿using Ddon.Domain.Dtos;
 using Ddon.Domain.Specifications;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

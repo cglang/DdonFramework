@@ -9,6 +9,7 @@ namespace Ddon.Mail
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
             var ddonMailOptions = configuration.GetSection(nameof(DdonMailOptions)).Get<DdonMailOptions>();
+            if (ddonMailOptions is null) throw new System.Exception("DdonMailOptions Is Null");
             services.Configure<DdonMailOptions>(options =>
             {
                 options.SmtpHost = ddonMailOptions.SmtpHost;
