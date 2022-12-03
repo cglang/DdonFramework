@@ -168,25 +168,23 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public virtual async Task<IPageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            var entitiesTask = BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-            var countTask = GetCountAsync();
-            await Task.WhenAll(entitiesTask, countTask);
+            var entities = await BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var count = await GetCountAsync();
             return new PageResult<TEntity>()
             {
-                Total = countTask.Result,
-                Items = entitiesTask.Result
+                Total = count,
+                Items = entities
             };
         }
 
         public virtual async Task<IPageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            var entitiesTask = BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-            var countTask = GetCountAsync();
-            await Task.WhenAll(entitiesTask, countTask);
+            var entities = await BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var count = await GetCountAsync();
             return new PageResult<TEntity>()
             {
-                Total = countTask.Result,
-                Items = entitiesTask.Result
+                Total = count,
+                Items = entities
             };
         }
 
