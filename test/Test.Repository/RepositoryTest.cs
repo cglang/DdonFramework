@@ -38,31 +38,42 @@ namespace Test.Repository
         [TestMethod]
         public async Task RepositoryTestQueryPageAsync()
         {
-            var repository = ServiceProvider.LazyGetService<TestRepository>();
+            var testRepository = ServiceProvider.LazyGetService<TestRepository>();
+            var pageRepository = ServiceProvider.LazyGetService<TestPageRepository>();
 
             var en = new TestEntity { Title = "测试" };
-            await repository.AddAsync(en, true);
-            await repository.AddAsync(en, true);
-            await repository.AddAsync(en, true);
-            await repository.AddAsync(en, true);
-            await repository.AddAsync(en, true);
+            await testRepository.AddAsync(en, true);
+            await testRepository.AddAsync(en, true);
+            await testRepository.AddAsync(en, true);
+            await testRepository.AddAsync(en, true);
+            await testRepository.AddAsync(en, true);
+
+            var pg = new TestPageEntity { Title = "测试" };
+            await pageRepository.AddAsync(pg, true);
+            await pageRepository.AddAsync(pg, true);
+            await pageRepository.AddAsync(pg, true);
+            await pageRepository.AddAsync(pg, true);
+            await pageRepository.AddAsync(pg, true);
 
             Page page = new()
             {
                 Index = 1,
                 Size = 2
             };
-            var pageResult = await repository.GetListAsync(page);
+            var pageResult = await testRepository.GetListAsync(page);
             Assert.IsNotNull(pageResult);
 
-            var pageResult1 = repository.GetListAsync(page);
-            var pageResult2 = repository.GetListAsync(page);
-            var pageResult3 = repository.GetListAsync(page);
-            var pageResult4 = repository.GetListAsync(page);
+            var testPageResult = await pageRepository.GetListAsync(page);
+            Assert.IsNotNull(testPageResult);
+
+            var pageResult1 = testRepository.GetListAsync(page);
+            var pageResult2 = testRepository.GetListAsync(page);
+            var pageResult3 = testRepository.GetListAsync(page);
+            var pageResult4 = testRepository.GetListAsync(page);
 
             await Task.WhenAll(pageResult1, pageResult2, pageResult3, pageResult4);
 
-            var count = await repository.GetCountAsync();
+            var count = await testRepository.GetCountAsync();
             Assert.IsTrue(count > 0);
         }
     }

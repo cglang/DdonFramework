@@ -1,4 +1,5 @@
 ﻿using Ddon.Core.Use.Di;
+using Ddon.Domain.Entities.Auditing;
 using Ddon.Domain.Repositories;
 using Ddon.Repositiry.EntityFrameworkCore;
 using System;
@@ -10,5 +11,10 @@ namespace Test.Repository.Db
         public TestRepository(TestDbContext dbContext) : base(dbContext)
         {
         }
+    }
+
+    public class TestEntity : AuditedAggregateRoot<Guid>
+    {
+        public string? Title { get; set; }
     }
 }

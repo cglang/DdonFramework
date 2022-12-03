@@ -1,7 +1,6 @@
 ﻿using Ddon.Core.Services.LazyService;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Test.Repository.Db
@@ -14,5 +13,6 @@ namespace Test.Repository.Db
 
         [AllowNull]
         public DbSet<TestEntity> Tests { get; set; }
+        public DbSet<TestPageEntity> TestPages { get; set; }
     }
 }
