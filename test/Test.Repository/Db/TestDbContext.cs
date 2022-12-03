@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Test.Repository.Db
 {
-    public class TestDbContext : BasicDbContext<TestDbContext, Guid>
+    public class TestDbContext : BasicDbContext<TestDbContext>
     {
         public TestDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TestDbContext> options) : base(lazyServiceProvider, options)
         {

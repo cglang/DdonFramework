@@ -1,16 +1,16 @@
-﻿using Ddon.Core.Services.Guids;
+﻿using Ddon.Core;
+using Ddon.EventBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ddon.Core
+namespace Ddon.Identity
 {
-    public class CoreModule : Module
+    public class DomainModule : Module
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAutoInject();
-
-            services.AddTransient<IGuidGenerator, SequentialGuidGenerator>();
+            Load<CoreModule>(services, configuration);
+            Load<EventBusModule>(services, configuration);
         }
     }
 }

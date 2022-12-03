@@ -7,7 +7,7 @@ using System;
 
 namespace Ddon.Identity
 {
-    public class IdentityDbContext<TDbContext, TKey> : BasicDbContext<TDbContext, TKey>
+    public class IdentityDbContext<TDbContext, TKey> : BasicDbContext<TDbContext>
         where TDbContext : DbContext
         where TKey : IEquatable<TKey>
     {

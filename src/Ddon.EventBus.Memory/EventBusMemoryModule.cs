@@ -9,6 +9,7 @@ namespace Ddon.EventBus.MemoryQueue
     {
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
+            Load<CoreModule>(services, configuration);
             Load<EventBusModule>(services, configuration);
 
             services.AddTransient<IEventBus, InMemoryEventBus>();

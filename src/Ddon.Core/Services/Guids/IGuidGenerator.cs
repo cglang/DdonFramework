@@ -3,7 +3,7 @@ using System;
 
 namespace Ddon.Core.Services.Guids
 {
-    public interface IGuidGenerator : ITransientDependency
+    public interface IGuidGenerator
     {
         Guid Create();
     }

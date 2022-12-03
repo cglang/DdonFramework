@@ -11,14 +11,11 @@ using System.Threading.Tasks;
 
 namespace Ddon.Repositiry
 {
-    public class BasicDbContext<TDbContext, TKey> : DbContext
-        where TDbContext : DbContext
-        where TKey : IEquatable<TKey>
+    public class BasicDbContext<TDbContext> : DbContext where TDbContext : DbContext
     {
         private readonly ILazyServiceProvider LazyServiceProvider;
 
         private IGuidGenerator? GuidGenerator => LazyServiceProvider.LazyGetRequiredService<IGuidGenerator>();
-
 
         public BasicDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(options)
         {

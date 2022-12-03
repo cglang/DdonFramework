@@ -5,7 +5,7 @@ using System;
 
 namespace Ddon.FileStorage.DataBase
 {
-    public class FileStorageDbContext : BasicDbContext<FileStorageDbContext, Guid>
+    public class FileStorageDbContext : BasicDbContext<FileStorageDbContext>
     {
         public DbSet<FileEntity>? Files { get; set; }
 
