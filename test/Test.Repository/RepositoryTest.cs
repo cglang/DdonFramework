@@ -1,6 +1,8 @@
 ﻿using Ddon.Domain.Dtos;
 using Ddon.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Test.Repository.Db;
@@ -75,6 +77,27 @@ namespace Test.Repository
 
             var count = await testRepository.GetCountAsync();
             Assert.IsTrue(count > 0);
+        }
+
+        [TestMethod]
+        public async Task AddRangeTestAsync()
+        {
+            var repository = ServiceProvider.LazyGetService<TestRepository>();
+
+            var value = Guid.NewGuid().ToString();
+            var value2 = Guid.NewGuid().ToString();
+            var value3 = Guid.NewGuid().ToString();
+            List<TestEntity> ls = new()            
+            {
+                new TestEntity { Title = value },
+                new TestEntity { Title = value2 },
+                new TestEntity { Title = value3 },
+            };
+            await repository.AddAsync(ls, true);
+            var re = await repository.GetListAsync(x => ls.Select(l => l.Title).Contains(x.Title));
+            Assert.AreEqual(ls.Count, re.Count);
+
+            var c = repository.GetCountAsync();
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Ddon.Core
 {
     public class ModuleCore
     {
-        protected readonly HashSet<string> LoadedModule = new();
+        protected static readonly HashSet<string> LoadedModule = new();
 
         /// <summary>
         /// 加载指定 Module
