@@ -68,7 +68,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             }
         }
 
-        public virtual async Task AddAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        public virtual async Task AddAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
         {
             var enumerable = entities.ToList();
             enumerable.ForEach(e =>
@@ -96,7 +96,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             }
         }
 
-        public virtual async Task DeleteAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
         {
             Entites.RemoveRange(entities);
 
@@ -124,7 +124,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             }
         }
 
-        public virtual async Task UpdateAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+        public virtual async Task UpdateAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
         {
             var enumerable = entities.ToList();
             DbContext.AttachRange(enumerable);
@@ -156,35 +156,37 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             return await BuildQuery(propertySelectors).SingleOrDefaultAsync(predicate, cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> GetListAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+        public virtual async Task<List<TEntity>> GetListAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
             return await BuildQuery(propertySelectors).ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+        public virtual async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
             return await BuildQuery(propertySelectors).Where(predicate).ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<IPageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+        public virtual async Task<PageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            var entities = await BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-            var count = await GetCountAsync();
+            var entitiesTask = BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var countTask = GetCountAsync();
+            await Task.WhenAll(entitiesTask, countTask);
             return new PageResult<TEntity>()
             {
-                Total = count,
-                Items = entities
+                Total = countTask.Result,
+                Items = entitiesTask.Result
             };
         }
 
-        public virtual async Task<IPageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+        public virtual async Task<PageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            var entities = await BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-            var count = await GetCountAsync();
+            var entitiesTask = BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var countTask = GetCountAsync();
+            await Task.WhenAll(entitiesTask, countTask);
             return new PageResult<TEntity>()
             {
-                Total = count,
-                Items = entities
+                Total = countTask.Result,
+                Items = entitiesTask.Result
             };
         }
 
@@ -198,7 +200,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             return await BuildQuery().FirstOrDefaultAsync(e => e.Id!.Equals(id), cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> GetListAsync(Page page, Expression<Func<TEntity, object>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+        public virtual async Task<List<TEntity>> GetListAsync(Page page, Expression<Func<TEntity, object>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
             return await BuildQuery(propertySelectors).QueryPageOrderBy(page, predicate).ToListAsync(cancellationToken);
         }
@@ -222,7 +224,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             return await _specification2.BuildQuery(Entites, specification).FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
+        public async Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
         {
             return await _specification2.BuildQuery(Entites, specification).ToListAsync(cancellationToken);
         }

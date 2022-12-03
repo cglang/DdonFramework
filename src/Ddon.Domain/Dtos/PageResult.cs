@@ -2,7 +2,7 @@
 
 namespace Ddon.Domain.Dtos
 {
-    public class PageResult<T> : IPageResult<T>
+    public class PageResult<T>
     {
         public long Total { get; set; }
 

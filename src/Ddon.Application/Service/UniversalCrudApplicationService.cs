@@ -32,7 +32,7 @@ namespace Ddon.Application.Service
 
         protected abstract Task<TEntity?> GetByIdAsync(TKey id);
 
-        public virtual async Task<IPageResult<TResultDto>> GetListAsync(TPageDto page)
+        public virtual async Task<PageResult<TResultDto>> GetListAsync(TPageDto page)
         {
             var entities = await _repository.GetListAsync(page);
             return Mapper.Map<PageResult<TResultDto>>(entities);

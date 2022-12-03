@@ -7,7 +7,7 @@ namespace Ddon.Application.Service
     {
         Task<TResultDto> GetAsync(TKey id);
 
-        Task<IPageResult<TResultDto>> GetListAsync(TPage page);
+        Task<PageResult<TResultDto>> GetListAsync(TPage page);
 
         Task<TResultDto> CreateAsync(TRequestDto model);
 

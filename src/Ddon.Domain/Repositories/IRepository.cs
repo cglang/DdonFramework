@@ -15,17 +15,17 @@ namespace Ddon.Domain.Repositories
 
         Task AddAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
 
-        Task AddAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
+        Task AddAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
 
         Task DeleteAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
 
-        Task DeleteAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
+        Task DeleteAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
 
         Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default);
 
         Task UpdateAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default);
 
-        Task UpdateAsync(IEnumerable<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
+        Task UpdateAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default);
 
         Task<long> GetCountAsync(CancellationToken cancellationToken = default);
 
@@ -35,13 +35,13 @@ namespace Ddon.Domain.Repositories
 
         Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
-        Task<IEnumerable<TEntity>> GetListAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+        Task<List<TEntity>> GetListAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
-        Task<IEnumerable<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+        Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
-        Task<IPageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+        Task<PageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
-        Task<IPageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+        Task<PageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
         IAsyncQueryableProvider AsyncExecuter { get; }
 
@@ -56,13 +56,13 @@ namespace Ddon.Domain.Repositories
 
         Task<TEntity?> FirstOrDefaultAsync(TKey id, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<TEntity>> GetListAsync(Page page, Expression<Func<TEntity, object>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
+        Task<List<TEntity>> GetListAsync(Page page, Expression<Func<TEntity, object>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors);
 
         #region 规约查询
 
         Task<TResult?> FirstOrDefault<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default);
+        Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default);
 
         #endregion
     }
