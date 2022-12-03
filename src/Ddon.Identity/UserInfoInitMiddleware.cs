@@ -1,8 +1,9 @@
 ﻿using Ddon.Domain.UserInfo;
-using Ddon.Identity.Manager;
+using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Ddon.Identity
@@ -10,20 +11,22 @@ namespace Ddon.Identity
     public class UserInfoInitMiddleware<TKey> : IMiddleware where TKey : IEquatable<TKey>
     {
         private readonly ICurrentUserInfoAccessor<TKey> _userinfoAccessor;
-        private readonly IIdentityManager<TKey> _identityManager;
+        private readonly IUserRepository<TKey> _userRepositity;
 
-        public UserInfoInitMiddleware(ICurrentUserInfoAccessor<TKey> userinfoAccessor, IIdentityManager<TKey> identityManager)
+        public UserInfoInitMiddleware(ICurrentUserInfoAccessor<TKey> userinfoAccessor, IUserRepository<TKey> identityManager)
         {
             _userinfoAccessor = userinfoAccessor;
-            _identityManager = identityManager;
+            _userRepositity = identityManager;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            var user = await _identityManager.GetUserByClaimsAsync(context.User);
-            var tenant = await _identityManager.GetUserTenantByClaimsAsync(context.User);
-            _userinfoAccessor!.Init(user, tenant);
-
+            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var user = await _userRepositity.FirstOrDefaultAsync(x => x.Id.ToString() == userId);
+                _userinfoAccessor!.Init(user);
+            }
             await next(context);
         }
     }

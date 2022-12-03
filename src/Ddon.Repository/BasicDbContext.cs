@@ -78,11 +78,6 @@ namespace Ddon.Repositiry
 
         protected virtual void ApplyAbpConceptsForAddedEntity(EntityEntry entry)
         {
-            if (entry.Entity is IMultTenant<string> stringMultTenant)
-            {
-                stringMultTenant.TenantId = Guid.NewGuid().ToString();
-            }
-
             if (entry.Entity is IEntity<Guid> entityWithGuidId)
             {
                 if (GuidGenerator != null) entityWithGuidId.Id = GuidGenerator.Create();

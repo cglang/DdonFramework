@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Ddon.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Ddon.Domain.Entities.Identity
+namespace Ddon.Identity.Entities
 {
-    public class User<TKey> : Entity<TKey>, IMultTenant<TKey> where TKey : IEquatable<TKey>
+    public class User<TKey> : Entity<TKey> where TKey : IEquatable<TKey>
     {
-        [AllowNull]
-        public TKey TenantId { get; set; }
-
         [AllowNull]
         public virtual string UserName { get; set; }
 
@@ -38,5 +38,15 @@ namespace Ddon.Domain.Entities.Identity
 
         public virtual int AccessFailedCount { get; set; }
 
+        /// <summary>
+        /// 用户角色
+        /// </summary>
+        public List<Role<TKey>>? UserRoles { get; set; }
+
+        /// <summary>
+        /// 用户权限
+        /// </summary>
+        [NotMapped]
+        public List<PermissionGrant<TKey>>? UserPermissions { get; set; }
     }
 }

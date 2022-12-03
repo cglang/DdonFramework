@@ -1,5 +1,5 @@
-﻿using Ddon.Domain.Entities.Identity;
-using Ddon.Domain.Repositories;
+﻿using Ddon.Domain.Repositories;
+using Ddon.Identity.Entities;
 using System;
 
 namespace Ddon.Repositiry.EntityFrameworkCore.Identity

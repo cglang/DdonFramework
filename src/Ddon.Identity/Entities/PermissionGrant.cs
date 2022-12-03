@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Ddon.Domain.Entities;
+using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Ddon.Domain.Entities.Identity
+namespace Ddon.Identity.Entities
 {
-    public class PermissionGrant<TKey> : Entity<TKey>, IMultTenant<TKey> where TKey : IEquatable<TKey>
+    public class PermissionGrant<TKey> : Entity<TKey> where TKey : IEquatable<TKey>
     {
-        [AllowNull]
-        public TKey TenantId { get; set; }
-
         [AllowNull]
         public string Name { get; set; }
 

@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Ddon.Domain.Entities;
+using System;
 
-namespace Ddon.Domain.Entities.Identity
+namespace Ddon.Identity.Entities
 {
     public class UserRole<TKey> : Entity<TKey> where TKey : IEquatable<TKey>
     {

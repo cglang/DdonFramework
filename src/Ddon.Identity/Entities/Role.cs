@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Ddon.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Ddon.Domain.Entities.Identity
+namespace Ddon.Identity.Entities
 {
     public class Role<TKey> : Entity<TKey> where TKey : IEquatable<TKey>
     {
@@ -18,5 +21,11 @@ namespace Ddon.Domain.Entities.Identity
         /// 并发戳
         /// </summary>
         public string? ConcurrencyStamp { get; set; }
+
+        /// <summary>
+        /// 角色权限
+        /// </summary>
+        [NotMapped]
+        public List<PermissionGrant<TKey>>? RolePermissions { get; set; }
     }
 }

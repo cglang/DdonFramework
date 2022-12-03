@@ -1,21 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<AssemblyVersion>$(Version)</AssemblyVersion>
-		<FileVersion>$(Version)</FileVersion>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageIcon>icon.nuget.jpg</PackageIcon>
-	</PropertyGroup>
+  <PropertyGroup>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageIcon>icon.nuget.jpg</PackageIcon>
+  </PropertyGroup>
 
-	<Import Project="../../common.props" />
+  <Import Project="../../common.props" />
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
+  </ItemGroup>
 
 </Project>

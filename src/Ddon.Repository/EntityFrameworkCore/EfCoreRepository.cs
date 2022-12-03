@@ -30,8 +30,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
         where TEntity : class, IEntity<TKey>
         where TKey : IEquatable<TKey>
     {
-        private readonly ISpecificationEvaluator<TEntity> _specification = new SpecificationEvaluator<TEntity>();
-        private readonly ISpecificationEvaluator<TEntity, TKey> _specification2 = new SpecificationEvaluator<TEntity, TKey>();
+        private readonly ISpecificationEvaluator<TEntity, TKey> _specification = new SpecificationEvaluator<TEntity, TKey>();
         public virtual IAsyncQueryableProvider AsyncExecuter => new EfCoreAsyncQueryableProvider();
 
         public EfCoreRepository(TDbContext dbContext) : base(dbContext) { }
@@ -53,11 +52,6 @@ namespace Ddon.Repositiry.EntityFrameworkCore
             if (entity is IEntity<string> entityWithStringId)
             {
                 entityWithStringId.Id = new Guid().ToString();
-            }
-
-            if (entity is IMultTenant<string> multEntityWithStringId)
-            {
-                multEntityWithStringId.TenantId = new Guid().ToString();
             }
 
             await Entites.AddAsync(entity, cancellationToken);
@@ -168,25 +162,23 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public virtual async Task<PageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            var entitiesTask = BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-            var countTask = GetCountAsync();
-            await Task.WhenAll(entitiesTask, countTask);
+            var entities = await BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var count = await GetCountAsync();
             return new PageResult<TEntity>()
             {
-                Total = countTask.Result,
-                Items = entitiesTask.Result
+                Total = count,
+                Items = entities
             };
         }
 
         public virtual async Task<PageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
         {
-            var entitiesTask = BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-            var countTask = GetCountAsync();
-            await Task.WhenAll(entitiesTask, countTask);
+            var entities = await BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
+            var count = await GetCountAsync();
             return new PageResult<TEntity>()
             {
-                Total = countTask.Result,
-                Items = entitiesTask.Result
+                Total = count,
+                Items = entities
             };
         }
 
@@ -221,12 +213,12 @@ namespace Ddon.Repositiry.EntityFrameworkCore
 
         public async Task<TResult?> FirstOrDefault<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
         {
-            return await _specification2.BuildQuery(Entites, specification).FirstOrDefaultAsync(cancellationToken);
+            return await _specification.BuildQuery(Entites, specification).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
         {
-            return await _specification2.BuildQuery(Entites, specification).ToListAsync(cancellationToken);
+            return await _specification.BuildQuery(Entites, specification).ToListAsync(cancellationToken);
         }
 
         /// <summary>

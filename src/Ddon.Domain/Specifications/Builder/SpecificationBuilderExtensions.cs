@@ -91,7 +91,7 @@ namespace Ddon.Domain.Specifications.Builder
         public static ISpecificationBuilder<TEntity, TKey, TResult> Select<TEntity, TKey, TResult>(
             this ISpecificationBuilder<TEntity, TKey, TResult> specificationBuilder,
             Expression<Func<TEntity, TResult>> selector)
-            where TEntity : IMultTenant<TKey>
+            where TEntity : IEntity<TKey>
             where TKey : IEquatable<TKey>
         {
             specificationBuilder.Specification.Selector = selector;

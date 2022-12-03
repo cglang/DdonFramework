@@ -1,5 +1,4 @@
-﻿using Ddon.Domain.Entities;
-using Ddon.Domain.Entities.Identity;
+﻿using Ddon.Identity.Entities;
 using System;
 
 namespace Ddon.Domain.UserInfo
@@ -8,8 +7,6 @@ namespace Ddon.Domain.UserInfo
     {
         User<TKey>? User { get; set; }
 
-        Tenant<TKey> Tenant { get; set; }
-
-        void Init(User<TKey>? user, Tenant<TKey>? tenant);
+        void Init(User<TKey>? user);
     }
 }
