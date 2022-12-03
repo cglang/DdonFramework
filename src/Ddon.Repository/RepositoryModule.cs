@@ -11,15 +11,13 @@ namespace Ddon.Repository
     public class RepositoryModule<TDbContext> : Module<DbContextOptionsBuilder>
         where TDbContext : DbContext
     {
-        public override void Load(IServiceCollection services, IConfiguration configuration, Action<DbContextOptionsBuilder> optionBuilder)
+        public override void Load(IServiceCollection services, IConfiguration configuration, Action<DbContextOptionsBuilder>? optionBuilder)
         {
             Load<CoreModule>(services, configuration);
             Load<CacheModule>(services, configuration);
 
-            Load<RepositoryModule<DbContext>>(services, configuration, (s) => { });
-
             services.AddTransient<IUnitOfWork<TDbContext>, UnitOfWork<TDbContext>>();
-            services.AddDbContext<TDbContext>(RepositoryModuleOptions.OptionsBuilder);
+            services.AddDbContext<TDbContext>(optionBuilder);
         }
     }
 }
