@@ -138,14 +138,15 @@ namespace System.Linq
 
             private static LambdaExpression GetLambdaExpression(string propertyName)
             {
-                if (Cached.ContainsKey(propertyName))
+                var key = $"{typeof(TEntity).FullName}.{propertyName}";
+                if (Cached.ContainsKey(key))
                 {
-                    return Cached[propertyName];
+                    return Cached[key];
                 }
                 var param = Expression.Parameter(typeof(TEntity));
                 var body = Expression.Property(param, propertyName);
                 var keySelector = Expression.Lambda(body, param);
-                Cached[propertyName] = keySelector;
+                Cached[key] = keySelector;
 
                 return keySelector;
             }
