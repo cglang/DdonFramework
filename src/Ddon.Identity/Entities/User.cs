@@ -41,6 +41,7 @@ namespace Ddon.Identity.Entities
         /// <summary>
         /// 用户角色
         /// </summary>
+        [NotMapped]
         public List<Role<TKey>>? UserRoles { get; set; }
 
         /// <summary>
