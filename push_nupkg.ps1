@@ -14,6 +14,7 @@ $projects = (
     "Ddon.EventBus",
     "Ddon.EventBus.Memory",
     "Ddon.Identity",
+    "Ddon.Jwt",
     "Ddon.Job",
     "Ddon.KeyValueStorage",
     "Ddon.Localizer",
