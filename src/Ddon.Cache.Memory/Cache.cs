@@ -63,7 +63,7 @@ namespace Ddon.Cache.Memory
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => _distributedCache.Set(key, value, options);
 
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default) => _distributedCache.SetAsync(key, value, options);
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default) => _distributedCache.SetAsync(key, value, options, token);
 
         public void Refresh(string key) => _distributedCache.Refresh(key);
 
