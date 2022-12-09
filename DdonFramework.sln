@@ -63,6 +63,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.FileStorage", "src\Ddo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.FileStorage", "test\Test.FileStorage\Test.FileStorage.csproj", "{FF38845B-4EC4-4B61-8BBE-2A39B66096E7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{2631A837-387D-4343-9C69-03B4F8F296B9}"
+	ProjectSection(SolutionItems) = preProject
+		common.props = common.props
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

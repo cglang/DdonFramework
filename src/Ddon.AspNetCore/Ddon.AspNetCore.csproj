@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<AssemblyVersion>$(Version)</AssemblyVersion>
-		<FileVersion>$(Version)</FileVersion>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageIcon>icon.nuget.jpg</PackageIcon>
-	</PropertyGroup>
+  <PropertyGroup>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageIcon>icon.nuget.jpg</PackageIcon>
+  </PropertyGroup>
 
-	<Import Project="../../common.props" />
+  <Import Project="../../common.props" />
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.5" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters"  />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
-		<ProjectReference Include="..\Ddon.Identity\Ddon.Identity.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
+    <ProjectReference Include="..\Ddon.Identity\Ddon.Identity.csproj" />
+  </ItemGroup>
 
 </Project>

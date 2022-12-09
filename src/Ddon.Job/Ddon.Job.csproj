@@ -14,8 +14,4 @@
 		<ProjectReference Include="..\Ddon.EventBus.Memory\Ddon.EventBus.Memory.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <None Update="..\..\icon.nuget.jpg" Link="icon.nuget.jpg" />
-	</ItemGroup>
-
 </Project>
