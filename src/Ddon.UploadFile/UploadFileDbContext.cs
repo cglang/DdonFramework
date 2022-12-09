@@ -1,11 +1,10 @@
 ﻿using Ddon.Core.Services.LazyService;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Ddon.UploadFile
 {
-    public class UploadFileDbContext : BasicDbContext<UploadFileDbContext, Guid>
+    public class UploadFileDbContext : BasicDbContext<UploadFileDbContext>
     {
         public DbSet<FileEntity>? Files { get; set; }
 
