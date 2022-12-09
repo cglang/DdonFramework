@@ -1,32 +1,31 @@
-using Ddon.Jwt.Options;
-using Microsoft.IdentityModel.Tokens;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
+using Ddon.Cache;
+using Ddon.Jwt.Options;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Ddon.Jwt;
 
-public class JwtTokenManager
+public class JwtTokenManager : IJwtTokenManager
 {
-    private readonly JwtSettings _jwtSettings;
+    private readonly JwtOptions _jwtSettings;
+    private readonly ICache _cache;
+    private static readonly JwtSecurityTokenHandler _jwtTokenHandler = new();
 
-    private SecurityKey SecurityKey => new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_jwtSettings.SecurityKey));
-
-    private static JwtSecurityTokenHandler JwtTokenHandler => new();
-
-    public JwtTokenManager(JwtSettings jwtSettings)
+    public JwtTokenManager(JwtOptions jwtSettings, ICache cache)
     {
         _jwtSettings = jwtSettings;
+        _cache = cache;
     }
 
-    /// <summary>
-    /// 生成JwtToken
-    /// </summary>
-    /// <returns></returns>
-    public string GenerateJwtToken(IEnumerable<Claim>? claims = null)
+    public string GenerateToken(IEnumerable<Claim>? claims = null)
     {
         var claimsList = claims?.ToList() ?? new List<Claim>();
         if (claimsList.All(claim => claim.Type != JwtRegisteredClaimNames.Jti))
@@ -34,65 +33,76 @@ public class JwtTokenManager
             claimsList.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")));
         }
 
-        var securityToken = GenerateSecurityToken(claimsList);
-
-        return JwtTokenHandler.WriteToken(securityToken);
-    }
-
-    public bool ValidateToken(string token)
-    {
-        //校验token
-        var validateParameter = new TokenValidationParameters()
-        {
-            // ValidateLifetime = true,
-            // ValidateAudience = true,
-            // ValidateIssuer = true,
-            // ValidateIssuerSigningKey = true,
-            // ValidIssuer = "fan",
-            // ValidAudience = "audi~~!",
-            IssuerSigningKey = SecurityKey,
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = false,
-            ValidateAudience = false,
-        };
-        //不校验，直接解析token
-        //jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token1);
-        try
-        {
-            //校验并解析token
-            JwtTokenHandler.ValidateToken(token, validateParameter, out _);
-            // var claimsPrincipal =
-            //     new JwtSecurityTokenHandler().ValidateToken(token, validateParameter,
-            //         out var validatedToken); //validatedToken:解密后的对象
-            // var jwtPayload = ((JwtSecurityToken)validatedToken).Payload.SerializeToJson(); //获取payload中的数据 
-        }
-        catch (SecurityTokenExpiredException)
-        {
-            //表示过期
-            return false;
-        }
-        catch (SecurityTokenException)
-        {
-            //表示token错误
-            return false;
-        }
-
-        return true;
-    }
-
-    private SecurityToken GenerateSecurityToken(IEnumerable<Claim> claims)
-    {
         var nowDate = DateTime.UtcNow;
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            // IssuedAt = nowDate,
-            // NotBefore = nowDate,
-            Expires = nowDate.Add(_jwtSettings.ExpiresIn),
-            SigningCredentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256Signature)
+            IssuedAt = nowDate,
+            NotBefore = nowDate,
+            Expires = nowDate.Add(_jwtSettings.AccessTokenExpires),
+            SigningCredentials = new SigningCredentials(_jwtSettings.SecurityKey, SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _jwtSettings.Issuer,
+            Audience = _jwtSettings.Audience
         };
 
-        var securityToken = JwtTokenHandler.CreateToken(tokenDescriptor);
-        return securityToken;
+        var securityToken = _jwtTokenHandler.CreateToken(tokenDescriptor);
+
+        return _jwtTokenHandler.WriteToken(securityToken);
+    }
+
+    public ClaimsPrincipal ValidateAccessToken(string token, out SecurityToken validatedToken)
+    {
+        var validateParameter = new TokenValidationParameters()
+        {
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidAudience = _jwtSettings.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = _jwtSettings.SecurityKey,
+            ValidateLifetime = true
+        };
+        try
+        {
+            return _jwtTokenHandler.ValidateToken(token, validateParameter, out validatedToken);
+        }
+        catch
+        {
+            throw new Exception("验证未通过");
+        }
+    }
+
+    public async Task<string> GenerateTokenAsync(string refreshToken, CancellationToken token = default)
+    {
+        var claims = await _cache.GetAsync<IEnumerable<Claim>>($"{JwtDefaults.RefreshTokenCacheKey}{refreshToken}", token);
+        if (claims is null) throw new Exception("验证 RefreshToken 失败");
+
+        return GenerateToken(claims);
+    }
+
+    public async Task<MultiToken> GenerateMultiTokenAsync(IEnumerable<Claim>? claims = null, CancellationToken token = default)
+    {
+        var accessToken = GenerateToken(claims);
+        var refreshToken = GenerateRefreshToken(32);
+
+        var cacheEntryOptions = new DistributedCacheEntryOptions() { SlidingExpiration = _jwtSettings.RefreshTokenExpires };
+        await _cache.SetAsync($"{JwtDefaults.RefreshTokenCacheKey}{refreshToken}", claims ?? new List<Claim>(), cacheEntryOptions, token);
+
+        return new(accessToken, refreshToken);
+    }
+
+    public async Task<MultiToken> GenerateMultiTokenAsync(string refreshToken, CancellationToken token = default)
+    {
+        var accessToken = await GenerateTokenAsync(refreshToken, token);
+        return new(accessToken, refreshToken);
+    }
+
+    /// <summary>
+    /// 生成 RefreshToken
+    /// </summary>
+    private static string GenerateRefreshToken(int len = 32)
+    {
+        var randomNumber = new byte[len];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
     }
 }

@@ -1,12 +1,11 @@
-﻿using Ddon.Cache;
+﻿using System.Threading.Tasks;
+using Ddon.Cache;
 using Ddon.Core;
 using Ddon.Jwt.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Text;
 
 namespace Ddon.Identity
 {
@@ -16,24 +15,40 @@ namespace Ddon.Identity
         {
             Load<CacheModule>(services, configuration);
 
-            var jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>();
-            services.AddSingleton(jwtSettings!);
+            var jwtJwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ?? new();
+            services.AddSingleton(jwtJwtOptions);
 
-            var tokenValidationParameters = new TokenValidationParameters
+            var authenticationBuilder = services.AddAuthentication(options =>
             {
-                ValidateIssuer = false,      // 是否在令牌验证期间验证颁发者
-                ValidateAudience = false,   // 是否在令牌验证期间验证受众
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings!.SecurityKey)),
-                ValidateLifetime = true,                    // 是否验证Token有效期
-                ClockSkew = TimeSpan.FromMilliseconds(5),   // Token缓冲过期时间
-            };
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options => { options.TokenValidationParameters = tokenValidationParameters; });
+            });
+            authenticationBuilder.AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    // 颁发者;默认会开启验证颁发者,可通过设置 ValidateIssuer = false 关闭验证,并删除此项
+                    ValidIssuer = jwtJwtOptions.Issuer,
+                    // 受众;默认会开启验证受众,可通过设置 ValidateAudience = false 关闭验证,并删除此项
+                    ValidAudience = jwtJwtOptions.Audience,
+                    // 检查签名密钥
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = jwtJwtOptions.SecurityKey,
+                    // 是否验证Token有效期
+                    ValidateLifetime = true
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies[jwtJwtOptions.CookieKey] ?? string.Empty;
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            services.AddHttpContextAccessor();
         }
     }
 }
