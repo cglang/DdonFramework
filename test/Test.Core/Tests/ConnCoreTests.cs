@@ -1,4 +1,4 @@
-using Ddon.Core.Use.Socket;
+ï»¿using Ddon.Core.Use.Socket;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ namespace Test.Core.Tests
     public class ConnCoreTests
     {
         /// <summary>
-        /// ºËÐÄÀà»ù´¡²âÊÔ
+        /// æ ¸å¿ƒç±»åŸºç¡€æµ‹è¯•
         /// </summary>
         [TestMethod]
         public async Task CoreBaseTest()
