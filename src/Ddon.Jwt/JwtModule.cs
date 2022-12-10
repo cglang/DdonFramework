@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Ddon.Cache;
 using Ddon.Core;
+using Ddon.Jwt;
 using Ddon.Jwt.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,8 @@ namespace Ddon.Identity
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
             Load<CacheModule>(services, configuration);
+
+            services.AddTransient<JwtTokenManager>();
 
             var jwtJwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ?? new();
             services.AddSingleton(jwtJwtOptions);
