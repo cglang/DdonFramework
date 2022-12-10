@@ -26,7 +26,7 @@ namespace Ddon.Core.Use
             _startDate = startDate?.Kind == DateTimeKind.Utc ? startDate : startDate?.ToUniversalTime();
             _interval = interval.TotalSeconds;
 
-            Interval = 100;
+            Interval = 1000;
 
             InitElapsed();
         }
