@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace Ddon.AspNetCore.Filters
@@ -68,7 +71,7 @@ namespace Ddon.AspNetCore.Filters
             {
                 return new ContentResult
                 {
-                    Content = JsonSerializer.Serialize(new GlobalResult(success, statusCode, message)),
+                    Content = JsonSerializer.Serialize(new GlobalResult(success, statusCode, message), options),
                     StatusCode = statusCode,
                     ContentType = "application/json;charset=utf-8"
                 };
@@ -83,5 +86,12 @@ namespace Ddon.AspNetCore.Filters
                 };
             }
         }
+
+        private static readonly JsonSerializerOptions options = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
+        };
     }
 }
