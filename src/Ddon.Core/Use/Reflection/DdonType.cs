@@ -17,7 +17,8 @@ namespace Ddon.Core.Use.Reflection
         /// <exception cref="Exception">通过名称找不到类型时引发异常</exception>
         public static Type GetTypeByName(string className)
         {
-            return Types.FirstOrDefault(type => type.Name.Equals(className) || type.FullName.Equals(className)) ?? throw new Exception($"找不到名为[{className}]的类型");
+            return Types.FirstOrDefault(type => type.Name.Equals(className) || (type.FullName?.Equals(className) ?? false))
+                ?? throw new Exception($"找不到名为[{className}]的类型");
         }
 
         /// <summary>
@@ -30,8 +31,12 @@ namespace Ddon.Core.Use.Reflection
         public static Type GetTypeByName<T>(string className)
         {
             var baseType = typeof(T);
-            var type = Types.FirstOrDefault(type => type.Name.Equals(className, StringComparison.Ordinal) && baseType.IsAssignableFrom(type))
-                ?? throw new Exception($"找不到名为[{className}]的类型");
+            var type = Types.FirstOrDefault(type =>
+            {
+                return type.Name.Equals(className, StringComparison.Ordinal)
+                || (type.FullName?.Equals(className) ?? false)
+                && baseType.IsAssignableFrom(type);
+            }) ?? throw new Exception($"找不到名为[{className}]的类型");
             return type;
         }
 

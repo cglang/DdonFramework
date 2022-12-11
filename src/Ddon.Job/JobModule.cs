@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Ddon.Core;
-using Ddon.Core.Use.Di;
 using Ddon.EventBus.MemoryQueue;
 using Ddon.Job.old;
 using Microsoft.Extensions.Configuration;
@@ -19,10 +18,9 @@ namespace Ddon.Job
 
             var baseType = typeof(IJob);
 
-            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes())
-                .Where(type => type != baseType && baseType.IsAssignableFrom(type)).ToList();
+            var implementTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes())
+                .Where(type => type != baseType && baseType.IsAssignableFrom(type) && type.IsClass).ToList();
 
-            var implementTypes = types.Where(x => x.IsClass).ToList();
             implementTypes.ForEach(implementType =>
             {
                 services.AddTransient(implementType);

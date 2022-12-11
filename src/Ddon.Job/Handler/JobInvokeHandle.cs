@@ -19,7 +19,7 @@ namespace Ddon.Job.Handler
 
         public async Task Handle(JobInvokeEventData data, CancellationToken cancellationToken)
         {
-            var classType = DdonType.GetTypeByName(data.JobClassName);
+            var classType = DdonType.GetTypeByName<IJob>(data.JobClassName);
             var instance = serviceProvider.GetRequiredService(classType) ??
                 throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 

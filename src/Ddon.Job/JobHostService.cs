@@ -15,15 +15,13 @@ namespace Ddon.Job.old
     /// </summary>
     internal class JobHostService : BackgroundService
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly JobService _jobService;
 
         /// <summary>
         /// Job 服务启动
         /// </summary>
-        public JobHostService(IServiceProvider serviceProvider, JobService jobService)
+        public JobHostService(JobService jobService)
         {
-            _serviceProvider = serviceProvider;
             _jobService = jobService;
         }
 
@@ -54,7 +52,6 @@ namespace Ddon.Job.old
                 }
             }
 
-            //using var scope = _serviceProvider.CreateScope();
             _jobService.Start();
 
             return Task.CompletedTask;

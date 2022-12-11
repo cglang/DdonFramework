@@ -23,7 +23,7 @@ namespace Ddon.Job
             get
             {
                 DateTime now = DateTime.UtcNow;
-                var nextOccurrence = Cron.GetNextOccurrence(DateTime.UtcNow, Inclusive);
+                var nextOccurrence = Cron.GetNextOccurrence(now, Zone, Inclusive);
 
                 if (nextOccurrence is null || nextOccurrence < now) throw new Exception();
 
