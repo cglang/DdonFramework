@@ -6,6 +6,11 @@ using System.Text;
 
 namespace Ddon.Core.Use.Cronos;
 
+/*
+ *  *  *  *  *  *  ?
+ *  秒 分 时 日 月 星期
+ */
+
 /// <summary>
 /// Provides a parser and scheduler for cron expressions.
 /// </summary>

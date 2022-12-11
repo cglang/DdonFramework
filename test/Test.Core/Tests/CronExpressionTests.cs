@@ -26,6 +26,45 @@ namespace Cronos.Tests
 
         private static readonly CronExpression MinutelyExpression = CronExpression.Parse("* * * * *");
 
+        #region 学习使用
+
+        [TestMethod]
+        [DataRow("0 * * * * ?", "2022-10-10 00:00:00 +00:00", "2022-10-10 00:00:00 +00:00", true)]
+        [DataRow("0 * * * * ?", "2022-10-10 00:00:00 +00:00", "2022-10-10 00:01:00 +00:00", false)]
+        [DataRow("0 * * * * ?", "2022-10-10 00:01:00 +00:00", "2022-10-10 00:02:00 +00:00", false)]
+        [DataRow("0 0 6 * * ?", "2022-10-10 00:00:00 +00:00", "2022-10-10 06:00:00 +00:00", false)]
+        [DataRow("0 0 6 * * ?", "2022-10-10 06:00:00 +00:00", "2022-10-11 06:00:00 +00:00", false)]
+        [DataRow("0 0 6 * * 1-5", "2022-12-05 00:00:00 +00:00", "2022-12-05 06:00:00 +00:00", false)]
+        [DataRow("0 0 6 * * 1-5", "2022-12-10 00:00:00 +00:00", "2022-12-12 06:00:00 +00:00", false)]
+        public void LearnTest(string cronExpression, string fromString, string expectedString, bool inclusive)
+        {
+            var expression = CronExpression.Parse(cronExpression, CronFormat.IncludeSeconds);
+
+            var fromInstant = GetInstant(fromString);
+            var expectedInstant = GetInstant(expectedString);
+
+            var executed = expression.GetNextOccurrence(fromInstant, TimeZoneInfo.Utc, inclusive);
+
+            Assert.AreEqual(expectedInstant, executed);
+        }
+
+        [TestMethod]
+        [DataRow("0 * * * * ?", "2022-10-10 00:00:00 +00:00", "2022-10-10 00:00:00 +00:00", true)]
+        public void Learn2Test(string cronExpression, string fromString, string expectedString, bool inclusive)
+        {
+            var expression = CronExpression.Parse(cronExpression, CronFormat.IncludeSeconds);
+
+            var fromInstant = GetInstant(fromString);
+            var expectedInstant = GetInstant(expectedString);
+
+            var executed = expression.GetNextOccurrence(fromInstant, TimeZoneInfo.Local, inclusive);
+
+            Assert.AreEqual(expectedInstant, executed);
+        }
+
+        #endregion
+
+
         [TestMethod]
         [DataRow("*	*	* * * *")]        // Handle tabs.
         [DataRow(" 	*	*	* * * *    ")]// Handle white spaces at the beginning and end of expression.        

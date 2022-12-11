@@ -17,7 +17,7 @@ namespace Ddon.Core.Use.Reflection
         /// <exception cref="Exception">通过名称找不到类型时引发异常</exception>
         public static Type GetTypeByName(string className)
         {
-            return Types.FirstOrDefault(type => type.Name.Equals(className)) ?? throw new Exception($"找不到名为[{className}]的类型");
+            return Types.FirstOrDefault(type => type.Name.Equals(className) || type.FullName.Equals(className)) ?? throw new Exception($"找不到名为[{className}]的类型");
         }
 
         /// <summary>

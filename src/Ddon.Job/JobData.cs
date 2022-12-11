@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ddon.Job
+namespace Ddon.Job.old
 {
-    internal static class MissionData
+    internal static class JobData
     {
-        public static readonly Dictionary<Guid, Mission> Missions = new();
+        public static readonly Dictionary<Guid, JobInvokeData> Jobs = new();
         public static readonly DelayQueue<Guid> DelayQueue = new();
     }
 }
