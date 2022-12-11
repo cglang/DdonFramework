@@ -1,9 +1,9 @@
-﻿using Ddon.Core.Services.LazyService;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Ddon.FileStorage.DataBase;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Gardener.HostService
 {
@@ -12,17 +12,17 @@ namespace Gardener.HostService
     /// </summary>
     public class FileStorageHostService : BackgroundService
     {
-        private readonly ILazyServiceProvider _lazyServiceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
         /// <summary></summary>
-        public FileStorageHostService(ILazyServiceProvider lazyServiceProvider)
+        public FileStorageHostService(IServiceProvider serviceProvider)
         {
-            _lazyServiceProvider = lazyServiceProvider;
+            _serviceProvider = serviceProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var scope = _lazyServiceProvider.ServiceProvider.CreateScope();
+            using var scope = _serviceProvider.CreateScope();
             var databaseMigrate = scope.ServiceProvider.GetRequiredService<DatabaseMigrate>();
             await databaseMigrate.MigrateAsync();
         }

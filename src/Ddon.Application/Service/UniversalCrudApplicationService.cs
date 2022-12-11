@@ -1,11 +1,11 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Threading.Tasks;
+using AutoMapper;
 using Ddon.Application.Dtos;
-using Ddon.Core.Services.LazyService;
 using Ddon.Domain.Dtos;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Repositories;
-using System;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Application.Service
 {
@@ -19,11 +19,11 @@ namespace Ddon.Application.Service
         /// <summary>
         /// Mapper 映射
         /// </summary>
-        protected IMapper Mapper => LazyServiceProvider.LazyGetRequiredService<IMapper>();
+        protected IMapper Mapper => ServiceProvider.GetRequiredService<IMapper>();
 
         private readonly IRepository<TEntity, TKey> _repository;
 
-        public UniversalCrudApplicationService(ILazyServiceProvider lazyServiceProvider, IRepository<TEntity, TKey> repository) : base(lazyServiceProvider)
+        public UniversalCrudApplicationService(IServiceProvider serviceProvider, IRepository<TEntity, TKey> repository) : base(serviceProvider)
         {
             _repository = repository;
         }

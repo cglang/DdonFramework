@@ -1,13 +1,14 @@
 ﻿using Ddon.Core.Services.LazyService;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Test.Repository.Db
 {
     public class TestDbContext : BasicDbContext<TestDbContext>
     {
-        public TestDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TestDbContext> options) : base(lazyServiceProvider, options)
+        public TestDbContext(IServiceProvider serviceProvider, DbContextOptions<TestDbContext> options) : base(serviceProvider, options)
         {
         }
 

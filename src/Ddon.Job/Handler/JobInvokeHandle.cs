@@ -10,17 +10,17 @@ namespace Ddon.Job.Handler
 {
     internal class JobInvokeHandle : INotificationHandler<JobInvokeEventData>
     {
-        private readonly IServiceProvider serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
         public JobInvokeHandle(IServiceProvider serviceProvider)
         {
-            this.serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task Handle(JobInvokeEventData data, CancellationToken cancellationToken)
         {
             var classType = DdonType.GetTypeByName<IJob>(data.JobClassName);
-            var instance = serviceProvider.GetRequiredService(classType) ??
+            var instance = _serviceProvider.GetRequiredService(classType) ??
                 throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
             var method = DdonType.GetMothodByName(classType, data.JobMethodName);

@@ -1,10 +1,9 @@
-﻿using Ddon.Application.Dtos;
-using Ddon.Core.Services.LazyService;
+﻿using System;
+using System.Threading.Tasks;
+using Ddon.Application.Dtos;
 using Ddon.Domain.Dtos;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Repositories;
-using System;
-using System.Threading.Tasks;
 
 namespace Ddon.Application.Service
 {
@@ -18,7 +17,7 @@ namespace Ddon.Application.Service
     {
         private readonly IRepository<TEntity, TKey> _repository;
 
-        public CrudApplicationService(ILazyServiceProvider lazyServiceProvider, IRepository<TEntity, TKey> repository) : base(lazyServiceProvider, repository)
+        public CrudApplicationService(IServiceProvider serviceProvider, IRepository<TEntity, TKey> repository) : base(serviceProvider, repository)
         {
             _repository = repository;
         }

@@ -1,4 +1,5 @@
 ﻿using Ddon.Core.Services.Guids;
+using Ddon.Core.Services.LazyService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ namespace Ddon.Core
         {
             services.AddAutoInject();
 
+            services.AddTransient<ILazyServiceProvider, LazyServiceProvider>();
             services.AddTransient<IGuidGenerator, SequentialGuidGenerator>();
         }
     }

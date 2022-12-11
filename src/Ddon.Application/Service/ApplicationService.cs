@@ -5,11 +5,11 @@ namespace Ddon.Application.Service
 {
     public class ApplicationService<TKey> where TKey : IEquatable<TKey>
     {
-        protected ILazyServiceProvider LazyServiceProvider { get; }
+        protected IServiceProvider ServiceProvider { get; }
 
-        public ApplicationService(ILazyServiceProvider lazyServiceProvider)
+        public ApplicationService(IServiceProvider lazyServiceProvider)
         {
-            LazyServiceProvider = lazyServiceProvider;
+            ServiceProvider = lazyServiceProvider;
         }
     }
 }

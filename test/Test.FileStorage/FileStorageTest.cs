@@ -1,6 +1,7 @@
-using Ddon.FileStorage.DataBase;
+﻿using Ddon.FileStorage.DataBase;
 using Ddon.FileStorage.Service;
 using Ddon.Test;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Test.FileStorage
 {
@@ -13,9 +14,9 @@ namespace Test.FileStorage
 
         public FileStorageTest()
         {
-            _fileStorage = ServiceProvider.LazyGetService<IFileStorageService>();
-            _databaseMigrate = ServiceProvider.LazyGetService<DatabaseMigrate>();
-            _fileStorageService = ServiceProvider.LazyGetService<IFileStorageService>();
+            _fileStorage = ServiceProvider.GetRequiredService<IFileStorageService>();
+            _databaseMigrate = ServiceProvider.GetRequiredService<DatabaseMigrate>();
+            _fileStorageService = ServiceProvider.GetRequiredService<IFileStorageService>();
         }
 
         [TestMethod]

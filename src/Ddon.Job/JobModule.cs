@@ -2,7 +2,6 @@
 using System.Linq;
 using Ddon.Core;
 using Ddon.EventBus.MemoryQueue;
-using Ddon.Job.old;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +22,7 @@ namespace Ddon.Job
 
             implementTypes.ForEach(implementType =>
             {
-                services.AddTransient(implementType);
+                services.AddSingleton(implementType);
             });
         }
     }

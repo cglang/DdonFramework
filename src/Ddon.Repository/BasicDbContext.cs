@@ -1,25 +1,25 @@
-﻿using Ddon.Core.Services.Guids;
-using Ddon.Core.Services.LazyService;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Ddon.Core.Services.Guids;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Entities.Auditing;
 using Ddon.Repositiry.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Repositiry
 {
     public class BasicDbContext<TDbContext> : DbContext where TDbContext : DbContext
     {
-        private readonly ILazyServiceProvider LazyServiceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
-        private IGuidGenerator? GuidGenerator => LazyServiceProvider.LazyGetRequiredService<IGuidGenerator>();
+        private IGuidGenerator? GuidGenerator => _serviceProvider.GetRequiredService<IGuidGenerator>();
 
-        public BasicDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(options)
+        public BasicDbContext(IServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(options)
         {
-            LazyServiceProvider = lazyServiceProvider;
+            _serviceProvider = lazyServiceProvider;
 
             Initialize();
         }

@@ -1,14 +1,12 @@
-﻿using Ddon.Core.Services.LazyService.Static;
-using Ddon.Core.Use.Cronos;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Ddon.Core.Use.Cronos;
+using Microsoft.Extensions.Hosting;
 
-namespace Ddon.Job.old
+namespace Ddon.Job
 {
     /// <summary>
     /// Job 服务启动
@@ -25,7 +23,7 @@ namespace Ddon.Job.old
             _jobService = jobService;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var baseType = typeof(IJob);
 
@@ -52,9 +50,7 @@ namespace Ddon.Job.old
                 }
             }
 
-            _jobService.Start();
-
-            return Task.CompletedTask;
+            await _jobService.StartAsync();
         }
     }
 }

@@ -1,22 +1,23 @@
-using Ddon.Cache;
+﻿using Ddon.Cache;
 using Ddon.Test;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Test.Cache
 {
     [TestClass]
     public class CacheTest : TestBase<TestCacheMemoryModule>
     {
-        ICache _cache;
+        readonly ICache _cache;
 
         public CacheTest()
         {
-            _cache = ServiceProvider.LazyGetService<ICache>();
+            _cache = ServiceProvider.GetRequiredService<ICache>();
         }
 
         [TestMethod]
         public void BaseTestMethod()
         {
-            var cache = ServiceProvider.LazyGetService<ICache>();
+            var cache = ServiceProvider.GetRequiredService<ICache>();
             Assert.IsNotNull(cache);
         }
 

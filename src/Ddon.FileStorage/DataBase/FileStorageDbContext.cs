@@ -1,7 +1,6 @@
-﻿using Ddon.Core.Services.LazyService;
+﻿using System;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Ddon.FileStorage.DataBase
 {
@@ -9,8 +8,8 @@ namespace Ddon.FileStorage.DataBase
     {
         public DbSet<FileEntity>? Files { get; set; }
 
-        public FileStorageDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<FileStorageDbContext> options)
-            : base(lazyServiceProvider, options)
+        public FileStorageDbContext(IServiceProvider serviceProvider, DbContextOptions<FileStorageDbContext> options)
+            : base(serviceProvider, options)
         {
         }
     }

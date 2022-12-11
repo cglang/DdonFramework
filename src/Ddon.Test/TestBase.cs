@@ -1,5 +1,5 @@
-﻿using Ddon.Core;
-using Ddon.Core.Services.LazyService;
+﻿using System;
+using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,7 +8,7 @@ namespace Ddon.Test
 {
     public class TestBase<TModule> where TModule : Module, new()
     {
-        protected ILazyServiceProvider ServiceProvider { get; }
+        protected IServiceProvider ServiceProvider { get; }
 
         protected TestBase()
         {
@@ -20,7 +20,7 @@ namespace Ddon.Test
             services.LoadModule<CoreModule>(configuration);
             services.LoadModule<TModule>(configuration);
 
-            ServiceProvider = services.BuildServiceProvider().GetService<ILazyServiceProvider>()!;
+            ServiceProvider = services.BuildServiceProvider().GetService<IServiceProvider>()!;
         }
     }
 }

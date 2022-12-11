@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ddon.Job.old
+namespace Ddon.Job
 {
     internal static class JobData
     {

@@ -1,5 +1,6 @@
 ﻿using Ddon.Domain.Dtos;
 using Ddon.Test;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace Test.Repository
         [TestMethod]
         public async Task DbContextBasicTest()
         {
-            var db = ServiceProvider.LazyGetService<TestDbContext>()!;
+            var db = ServiceProvider.GetRequiredService<TestDbContext>()!;
 
             var en = new TestEntity { Title = "测试" };
             await db.Tests.AddAsync(en);
@@ -28,7 +29,7 @@ namespace Test.Repository
         [TestMethod]
         public async Task RepositoryTestAsync()
         {
-            var repository = ServiceProvider.LazyGetService<TestRepository>();
+            var repository = ServiceProvider.GetRequiredService<TestRepository>();
 
             var en = new TestEntity { Title = "测试" };
             await repository.AddAsync(en, true);
@@ -40,8 +41,8 @@ namespace Test.Repository
         [TestMethod]
         public async Task RepositoryTestQueryPageAsync()
         {
-            var testRepository = ServiceProvider.LazyGetService<TestRepository>();
-            var pageRepository = ServiceProvider.LazyGetService<TestPageRepository>();
+            var testRepository = ServiceProvider.GetRequiredService<TestRepository>();
+            var pageRepository = ServiceProvider.GetRequiredService<TestPageRepository>();
 
             var en = new TestEntity { Title = "测试" };
             await testRepository.AddAsync(en, true);
@@ -82,7 +83,7 @@ namespace Test.Repository
         [TestMethod]
         public async Task AddRangeTestAsync()
         {
-            var repository = ServiceProvider.LazyGetService<TestRepository>();
+            var repository = ServiceProvider.GetRequiredService<TestRepository>();
 
             var value = Guid.NewGuid().ToString();
             var value2 = Guid.NewGuid().ToString();

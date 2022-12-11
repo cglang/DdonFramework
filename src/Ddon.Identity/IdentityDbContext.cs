@@ -18,7 +18,7 @@ namespace Ddon.Identity
 
         public DbSet<PermissionGrant<TKey>> PermissionGrant { get; set; }
 
-        public IdentityDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(lazyServiceProvider, options)
+        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions<TDbContext> options) : base(serviceProvider, options)
         {
         }
 

@@ -15,12 +15,11 @@ namespace Ddon.FileStorage.DataBase
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             IConfiguration configuration = configurationBuilder.Build();
             var services = new ServiceCollection();
-            services.AddTransient<ILazyServiceProvider, LazyServiceProvider>();
-            var lazyServiceProvider = services.BuildServiceProvider().GetService<ILazyServiceProvider>()!;
+            var serviceProvider = services.BuildServiceProvider().GetService<IServiceProvider>()!;
             var optionsBuilder = new DbContextOptionsBuilder<FileStorageDbContext>();
             optionsBuilder.UseSqlite($"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FileStorage", "FileStorage.db")}");
 
-            return new FileStorageDbContext(lazyServiceProvider, optionsBuilder.Options);
+            return new FileStorageDbContext(serviceProvider, optionsBuilder.Options);
         }
     }
 }

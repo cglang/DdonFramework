@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Ddon.Core.Use.Utils
+namespace Ddon.Core.Utility
 {
     public class DdonMd5
     {
