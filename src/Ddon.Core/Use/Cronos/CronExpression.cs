@@ -82,7 +82,7 @@ public sealed class CronExpression : IEquatable<CronExpression>
     /// </summary>
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe CronExpression Parse(string expression, CronFormat format)
+    public static unsafe CronExpression Parse(string? expression, CronFormat format)
     {
         if (string.IsNullOrEmpty(expression)) throw new ArgumentNullException(nameof(expression));
 
@@ -92,16 +92,16 @@ public sealed class CronExpression : IEquatable<CronExpression>
 
             SkipWhiteSpaces(ref pointer);
 
-            CronExpression cronExpression;
+            CronExpression? cronExpression;
 
             if (Accept(ref pointer, '@'))
             {
                 cronExpression = ParseMacro(ref pointer);
                 SkipWhiteSpaces(ref pointer);
 
-                if (cronExpression == null || !IsEndOfString(*pointer)) ThrowFormatException("Macro: Unexpected character '{0}' on position {1}.", *pointer, pointer - value);
+                if (cronExpression is null || !IsEndOfString(*pointer)) ThrowFormatException("Macro: Unexpected character '{0}' on position {1}.", *pointer, pointer - value);
 
-                return cronExpression;
+                return cronExpression!;
             }
 
             cronExpression = new CronExpression();
@@ -286,9 +286,9 @@ public sealed class CronExpression : IEquatable<CronExpression>
     /// <returns>
     /// <c>true</c> if the specified <see cref="object"/> is equal to the current <see cref="object"/>; otherwise, <c>false</c>.
     /// </returns>
-    public bool Equals(CronExpression other)
+    public bool Equals(CronExpression? other)
     {
-        if (other == null) return false;
+        if (other is null) return false;
 
         return _second == other._second &&
                _minute == other._minute &&
@@ -309,7 +309,7 @@ public sealed class CronExpression : IEquatable<CronExpression>
     /// <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance;
     /// otherwise, <c>false</c>.
     /// </returns>
-    public override bool Equals(object obj) => Equals(obj as CronExpression);
+    public override bool Equals(object? obj) => Equals(obj as CronExpression);
 
     /// <summary>
     /// Returns a hash code for this instance.
@@ -564,7 +564,7 @@ RetryMonth:
         if (!IsEndOfString(*pointer)) ThrowFormatException("Unexpected character '{0}'.", *pointer);
     }
 
-    private static unsafe CronExpression ParseMacro(ref char* pointer)
+    private static unsafe CronExpression? ParseMacro(ref char* pointer)
     {
         switch (ToUpper(*pointer++))
         {
@@ -938,7 +938,7 @@ RetryMonth:
         return 1L << num1;
     }
 
-    private static unsafe int GetNumber(ref char* pointer, int[] names)
+    private static unsafe int GetNumber(ref char* pointer, int[]? names)
     {
         if (IsDigit(*pointer))
         {

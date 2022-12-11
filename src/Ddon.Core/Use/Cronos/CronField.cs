@@ -4,7 +4,7 @@ internal sealed class CronField
 {
     private static readonly string[] MonthNames =
     {
-        null, "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+        string.Empty, "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
     };
 
     private static readonly string[] DayOfWeekNames =
@@ -56,11 +56,11 @@ internal sealed class CronField
     public readonly string Name;
     public readonly int First;
     public readonly int Last;
-    public readonly int[] Names;
+    public readonly int[]? Names;
     public readonly bool CanDefineInterval;
     public readonly long AllBits;
 
-    private CronField(string name, int first, int last, int[] names, bool canDefineInterval)
+    private CronField(string name, int first, int last, int[]? names, bool canDefineInterval)
     {
         Name = name;
         First = first;
