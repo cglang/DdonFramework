@@ -80,7 +80,7 @@ namespace Ddon.AspNetCore.Filters
             {
                 return new ContentResult
                 {
-                    Content = JsonSerializer.Serialize(new GlobalResult<object>(success, statusCode, message, data)),
+                    Content = JsonSerializer.Serialize(new GlobalResult<object>(success, statusCode, message, data), options),
                     StatusCode = statusCode,
                     ContentType = "application/json;charset=utf-8"
                 };
