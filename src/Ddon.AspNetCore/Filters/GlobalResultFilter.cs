@@ -91,7 +91,7 @@ namespace Ddon.AspNetCore.Filters
         {
             PropertyNameCaseInsensitive = true,
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
         };
     }
 }
