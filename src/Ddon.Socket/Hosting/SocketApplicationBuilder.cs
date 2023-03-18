@@ -29,7 +29,8 @@ namespace Ddon.Socket.Hosting
 
             _tcpListener = new TcpListener(IPAddress.Parse(_socketBuilderContext.Host), _socketBuilderContext.Port);
 
-            return new(_serviceProvider, _tcpListener, _logger, _socketBuilderContext.ExceptionHandler, _socketBuilderContext.SocketAccessHandler);
+            return new SocketApplication(_serviceProvider, _tcpListener, _logger,
+                _socketBuilderContext.ExceptionHandler, _socketBuilderContext.SocketAccessHandler);
         }
 
         public SocketApplicationBuilder Configure(Action<SocketBuilderContext> configureDelegate)

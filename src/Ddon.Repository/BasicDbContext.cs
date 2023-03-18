@@ -17,9 +17,9 @@ namespace Ddon.Repositiry
 
         private IGuidGenerator? GuidGenerator => _serviceProvider.GetRequiredService<IGuidGenerator>();
 
-        public BasicDbContext(IServiceProvider lazyServiceProvider, DbContextOptions<TDbContext> options) : base(options)
+        public BasicDbContext(IServiceProvider serviceProvider, DbContextOptions<TDbContext> options) : base(options)
         {
-            _serviceProvider = lazyServiceProvider;
+            _serviceProvider = serviceProvider;
 
             Initialize();
         }

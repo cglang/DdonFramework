@@ -13,7 +13,8 @@ namespace Ddon.Identity
         private readonly ICurrentUserInfoAccessor<TKey> _userinfoAccessor;
         private readonly IUserRepository<TKey> _userRepositity;
 
-        public UserInfoInitMiddleware(ICurrentUserInfoAccessor<TKey> userinfoAccessor, IUserRepository<TKey> identityManager)
+        public UserInfoInitMiddleware(ICurrentUserInfoAccessor<TKey> userinfoAccessor,
+            IUserRepository<TKey> identityManager)
         {
             _userinfoAccessor = userinfoAccessor;
             _userRepositity = identityManager;
@@ -25,8 +26,9 @@ namespace Ddon.Identity
             if (!string.IsNullOrWhiteSpace(userId))
             {
                 var user = await _userRepositity.FirstOrDefaultAsync(x => x.Id.ToString() == userId);
-                _userinfoAccessor!.Init(user);
+                _userinfoAccessor.Init(user);
             }
+
             await next(context);
         }
     }
@@ -38,7 +40,8 @@ namespace Ddon.Identity
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseUserInfoInit<TKey>(this IApplicationBuilder app) where TKey : IEquatable<TKey>
+        public static IApplicationBuilder UseUserInfoInit<TKey>(this IApplicationBuilder app)
+            where TKey : IEquatable<TKey>
         {
             return app.UseMiddleware<UserInfoInitMiddleware<TKey>>();
         }

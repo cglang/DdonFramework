@@ -11,6 +11,7 @@ namespace Ddon.Socket.Hosting
 
         public int Port { get; private set; } = 6000;
 
+        ///<summary>
         /// 断开连接是否自动重连
         /// </summary>
         public bool IsReconnection { get; set; }

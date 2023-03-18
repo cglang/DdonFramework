@@ -131,7 +131,7 @@ namespace Ddon.Core.Use.Socket
             GC.SuppressFinalize(this);
         }
 
-        public void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (_disposed)
             {
@@ -154,7 +154,7 @@ namespace Ddon.Core.Use.Socket
             _disposed = true;
         }
 
-        private struct Head
+        private readonly struct Head
         {
             public int Length { get; }
             public Type Type { get; }

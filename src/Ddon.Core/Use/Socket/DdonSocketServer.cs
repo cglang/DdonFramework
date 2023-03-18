@@ -68,7 +68,10 @@ namespace Ddon.Core.Use.Socket
 
                 DdonSocketStorage.Add(session);
 
-                if (_connectHandler != null) await _connectHandler(session);
+                if (_connectHandler != null)
+                    await _connectHandler(session);
+                else
+                    throw new Exception();
             }
         }
 

@@ -7,9 +7,9 @@ namespace Ddon.Application.Service
     {
         protected IServiceProvider ServiceProvider { get; }
 
-        public ApplicationService(IServiceProvider lazyServiceProvider)
+        public ApplicationService(IServiceProvider serviceProvider)
         {
-            ServiceProvider = lazyServiceProvider;
+            ServiceProvider = serviceProvider;
         }
     }
 }

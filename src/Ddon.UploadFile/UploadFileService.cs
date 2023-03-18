@@ -13,7 +13,7 @@ namespace Ddon.UploadFile
     {
         private readonly UploadFileDbContext _dbContext;
 
-        public UploadFileService(ILazyServiceProvider lazyServiceProvider, UploadFileDbContext dbContext) : base(lazyServiceProvider)
+        public UploadFileService(IServiceProvider serviceProvider, UploadFileDbContext dbContext) : base(serviceProvider)
         {
             _dbContext = dbContext;
         }

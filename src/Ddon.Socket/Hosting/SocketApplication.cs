@@ -18,7 +18,8 @@ namespace Ddon.Socket.Hosting
 
         private readonly Action<TcpClient, IServiceProvider, ILogger?,
             Func<SocketSession, DdonSocketException, Task>?,
-            Func<SocketSession, IServiceProvider, Task>?> acceptTcpClientHandler = (tcpClient, serviceProvider, logger, exceptionHandler, socketAccessHandler) =>
+            Func<SocketSession, IServiceProvider, Task>?> _acceptTcpClientHandler =
+            (tcpClient, serviceProvider, _, exceptionHandler, socketAccessHandler) =>
             {
                 var session = new SocketSession(tcpClient, exceptionHandler);
                 DdonSocketResponsePool.Start();
@@ -30,37 +31,48 @@ namespace Ddon.Socket.Hosting
         public SocketApplication(
             IServiceProvider serviceProvider,
             TcpListener listener,
-            ILogger? Logger,
+            ILogger? logger,
             Func<SocketSession, DdonSocketException, Task>? exceptionHandler,
             Func<SocketSession, IServiceProvider, Task>? socketAccessHandler)
         {
             _serviceProvider = serviceProvider;
             _listener = listener;
-            _logger = Logger;
+            _logger = logger;
             _exceptionHandler = exceptionHandler;
-            _exceptionHandler += async (session, ex) =>
+            _exceptionHandler += async (session, _) =>
             {
                 await Task.Run(() => { DdonSocketSessionStorage.Instance.Remove(session.SessionId); });
             };
             _socketAccessHandler = socketAccessHandler;
         }
+
         public void Run()
         {
-            Task.Run(() =>
-            {
-                _listener.Start();
+            Task.Run(Function);
+        }
 
+        private Task Function()
+        {
+            _listener.Start();
+            try
+            {
                 while (true)
                 {
                     var client = _listener.AcceptTcpClient();
-                    acceptTcpClientHandler.Invoke(client, _serviceProvider, _logger, _exceptionHandler, _socketAccessHandler);
+                    _acceptTcpClientHandler.Invoke(client, _serviceProvider, _logger, _exceptionHandler,
+                        _socketAccessHandler);
                 }
-            });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public static SocketApplicationBuilder CreateBuilder(string[] args, IServiceProvider serviceProvider)
         {
-            return new(serviceProvider);
+            return new SocketApplicationBuilder(serviceProvider);
         }
     }
 }

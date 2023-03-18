@@ -23,9 +23,7 @@ namespace Ddon.Core.Use.Socket
 
         public static bool Add(DdonSocketCore session)
         {
-            if (!Pairs.ContainsKey(session.SocketId))
-                return Pairs.TryAdd(session.SocketId, session);
-            return false;
+            return !Pairs.ContainsKey(session.SocketId) && Pairs.TryAdd(session.SocketId, session);
         }
 
         public static void Remove(Guid clientId)

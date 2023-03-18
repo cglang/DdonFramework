@@ -1,4 +1,5 @@
-﻿using Ddon.Core.Services.LazyService;
+﻿using System;
+using Ddon.Core.Services.LazyService;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace Ddon.UploadFile
     {
         public DbSet<FileEntity>? Files { get; set; }
 
-        public UploadFileDbContext(ILazyServiceProvider lazyServiceProvider, DbContextOptions<UploadFileDbContext> options) : base(lazyServiceProvider, options)
+        public UploadFileDbContext(IServiceProvider serviceProvider, DbContextOptions<UploadFileDbContext> options) : base(serviceProvider, options)
         {
         }
     }

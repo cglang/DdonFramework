@@ -19,7 +19,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
     {
         protected readonly TDbContext DbContext;
 
-        public EfCoreRepository(TDbContext dbContext)
+        protected EfCoreRepository(TDbContext dbContext)
         {
             DbContext = dbContext;
         }
@@ -33,7 +33,7 @@ namespace Ddon.Repositiry.EntityFrameworkCore
         private readonly ISpecificationEvaluator<TEntity, TKey> _specification = new SpecificationEvaluator<TEntity, TKey>();
         public virtual IAsyncQueryableProvider AsyncExecuter => new EfCoreAsyncQueryableProvider();
 
-        public EfCoreRepository(TDbContext dbContext) : base(dbContext) { }
+        protected EfCoreRepository(TDbContext dbContext) : base(dbContext) { }
 
         protected DbSet<TEntity> Entites => DbContext.Set<TEntity>();
 
