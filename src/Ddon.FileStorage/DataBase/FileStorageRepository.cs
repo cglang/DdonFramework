@@ -1,11 +1,16 @@
 ﻿using Ddon.Repositiry.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.FileStorage.DataBase
 {
-    internal class FileStorageRepository : EfCoreRepository<FileStorageDbContext, FileEntity, string>, IFileStorageRepository
+    internal class FileStorageRepository : IFileStorageRepository
     {
-        public FileStorageRepository(FileStorageDbContext dbContext) : base(dbContext)
+        public DbSet<FileEntity> File { get; }
+        
+        public FileStorageRepository(FileStorageDbContext dbContext)
         {
+            File = dbContext.Files;
         }
+
     }
 }

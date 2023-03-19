@@ -1,8 +1,9 @@
-﻿using Ddon.Domain.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.FileStorage.DataBase
 {
-    public interface IFileStorageRepository : IRepository<FileEntity>
+    public interface IFileStorageRepository
     {
+        public DbSet<FileEntity> File { get; }
     }
 }

@@ -1,10 +1,11 @@
-﻿using Ddon.Domain.Repositories;
+﻿using System;
 using Ddon.Identity.Entities;
-using System;
+using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Repositiry.EntityFrameworkCore.Identity
+namespace Ddon.Identity.Repositories
 {
-    public interface IUserRoleRepository<TKey> : IRepository<UserRole<TKey>, TKey> where TKey : IEquatable<TKey>
+    public interface IUserRoleRepository<TKey> where TKey : IEquatable<TKey>
     {
+        DbSet<UserRole<TKey>> UserRoles { get; }
     }
 }

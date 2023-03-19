@@ -1,10 +1,11 @@
-﻿using Ddon.Domain.Repositories;
+﻿using System;
 using Ddon.Identity.Entities;
-using System;
+using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Repositiry.EntityFrameworkCore.Identity
+namespace Ddon.Identity.Repositories
 {
-    public interface IPermissionGrantRepository<TKey> : IRepository<PermissionGrant<TKey>, TKey> where TKey : IEquatable<TKey>
+    public interface IPermissionGrantRepository<TKey> where TKey : IEquatable<TKey>
     {
+        DbSet<PermissionGrant<TKey>> PermissionGrant { get; }
     }
 }

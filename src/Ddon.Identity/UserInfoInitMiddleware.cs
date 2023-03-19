@@ -1,10 +1,11 @@
 ﻿using Ddon.Domain.UserInfo;
-using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Ddon.Identity.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.Identity
 {
@@ -25,7 +26,7 @@ namespace Ddon.Identity
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                var user = await _userRepositity.FirstOrDefaultAsync(x => x.Id.ToString() == userId);
+                var user = await _userRepositity.User.FirstOrDefaultAsync(x => x.Id.ToString() == userId);
                 _userinfoAccessor.Init(user);
             }
 

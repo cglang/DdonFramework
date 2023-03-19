@@ -4,7 +4,6 @@ using Ddon.Domain.UserInfo;
 using Ddon.Identity.Manager;
 using Ddon.Identity.Options;
 using Ddon.Identity.Permission;
-using Ddon.Repositiry.EntityFrameworkCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

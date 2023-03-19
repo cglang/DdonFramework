@@ -1,15 +1,18 @@
-﻿using Ddon.Identity;
+﻿using System;
 using Ddon.Identity.Entities;
-using System;
+using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Repositiry.EntityFrameworkCore.Identity
+namespace Ddon.Identity.Repositories
 {
-    public class PermissionGrantRepository<TDbContext, TKey> : EfCoreRepository<TDbContext, PermissionGrant<TKey>, TKey>, IPermissionGrantRepository<TKey>
+    public class PermissionGrantRepository<TDbContext, TKey> : IPermissionGrantRepository<TKey>
         where TDbContext : IdentityDbContext<TDbContext, TKey>
         where TKey : IEquatable<TKey>
     {
-        public PermissionGrantRepository(TDbContext dbContext) : base(dbContext)
+        public DbSet<PermissionGrant<TKey>> PermissionGrant { get; }
+
+        public PermissionGrantRepository(TDbContext dbContext)
         {
+            PermissionGrant = dbContext.PermissionGrant;
         }
     }
 }

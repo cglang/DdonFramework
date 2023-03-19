@@ -2,7 +2,6 @@
 using Ddon.FileStorage.DataBase;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -11,11 +10,14 @@ namespace Ddon.FileStorage.Service
     public class FileStorageService : IFileStorageService
     {
         private readonly IFileStorageRepository _repository;
+        private readonly FileStorageDbContext _dbContext;
 
-        public FileStorageService(IFileStorageRepository repository)
+        public FileStorageService(IFileStorageRepository repository, FileStorageDbContext dbContext)
         {
             _repository = repository;
+            _dbContext = dbContext;
         }
+
 
         public async Task<FileEntity> SaveFileAsync(IFormFile file)
         {
@@ -23,38 +25,13 @@ namespace Ddon.FileStorage.Service
 
             var aa = Path.GetDirectoryName(fileEntity.FullPath);
             Directory.CreateDirectory(aa!);
-            using var newstream = File.OpenWrite(fileEntity.FullPath);
+            await using var newstream = File.OpenWrite(fileEntity.FullPath);
             await file.CopyToAsync(newstream);
 
-            await _repository.AddAsync(fileEntity, true);
-
+            await _repository.File.AddAsync(fileEntity);
+            await _dbContext.SaveChangesAsync();
+            
             return fileEntity;
-        }
-
-        public async Task<IEnumerable<FileEntity>> SaveFileAsync(IEnumerable<IFormFile> files)
-        {
-            List<FileEntity> filesEntity = new();
-            try
-            {
-                foreach (var file in files)
-                {
-                    await SaveFileAsync(file);
-                }
-            }
-            catch (ApplicationServiceException e)
-            {
-                throw e;
-            }
-            catch
-            {
-                throw new ApplicationServiceException("文件上传失败");
-            }
-            finally
-            {
-                await _repository.SaveChangesAsync();
-            }
-
-            return filesEntity;
         }
 
         public async Task<FileEntity> SaveFileAsync(Stream file, string? filename)
@@ -63,10 +40,11 @@ namespace Ddon.FileStorage.Service
 
             var aa = Path.GetDirectoryName(fileEntity.FullPath);
             Directory.CreateDirectory(aa!);
-            using var newstream = File.OpenWrite(fileEntity.FullPath);
+            await using var newstream = File.OpenWrite(fileEntity.FullPath);
             await file.CopyToAsync(newstream);
 
-            await _repository.AddAsync(fileEntity, true);
+            await _repository.File.AddAsync(fileEntity);
+            await _dbContext.SaveChangesAsync();
 
             return fileEntity;
         }
@@ -114,6 +92,6 @@ namespace Ddon.FileStorage.Service
 
             return fileEntity;
         }
-
+        
     }
 }

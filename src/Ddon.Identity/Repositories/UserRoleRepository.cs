@@ -1,15 +1,18 @@
-﻿using Ddon.Identity;
+﻿using System;
 using Ddon.Identity.Entities;
-using System;
+using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Repositiry.EntityFrameworkCore.Identity
+namespace Ddon.Identity.Repositories
 {
-    public class UserRoleRepository<TDbContext, TKey> : EfCoreRepository<TDbContext, UserRole<TKey>, TKey>, IUserRoleRepository<TKey>
+    public class UserRoleRepository<TDbContext, TKey> : IUserRoleRepository<TKey>
         where TDbContext : IdentityDbContext<TDbContext, TKey>
         where TKey : IEquatable<TKey>
     {
-        public UserRoleRepository(TDbContext dbContext) : base(dbContext)
+        public DbSet<UserRole<TKey>> UserRoles { get; }
+
+        public UserRoleRepository(TDbContext dbContext)
         {
+            UserRoles = dbContext.UserRoles;
         }
     }
 }
