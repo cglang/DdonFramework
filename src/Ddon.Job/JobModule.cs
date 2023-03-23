@@ -13,7 +13,7 @@ namespace Ddon.Job
         {
             Load<EventBusMemoryModule>(services, configuration);
             services.AddHostedService<JobHostService>();
-            services.AddSingleton<JobService>();
+            services.AddScoped<JobService>();
 
             var baseType = typeof(IJob);
 
@@ -22,7 +22,7 @@ namespace Ddon.Job
 
             implementTypes.ForEach(implementType =>
             {
-                services.AddSingleton(implementType);
+                services.AddScoped(implementType);
             });
         }
     }

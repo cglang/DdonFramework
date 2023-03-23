@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Core.Use.Cronos;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Ddon.Job
@@ -13,14 +14,14 @@ namespace Ddon.Job
     /// </summary>
     internal class JobHostService : BackgroundService
     {
-        private readonly JobService _jobService;
+        public IServiceProvider _serviceProvider { get; }
 
         /// <summary>
         /// Job 服务启动
         /// </summary>
-        public JobHostService(JobService jobService)
+        public JobHostService(IServiceProvider serviceProvider)
         {
-            _jobService = jobService;
+            _serviceProvider = serviceProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,7 +51,8 @@ namespace Ddon.Job
                 }
             }
 
-            await _jobService.StartAsync();
+            using var scope = _serviceProvider.CreateAsyncScope();
+            await scope.ServiceProvider.GetRequiredService<JobService>().StartAsync();
         }
     }
 }
