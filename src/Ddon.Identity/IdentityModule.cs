@@ -23,7 +23,7 @@ namespace Ddon.Identity
 
             services.AddTransient<UserInfoInitMiddleware<TKey>>();
 
-            services.AddTransient<IIdentityManager<TKey>, IdentityManager<TKey>>();
+            services.AddTransient<IIdentityManager<TKey>, IdentityManager<TDbContext, TKey>>();
 
             services.AddTransient<IRoleRepository<TKey>, RoleRepository<TDbContext, TKey>>();
             services.AddTransient<IUserRepository<TKey>, UserRepository<TDbContext, TKey>>();

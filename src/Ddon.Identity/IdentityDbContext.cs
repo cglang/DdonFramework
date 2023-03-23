@@ -1,5 +1,4 @@
-﻿using Ddon.Core.Services.LazyService;
-using Ddon.Identity.Entities;
+﻿using Ddon.Identity.Entities;
 using Ddon.Repositiry;
 using Microsoft.EntityFrameworkCore;
 using System;

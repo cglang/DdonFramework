@@ -10,9 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.Identity.Manager
 {
-    public class IdentityManager<TKey> : IIdentityManager<TKey> where TKey : IEquatable<TKey>
+    public class IdentityManager<TDbContext, TKey> : IIdentityManager<TKey>
+        where TDbContext : IdentityDbContext<TDbContext, TKey>
+        where TKey : IEquatable<TKey>
     {
-        private readonly DbContext _dbContext;
+        private readonly TDbContext _dbContext;
         private readonly IPermissionDefinitionContext _permissionDefinitionContext;
         private readonly IUserRepository<TKey> _userRepository;
         private readonly IRoleRepository<TKey> _roleRepository;
@@ -20,7 +22,7 @@ namespace Ddon.Identity.Manager
         private readonly IPermissionGrantRepository<TKey> _permissionGrantRepository;
 
         public IdentityManager(
-            DbContext dbContext,
+            TDbContext dbContext,
             IPermissionDefinitionContext permissionDefinitionContext,
             IUserRepository<TKey> userRepository,
             IRoleRepository<TKey> roleRepository,
@@ -66,9 +68,11 @@ namespace Ddon.Identity.Manager
             await _permissionGrantRepository.PermissionGrant.AddAsync(
                 new PermissionGrant<TKey>
                 {
-                    GrantKey = userId, Name = permissionName, Type = PermissionGrantType.User
+                    GrantKey = userId,
+                    Name = permissionName,
+                    Type = PermissionGrantType.User
                 });
-            
+
             await _dbContext.SaveChangesAsync();
         }
 
@@ -83,7 +87,7 @@ namespace Ddon.Identity.Manager
             }
 
             await _permissionGrantRepository.PermissionGrant.DeleteAsync(permission.Id);
-            
+
             await _dbContext.SaveChangesAsync();
         }
 
@@ -103,9 +107,11 @@ namespace Ddon.Identity.Manager
             await _permissionGrantRepository.PermissionGrant.AddAsync(
                 new PermissionGrant<TKey>
                 {
-                    GrantKey = roleId, Name = permissionName, Type = PermissionGrantType.Role
+                    GrantKey = roleId,
+                    Name = permissionName,
+                    Type = PermissionGrantType.Role
                 });
-            
+
             await _dbContext.SaveChangesAsync();
         }
 
@@ -120,7 +126,7 @@ namespace Ddon.Identity.Manager
             }
 
             await _permissionGrantRepository.PermissionGrant.DeleteAsync(permission.Id);
-            
+
             await _dbContext.SaveChangesAsync();
         }
 
@@ -137,7 +143,7 @@ namespace Ddon.Identity.Manager
             await _userRoleRepository.UserRoles.DeleteAsync<UserRole<TKey>, TKey>(x => x.RoleId.Equals(id));
             await _permissionGrantRepository.PermissionGrant.DeleteAsync<PermissionGrant<TKey>, TKey>(
                 x => x.GrantKey.Equals(id) && x.Type.Equals(PermissionGrantType.Role));
-            
+
             await _dbContext.SaveChangesAsync();
         }
 
@@ -153,7 +159,7 @@ namespace Ddon.Identity.Manager
             roleEntity.NormalizedName = entity.NormalizedName;
             roleEntity.ConcurrencyStamp = entity.ConcurrencyStamp;
             _roleRepository.Role.Update(roleEntity);
-            
+
             await _dbContext.SaveChangesAsync();
             return roleEntity;
         }
