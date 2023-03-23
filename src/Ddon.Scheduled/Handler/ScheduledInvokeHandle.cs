@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Core.Use.Reflection;
+using Ddon.Scheduled;
 using Ddon.Scheduled.Event;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
