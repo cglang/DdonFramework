@@ -122,9 +122,15 @@ namespace Ddon.Core.Use.Reflection
         {
             dynamic? invokeResult = method.Invoke(instance, parameter);
 
-            if (!method.ReturnType.IsAssignableTo(typeof(Task))) return invokeResult;
-            if (method.ReturnType.IsGenericType)
+            if (method.ReturnType.IsAssignableTo(typeof(Task)))
+            {
+                await invokeResult!;
+                return null;
+            }
+            else if (method.ReturnType.IsAssignableTo(typeof(Task<>)))
+            {
                 return await invokeResult!;
+            }
 
             return invokeResult;
         }
