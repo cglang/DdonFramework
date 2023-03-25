@@ -14,7 +14,7 @@ namespace Ddon.Scheduled;
 /// </summary>
 internal class ScheduledHostService : BackgroundService
 {
-    public IServiceProvider _serviceProvider { get; }
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Job 服务启动
@@ -33,25 +33,20 @@ internal class ScheduledHostService : BackgroundService
             .Where(type => type != baseType && baseType.IsAssignableFrom(type) && type.IsClass)
             .ToList();
 
-        foreach (var implementType in implementTypes)
+        var jobInvokeDatas = from implementType in implementTypes
+            where !string.IsNullOrWhiteSpace(implementType.FullName)
+            from method in implementType.GetMethods()
+            let attrs = method.GetCustomAttributes(typeof(CronAttribute), false).As<IEnumerable<CronAttribute>>()
+            from attr in attrs
+            where attr.Enable
+            let cron = CronExpression.Parse(attr.CronExpression, attr.Format)
+            select new ScheduledInvokeData(cron, attr.Zone, attr.Inclusive, implementType.FullName!, method.Name);
+        foreach (var jobInvokeData in jobInvokeDatas)
         {
-            if (string.IsNullOrWhiteSpace(implementType.FullName)) continue;
-
-            foreach (var method in implementType.GetMethods())
-            {
-                var attrs = method.GetCustomAttributes(typeof(CronAttribute), false).As<IEnumerable<CronAttribute>>();
-                foreach (var attr in attrs)
-                {
-                    if (attr.Enable == false) continue;
-
-                    var cron = CronExpression.Parse(attr.CronExpression, attr.Format);
-                    var jobInvokeData = new ScheduledInvokeData(cron, attr.Zone, attr.Inclusive, implementType.FullName, method.Name);
-                    ScheduledData.Jobs.Add(Guid.NewGuid(), jobInvokeData);
-                }
-            }
+            ScheduledData.Jobs.Add(Guid.NewGuid(), jobInvokeData);
         }
 
-        using var scope = _serviceProvider.CreateAsyncScope();
+        await using var scope = _serviceProvider.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<ScheduledService>().StartAsync();
     }
 }

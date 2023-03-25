@@ -18,11 +18,11 @@ namespace Test.Core.Tests
         {
             var delayQueue = new DelayQueue<Action>();
 
-            // Êä³öÁÐ±í
+            // ï¿½ï¿½ï¿½ï¿½Ð±ï¿½
             var outputs = new Dictionary<string, DateTime>();
             outputs.Add("00", DateTime.Now);
 
-            // Ìí¼ÓÈÎÎñ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             await delayQueue.AddAsync(() => { outputs.Add("50", DateTime.Now); }, TimeSpan.FromSeconds(5));
             await delayQueue.AddAsync(() => { outputs.Add("20", DateTime.Now); }, TimeSpan.FromSeconds(2));
             await delayQueue.AddAsync(() => { outputs.Add("20", DateTime.Now); }, TimeSpan.FromSeconds(2));
@@ -31,7 +31,7 @@ namespace Test.Core.Tests
 
             Assert.AreEqual(4, delayQueue.Count);
 
-            // »ñÈ¡ÈÎÎñ
+            // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
             while (delayQueue.Count > 0)
             {
                 var item = delayQueue.Take(CancellationToken.None);
@@ -50,7 +50,7 @@ namespace Test.Core.Tests
         }
 
         /// <summary>
-        /// ¶àÏß³Ì²âÊÔ
+        /// ï¿½ï¿½ï¿½ß³Ì²ï¿½ï¿½ï¿½
         /// </summary>
         /// <returns></returns>
         [TestMethod]
@@ -58,7 +58,7 @@ namespace Test.Core.Tests
         {
             var delayQueue = new DelayQueue<int>();
 
-            // Ìí¼ÓÈÎÎñ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             var taskCount = 20;
             for (int i = 0; i < taskCount; i++)
             {
@@ -67,7 +67,7 @@ namespace Test.Core.Tests
 
             Assert.AreEqual(taskCount, delayQueue.Count);
 
-            // 10¸öÏß³ÌÀ´Ïû·Ñ
+            // 10ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             var outputs = new ConcurrentDictionary<int, int>();
             var tasks = new List<Task>();
             for (int i = 0; i < 10; i++)
@@ -97,19 +97,19 @@ namespace Test.Core.Tests
                 preKey = output.Key;
             }
 
-            // ´òÓ¡Ã¿¸öÏß³ÌÏû·ÑµÄÈÎÎñÊýÁ¿
+            // ï¿½ï¿½Ó¡Ã¿ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             Console.WriteLine(string.Join(Environment.NewLine,
                 outputs.GroupBy(o => o.Value).Select(g => $"{g.Key}, {g.Count()}")));
         }
 
         private static int Calc(DateTime dt1, DateTime dt2)
         {
-            // ºÁÃëÊýÊÇ´æÔÚÎó²îµÄ£¬ÕâÀïÍ³¼ÆÃëÊý
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Í³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             return (int)(CutOffMillisecond(dt1) - CutOffMillisecond(dt2)).TotalSeconds;
         }
 
         /// <summary>
-        /// ½ØµôºÁÃë²¿·Ö
+        /// ï¿½Øµï¿½ï¿½ï¿½ï¿½ë²¿ï¿½ï¿½
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>

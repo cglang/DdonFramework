@@ -15,6 +15,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
+		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
 		<ProjectReference Include="..\Ddon.EventBus.Memory\Ddon.EventBus.Memory.csproj" />
 	</ItemGroup>
 

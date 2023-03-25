@@ -3,6 +3,9 @@ using Ddon.Domain.Specifications;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable once CheckNamespace
 namespace System.Linq
@@ -18,10 +21,17 @@ namespace System.Linq
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="query"></param>
         /// <param name="page"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IQueryable<TEntity> QueryPageOrderBy<TEntity>(this IQueryable<TEntity> query, Page page)
+        public static async Task<PageResult<TEntity>> QueryPageOrderByAsync<TEntity>(
+            this IQueryable<TEntity> query,
+            Page page, 
+            CancellationToken cancellationToken = default)
         {
-            return query.OrderBy(page.Sorting).Skip((page.Index - 1) * page.Size).Take(page.Size);
+            var total = await query.CountAsync(cancellationToken);
+            var data = await query.OrderBy(page.Sorting)
+                .Skip((page.Index - 1) * page.Size).Take(page.Size).ToListAsync(cancellationToken);
+            return new PageResult<TEntity> { Total = total, Items = data };
         }
 
         /// <summary>
@@ -31,11 +41,18 @@ namespace System.Linq
         /// <param name="query"></param>
         /// <param name="page"></param>
         /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IQueryable<TEntity> QueryPageOrderBy<TEntity>(this IQueryable<TEntity> query, Page page,
-            Expression<Func<TEntity, object>> predicate)
+        public static async Task<PageResult<TEntity>> QueryPageOrderByAsync<TEntity>(
+            this IQueryable<TEntity> query,
+            Page page,
+            Expression<Func<TEntity, object>> predicate, 
+            CancellationToken cancellationToken = default)
         {
-            return query.OrderBy(predicate).Skip((page.Index - 1) * page.Size).Take(page.Size);
+            var total = await query.CountAsync(cancellationToken);
+            var data = await query.OrderBy(predicate)
+                .Skip((page.Index - 1) * page.Size).Take(page.Size).ToListAsync(cancellationToken);
+            return new PageResult<TEntity> { Total = total, Items = data };
         }
 
         /// <summary>
@@ -47,16 +64,32 @@ namespace System.Linq
         /// <param name="page"></param>
         /// <param name="predicate"></param>
         /// <param name="orderType"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static IQueryable<TEntity> QueryPageOrderBy<TEntity, TKey>(this IQueryable<TEntity> query, Page page,
-            Expression<Func<TEntity, TKey>> predicate, OrderTypeEnum orderType = OrderTypeEnum.OrderBy)
+        public static async Task<PageResult<TEntity>> QueryPageOrderByAsync<TEntity, TKey>(
+            this IQueryable<TEntity> query, Page page,
+            Expression<Func<TEntity, TKey>> predicate, 
+            OrderTypeEnum orderType = OrderTypeEnum.OrderBy, 
+            CancellationToken cancellationToken = default)
         {
-            return orderType switch
+            long total;
+            IEnumerable<TEntity> data;
+            switch (orderType)
             {
-                OrderTypeEnum.OrderBy => query.OrderBy(predicate).Skip((page.Index - 1) * page.Size).Take(page.Size),
-                OrderTypeEnum.OrderByDescending => query.OrderByDescending(predicate).Skip((page.Index - 1) * page.Size).Take(page.Size),
-                _ => query.OrderBy(predicate).Skip((page.Index - 1) * page.Size).Take(page.Size),
-            };
+                case OrderTypeEnum.OrderByDescending:
+                case OrderTypeEnum.ThenByDescending:
+                    total = await query.CountAsync(cancellationToken);
+                    data = await query.OrderByDescending(predicate).Skip((page.Index - 1) * page.Size).Take(page.Size)
+                        .ToListAsync(cancellationToken);
+                    return new PageResult<TEntity> { Total = total, Items = data };
+                case OrderTypeEnum.OrderBy:
+                case OrderTypeEnum.ThenBy:
+                default:
+                    total = await query.CountAsync(cancellationToken);
+                    data = await query.OrderBy(predicate).Skip((page.Index - 1) * page.Size).Take(page.Size)
+                        .ToListAsync(cancellationToken);
+                    return new PageResult<TEntity> { Total = total, Items = data };
+            }
         }
 
         /// <summary>
@@ -68,7 +101,9 @@ namespace System.Linq
         /// <param name="page"></param>
         /// <param name="orderExpressions"></param>
         /// <returns></returns>
-        public static IQueryable<TEntity> QueryPageOrderBy<TEntity, TKey>(this IQueryable<TEntity> query, Page page,
+        public static IQueryable<TEntity> QueryPageOrderBy<TEntity, TKey>(
+            this IQueryable<TEntity> query, 
+            Page page,
             IEnumerable<(Expression<Func<TEntity, TKey>> KeySelector, OrderTypeEnum OrderType)> orderExpressions)
         {
             var valueTuples = orderExpressions.ToList();
@@ -105,51 +140,48 @@ namespace System.Linq
         }
 
 
-
         public static IQueryable<TEntity> OrderBy<TEntity>(this IQueryable<TEntity> queryable, string propertyName)
         {
-            return QueryableHelper<TEntity>.OrderBy(queryable, propertyName);
+            return QueryableHelper.OrderBy(queryable, propertyName);
         }
 
         public static IQueryable<TEntity> OrderByDescending<TEntity>(this IQueryable<TEntity> queryable,
             string propertyName)
         {
-            return QueryableHelper<TEntity>.OrderByDescending(queryable, propertyName);
+            return QueryableHelper.OrderByDescending(queryable, propertyName);
+        }
+    }
+
+    public static class QueryableHelper
+    {
+        private static readonly ConcurrentDictionary<string, LambdaExpression> Cached = new();
+
+        public static IQueryable<TEntity> OrderBy<TEntity>(IQueryable<TEntity> queryable, string propertyName)
+        {
+            dynamic keySelector = GetLambdaExpression<TEntity>(propertyName);
+            return Queryable.OrderBy(queryable, keySelector);
         }
 
-        public class QueryableHelper
+        public static IQueryable<TEntity> OrderByDescending<TEntity>(IQueryable<TEntity> queryable, string propertyName)
         {
-            protected static readonly ConcurrentDictionary<string, LambdaExpression> Cached = new();
+            dynamic keySelector = GetLambdaExpression<TEntity>(propertyName);
+            return Queryable.OrderByDescending(queryable, keySelector);
         }
 
-        private class QueryableHelper<TEntity> : QueryableHelper
+        private static LambdaExpression GetLambdaExpression<TEntity>(string propertyName)
         {
-            public static IQueryable<TEntity> OrderBy(IQueryable<TEntity> queryable, string propertyName)
+            var key = $"{typeof(TEntity).FullName}.{propertyName}";
+            if (Cached.ContainsKey(key))
             {
-                dynamic keySelector = GetLambdaExpression(propertyName);
-                return Queryable.OrderBy(queryable, keySelector);
+                return Cached[key];
             }
 
-            public static IQueryable<TEntity> OrderByDescending(IQueryable<TEntity> queryable, string propertyName)
-            {
-                dynamic keySelector = GetLambdaExpression(propertyName);
-                return Queryable.OrderByDescending(queryable, keySelector);
-            }
+            var param = Expression.Parameter(typeof(TEntity));
+            var body = Expression.Property(param, propertyName);
+            var keySelector = Expression.Lambda(body, param);
+            Cached[key] = keySelector;
 
-            private static LambdaExpression GetLambdaExpression(string propertyName)
-            {
-                var key = $"{typeof(TEntity).FullName}.{propertyName}";
-                if (Cached.ContainsKey(key))
-                {
-                    return Cached[key];
-                }
-                var param = Expression.Parameter(typeof(TEntity));
-                var body = Expression.Property(param, propertyName);
-                var keySelector = Expression.Lambda(body, param);
-                Cached[key] = keySelector;
-
-                return keySelector;
-            }
+            return keySelector;
         }
     }
 }

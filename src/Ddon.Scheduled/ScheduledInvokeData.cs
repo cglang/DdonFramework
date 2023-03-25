@@ -16,7 +16,7 @@ internal class ScheduledInvokeData
 
     public CronExpression Cron { get; set; }
 
-    public TimeZoneInfo Zone { get; } = TimeZoneInfo.Local;
+    public TimeZoneInfo Zone { get; }
 
     public TimeSpan NextSpan
     {

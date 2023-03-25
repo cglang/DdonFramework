@@ -11,6 +11,14 @@ namespace Ddon.Repository.Extensions;
 
 public static class DbSetExtension
 {
+    public static async Task<TEntity> FirstAsync<TEntity, TKey>(this DbSet<TEntity> dbset, TKey id,
+        CancellationToken cancellationToken = default)
+        where TEntity : class, IEntity<TKey>
+        where TKey : IEquatable<TKey>
+    {
+        return await dbset.FirstAsync(entity => entity.Id.Equals(id), cancellationToken);
+    }
+    
     public static async Task<TEntity?> FirstOrDefaultAsync<TEntity, TKey>(this DbSet<TEntity> dbset, TKey id,
         CancellationToken cancellationToken = default)
         where TEntity : class, IEntity<TKey>

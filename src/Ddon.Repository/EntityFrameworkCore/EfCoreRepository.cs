@@ -31,7 +31,9 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
     where TEntity : class, IEntity<TKey>
     where TKey : IEquatable<TKey>
 {
-    private readonly ISpecificationEvaluator<TEntity, TKey> _specification = new SpecificationEvaluator<TEntity, TKey>();
+    private readonly ISpecificationEvaluator<TEntity, TKey>
+        _specification = new SpecificationEvaluator<TEntity, TKey>();
+
     public virtual IAsyncQueryableProvider AsyncExecuter => new EfCoreAsyncQueryableProvider();
 
     protected EfCoreRepository(TDbContext dbContext) : base(dbContext) { }
@@ -43,12 +45,14 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         return await DbContext.SaveChangesAsync();
     }
 
-    public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         return await Entites.AnyAsync(predicate, cancellationToken);
     }
 
-    public virtual async Task AddAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task AddAsync(TEntity entity, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         if (entity is IEntity<string> entityWithStringId)
         {
@@ -63,7 +67,8 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         }
     }
 
-    public virtual async Task AddAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task AddAsync(List<TEntity> entities, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         var enumerable = entities.ToList();
         enumerable.ForEach(e =>
@@ -81,7 +86,8 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         }
     }
 
-    public virtual async Task DeleteAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteAsync(TEntity entity, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         Entites.Remove(entity);
 
@@ -91,7 +97,8 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         }
     }
 
-    public virtual async Task DeleteAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteAsync(List<TEntity> entities, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         Entites.RemoveRange(entities);
 
@@ -101,14 +108,16 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         }
     }
 
-    public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         var entities = await Entites.Where(predicate).ToListAsync(cancellationToken);
 
         await DeleteAsync(entities, autoSave, cancellationToken);
     }
 
-    public virtual async Task UpdateAsync(TEntity entity, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task UpdateAsync(TEntity entity, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         DbContext.Attach(entity);
         DbContext.Update(entity);
@@ -119,7 +128,8 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         }
     }
 
-    public virtual async Task UpdateAsync(List<TEntity> entities, bool autoSave = false, CancellationToken cancellationToken = default)
+    public virtual async Task UpdateAsync(List<TEntity> entities, bool autoSave = false,
+        CancellationToken cancellationToken = default)
     {
         var enumerable = entities.ToList();
         DbContext.AttachRange(enumerable);
@@ -136,66 +146,56 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         return await Entites.LongCountAsync(cancellationToken);
     }
 
-    public virtual async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+    public virtual async Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
     {
         return await BuildQuery(propertySelectors).FirstAsync(predicate, cancellationToken);
     }
 
-    public virtual async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+    public virtual async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
     {
         return await BuildQuery(propertySelectors).FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
-    public virtual async Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+    public virtual async Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
     {
         return await BuildQuery(propertySelectors).SingleOrDefaultAsync(predicate, cancellationToken);
     }
 
-    public virtual async Task<List<TEntity>> GetListAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+    public virtual async Task<List<TEntity>> GetListAsync(CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] propertySelectors)
     {
         return await BuildQuery(propertySelectors).ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+    public virtual async Task<List<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
     {
         return await BuildQuery(propertySelectors).Where(predicate).ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<PageResult<TEntity>> GetListAsync(Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+    public virtual async Task<PageResult<TEntity>> GetListAsync(Page page,
+        CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
     {
-        var entities = await BuildQuery(propertySelectors).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-        var count = await GetCountAsync();
-        return new PageResult<TEntity>()
-        {
-            Total = count,
-            Items = entities
-        };
+        return await BuildQuery(propertySelectors).QueryPageOrderByAsync(page, cancellationToken);
     }
 
-    public virtual async Task<PageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
+    public virtual async Task<PageResult<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Page page,
+        CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
     {
-        var entities = await BuildQuery(propertySelectors).Where(predicate).QueryPageOrderBy(page).ToListAsync(cancellationToken);
-        var count = await GetCountAsync();
-        return new PageResult<TEntity>()
-        {
-            Total = count,
-            Items = entities
-        };
+        return await BuildQuery(propertySelectors).Where(predicate).QueryPageOrderByAsync(page, cancellationToken);
     }
 
     public virtual async Task<TEntity> FirstAsync(TKey id, CancellationToken cancellationToken = default)
     {
-        return await BuildQuery().FirstAsync(e => e.Id!.Equals(id), cancellationToken);
+        return await BuildQuery().FirstAsync(e => e.Id.Equals(id), cancellationToken);
     }
 
-    public virtual async Task<TEntity?> FirstOrDefaultAsync(TKey id, CancellationToken cancellationToken = default)
+    protected virtual async Task<TEntity?> FirstOrDefaultAsync(TKey id, CancellationToken cancellationToken = default)
     {
-        return await BuildQuery().FirstOrDefaultAsync(e => e.Id!.Equals(id), cancellationToken);
-    }
-
-    public virtual async Task<List<TEntity>> GetListAsync(Page page, Expression<Func<TEntity, object>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] propertySelectors)
-    {
-        return await BuildQuery(propertySelectors).QueryPageOrderBy(page, predicate).ToListAsync(cancellationToken);
+        return await BuildQuery().FirstOrDefaultAsync(e => e.Id.Equals(id), cancellationToken);
     }
 
     public virtual async Task DeleteAsync(TKey id, bool autoSave = false, CancellationToken cancellationToken = default)
@@ -212,12 +212,14 @@ class EfCoreRepository<TDbContext, TEntity, TKey> : EfCoreRepository<TDbContext,
         }
     }
 
-    public async Task<TResult?> FirstOrDefault<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
+    public async Task<TResult?> FirstOrDefault<TResult>(ISpecification<TEntity, TKey, TResult> specification,
+        CancellationToken cancellationToken = default)
     {
         return await _specification.BuildQuery(Entites, specification).FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification, CancellationToken cancellationToken = default)
+    public async Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TKey, TResult> specification,
+        CancellationToken cancellationToken = default)
     {
         return await _specification.BuildQuery(Entites, specification).ToListAsync(cancellationToken);
     }

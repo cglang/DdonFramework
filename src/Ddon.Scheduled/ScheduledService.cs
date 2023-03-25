@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Ddon.Domain.Exceptions;
 using Ddon.EventBus.Abstractions;
 using Ddon.Scheduled.Event;
 using Microsoft.Extensions.Logging;
@@ -24,24 +25,32 @@ internal class ScheduledService
     {
         foreach (var job in ScheduledData.Jobs)
         {
-            await ScheduledData.DelayQueue.AddAsync(job.Key, job.Value.NextSpan);
+            ScheduledData.DelayQueue.Add(job.Key, job.Value.NextSpan);
         }
 
-        while (true)
+        try
         {
-            var jobId = await ScheduledData.DelayQueue.TakeAsync();
-            var job = ScheduledData.Jobs[jobId];
+            while (true)
+            {
+                var jobId = await ScheduledData.DelayQueue.TakeAsync();
+                var job = ScheduledData.Jobs[jobId];
 
-            var eventData = new ScheduledInvokeEventData(job.JobClassName, job.JobMethodName);
-            try
-            {
-                await _eventBus!.PublishAsync(eventData);
+                var eventData = new ScheduledInvokeEventData(job.JobClassName, job.JobMethodName);
+                try
+                {
+                    await _eventBus.PublishAsync(eventData);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Scheduled 错误");
+                }
+
+                ScheduledData.DelayQueue.Add(jobId, job.NextSpan);
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Scheduled 错误");
-            }
-            await ScheduledData.DelayQueue.AddAsync(jobId, job.NextSpan);
+        }
+        catch (Exception e)
+        {
+            throw new ApplicationServiceException(e, "延时队列错误:队列停止");
         }
     }
 }
