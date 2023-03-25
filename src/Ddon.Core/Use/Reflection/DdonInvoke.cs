@@ -127,7 +127,8 @@ namespace Ddon.Core.Use.Reflection
                 await invokeResult!;
                 return null;
             }
-            else if (method.ReturnType.IsAssignableTo(typeof(Task<>)))
+
+            if (method.ReturnType.IsAssignableTo(typeof(Task<>)))
             {
                 return await invokeResult!;
             }

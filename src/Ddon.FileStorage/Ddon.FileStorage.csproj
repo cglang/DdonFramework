@@ -14,11 +14,18 @@
     <PackageReference Include="Microsoft.Data.Sqlite.Core" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" />    
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
     <ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical">
+      <HintPath>..\..\..\..\..\..\..\..\usr\lib64\dotnet\shared\Microsoft.AspNetCore.App\7.0.3\Microsoft.Extensions.FileProviders.Physical.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

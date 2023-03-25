@@ -48,7 +48,7 @@ namespace Ddon.Repository.Uow
             foreach (var entity in changeEntities)
             {
                 if (entity is not IDomainEvents domainEvents) continue;
-
+            
                 foreach (var domainEvent in domainEvents.DomainEvents)
                 {
                     await _eventBus.PublishAsync(domainEvent, cancellationToken);

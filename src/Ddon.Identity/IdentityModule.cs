@@ -4,11 +4,12 @@ using Ddon.Domain.UserInfo;
 using Ddon.Identity.Manager;
 using Ddon.Identity.Options;
 using Ddon.Identity.Permission;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Ddon.Identity.Repositories;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
 
 namespace Ddon.Identity
 {
@@ -38,6 +39,11 @@ namespace Ddon.Identity
             services.AddTransient<Auth<TKey>>();
 
             services.AddTransient<IPermissionDefinitionProvider, TPermissions>();
+        }
+
+        public override void HttpMiddleware(IApplicationBuilder app, IHostEnvironment env)
+        {
+            app.UseUserInfoInit<TKey>();
         }
     }
 }

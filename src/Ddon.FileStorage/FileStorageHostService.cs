@@ -5,7 +5,7 @@ using Ddon.FileStorage.DataBase;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Gardener.HostService
+namespace Ddon.FileStorage
 {
     /// <summary>
     /// 
