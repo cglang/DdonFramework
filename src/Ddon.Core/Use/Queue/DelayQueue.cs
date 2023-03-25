@@ -9,43 +9,9 @@ namespace Ddon.Core.Use.Queue
     {
         private readonly SortedQueue<DelayItem<T>> _values = new();
 
-        private readonly object _lock = new();
-
         public int Count => _values.Count;
 
         public bool IsEmpty => _values.IsEmpty;
-
-        public T? Take(CancellationToken? cancelToken = null)
-        {
-            cancelToken ??= CancellationToken.None;
-            Monitor.Enter(_lock);
-
-            try
-            {
-                while (!cancelToken.Value.IsCancellationRequested)
-                {
-                    if (!_values.Any()) return default;
-
-                    var delayItem = _values.First();
-
-                    if (delayItem.DelaySpan <= TimeSpan.Zero)
-                    {
-                        _values.Remove(delayItem);
-                        return delayItem.Item;
-                    }
-
-                    Monitor.Pulse(_lock);
-                    Monitor.Wait(_lock);
-                    Thread.Sleep(1);
-                }
-
-                return default;
-            }
-            finally
-            {
-                Monitor.Exit(_lock);
-            }
-        }
 
         public async Task<T?> TakeAsync(CancellationToken? cancelToken = null)
         {
@@ -85,11 +51,6 @@ namespace Ddon.Core.Use.Queue
             }
 
             return true;
-        }
-
-        public void Remove(DelayItem<T> item)
-        {
-            _values.Remove(item);
         }
 
         public void Remove(T item)

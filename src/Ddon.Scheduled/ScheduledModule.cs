@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Ddon.Core;
-using Ddon.EventBus.MemoryQueue;
+using Ddon.EventBus.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

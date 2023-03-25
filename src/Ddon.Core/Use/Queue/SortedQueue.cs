@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace Ddon.Core.Use.Queue
 {
-    public class SortedQueue<T> : SortedSet<T> where T : class, IDelayItem
+    public class SortedQueue<T> : SimpleConcurrentSortedSet<T> where T : class, IDelayItem
     {
         public bool IsEmpty => Count == 0;
 
@@ -12,14 +13,10 @@ namespace Ddon.Core.Use.Queue
         {
             public override int Compare(T? x, T? y)
             {
-                if (x == null && y == null)
+                switch (x)
                 {
-                    return 0;
-                }
-
-                if (x == null)
-                {
-                    return -1;
+                    case null when y == null: return 0;
+                    case null: return -1;
                 }
 
                 if (y == null)

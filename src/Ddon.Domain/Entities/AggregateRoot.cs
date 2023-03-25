@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Ddon.Domain.Entities
 {
@@ -8,6 +9,7 @@ namespace Ddon.Domain.Entities
     {
         private readonly List<INotification> _domainEvents = new();
 
+        [JsonIgnore]
         public IEnumerable<INotification> DomainEvents => _domainEvents;
 
         public void AddDomainEvent(INotification eventItem) => _domainEvents.Add(eventItem);
