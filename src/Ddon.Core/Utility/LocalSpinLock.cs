@@ -11,7 +11,7 @@ namespace Ddon.Core
 
     public class LocalSpinLock : IDisposable
     {
-        private string _key = string.Empty;
+        private static string _key = string.Empty;
 
         /// <summary>
         /// 获取一个锁
@@ -20,7 +20,7 @@ namespace Ddon.Core
         /// <param name="frequency">尝试次数</param>
         /// <param name="interval">间隔时间(ms)</param>
         /// <returns></returns>
-        public async Task<bool> GetLock(string key, int frequency = 10, int interval = 100)
+        public async Task<bool> GetLockAsync(string key, int frequency = 10, int interval = 100)
         {
             _key = key;
             int i = 0;

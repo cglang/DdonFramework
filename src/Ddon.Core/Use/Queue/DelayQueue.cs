@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,14 +56,10 @@ namespace Ddon.Core.Use.Queue
 
         public void Remove(T item)
         {
-            var data = GetItem(item);
-            if (data is null) throw new Exception("队列中不存在该项[移除失败]");
-            _values.Remove(data);
-        }
-
-        public DelayItem<T>? GetItem(T item)
-        {
-            return _values.FirstOrDefault(x => x.Item.Equals(item));
+            foreach (var delayItem in _values.Where(x => x.Item.Equals(item)))
+            {
+                _values.Remove(delayItem);
+            }
         }
 
         public void Clear()

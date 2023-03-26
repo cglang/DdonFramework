@@ -39,7 +39,7 @@ namespace Ddon.Core.Use
         public async Task<bool> SaveAsync()
         {
             using var ddonLock = new LocalSpinLock();
-            if (!await ddonLock.GetLock("save")) throw new Exception("保存失败");
+            if (!await ddonLock.GetLockAsync("save")) throw new Exception("保存失败");
 
             await using var stream = new StreamWriter(_persistDataFullName);
 
