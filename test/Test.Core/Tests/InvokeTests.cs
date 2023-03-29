@@ -11,7 +11,7 @@ namespace Test.Core.Tests
     public class InvokeTests : TestBase<TestCoreModule>
     {
         /// <summary>
-        /// ²âÊÔÍ¬²½ÓëÒì²½·½·¨
+        /// æµ‹è¯•åŒæ­¥ä¸å¼‚æ­¥æ–¹æ³•
         /// </summary>
         /// <returns></returns>
         [TestMethod]
@@ -19,43 +19,43 @@ namespace Test.Core.Tests
         {
             var obj = "result";
 
-            // Òì²½·½·¨²âÊÔ
+            // å¼‚æ­¥æ–¹æ³•æµ‹è¯•
             var result1 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodAsync), obj);
             Assert.AreEqual(result1, obj);
 
-            // Í¬²½·½·¨²âÊÔ
+            // åŒæ­¥æ–¹æ³•æµ‹è¯•
             var result = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodSync), obj);
             Assert.AreEqual(result, obj);
         }
 
         /// <summary>
-        /// ²âÊÔµ¥¸ö²ÎÊı
+        /// æµ‹è¯•å•ä¸ªå‚æ•°
         /// </summary>
         /// <returns></returns>
         [TestMethod]
         public async Task TestInvokeBaseSingleParameter()
         {
-            // µ¥¸ö²ÎÊı byte
+            // å•ä¸ªå‚æ•° byte
             byte obj1 = 1;
             var result1 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodSingleParameterByte), obj1);
             Assert.AreEqual(result1, obj1);
 
-            // µ¥¸ö²ÎÊı int
+            // å•ä¸ªå‚æ•° int
             int obj2 = 1234;
             var result2 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodSingleParameterInt), obj2);
             Assert.AreEqual(result2, obj2);
 
-            // µ¥¸ö²ÎÊı long
+            // å•ä¸ªå‚æ•° long
             long obj3 = 1234;
             var result3 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodSingleParameterLong), obj3);
             Assert.AreEqual(result3, obj3);
 
-            // µ¥¸ö²ÎÊı short
+            // å•ä¸ªå‚æ•° short
             short obj4 = 1234;
             var result4 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodSingleParameterLong), obj4);
             Assert.AreEqual(result4, obj4);
 
-            // µ¥¸ö²ÎÊı string
+            // å•ä¸ªå‚æ•° string
             string obj5 = "text";
             var result5 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodSingleParameterString), obj5);
             Assert.AreEqual(result5, obj5);
@@ -63,7 +63,7 @@ namespace Test.Core.Tests
 
 
         /// <summary>
-        /// ²âÊÔ¶à¸ö²ÎÊı
+        /// æµ‹è¯•å¤šä¸ªå‚æ•°
         /// </summary>
         /// <returns></returns>
         [TestMethod]
@@ -79,7 +79,7 @@ namespace Test.Core.Tests
         }
 
         /// <summary>
-        /// ²âÊÔ¸´ÔÓ¶ÔÏó
+        /// æµ‹è¯•å¤æ‚å¯¹è±¡
         /// </summary>
         /// <returns></returns>
         [TestMethod]
