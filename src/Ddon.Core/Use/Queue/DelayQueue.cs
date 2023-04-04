@@ -24,7 +24,7 @@ namespace Ddon.Core.Use.Queue
         {
             while (!cancelToken.IsCancellationRequested)
             {
-                if (!_values.IsEmpty)
+                if (!_values.Any())
                 {
                     _queueWaitIsEmpty = new TaskCompletionSource(cancelToken);
                     //_queueWaitIsEmpty.SetCanceled(cancelToken);
