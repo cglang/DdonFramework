@@ -1,16 +1,13 @@
-﻿using Ddon.Core.Use.Di;
+﻿using System;
+using Ddon.Core.Use.Di;
 using Ddon.Domain.Entities.Auditing;
-using Ddon.Domain.Repositories;
-using Ddon.Repositiry.EntityFrameworkCore;
-using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Test.Repository.Db
 {
-    public class TestPageRepository : EfCoreRepository<TestDbContext, TestPageEntity, Guid>, IRepository<TestPageEntity>, ITransientDependency
+    public class TestPageRepository : IScopedDependency
     {
-        public TestPageRepository(TestDbContext dbContext) : base(dbContext)
-        {
-        }
+        public DbSet<TestPageEntity> TestPage { get; set; }
     }
 
     public class TestPageEntity : AuditedAggregateRoot<Guid>
