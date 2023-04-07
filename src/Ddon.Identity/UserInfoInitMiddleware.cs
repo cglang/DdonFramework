@@ -27,7 +27,7 @@ namespace Ddon.Identity
             if (!string.IsNullOrWhiteSpace(userId))
             {
                 var user = await _userRepositity.User.FirstOrDefaultAsync(x => x.Id.ToString() == userId);
-                _userinfoAccessor.Init(user);
+                _userinfoAccessor.User = user;
             }
 
             await next(context);

@@ -6,7 +6,5 @@ namespace Ddon.Domain.UserInfo
     public interface ICurrentUserInfoAccessor<TKey> where TKey : IEquatable<TKey>
     {
         User<TKey>? User { get; set; }
-
-        void Init(User<TKey>? user);
     }
 }
