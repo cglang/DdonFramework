@@ -16,7 +16,7 @@ namespace Test.SocketApplication.Client.Controllers
         }
 
         /// <summary>
-        /// µ÷ÊÔ»ù´¡
+        /// ï¿½ï¿½ï¿½Ô»ï¿½ï¿½ï¿½
         /// </summary>
         /// <returns></returns>
         [HttpGet("GetAnalysisByDayAsync")]
@@ -28,7 +28,7 @@ namespace Test.SocketApplication.Client.Controllers
 
             using var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
 
-            var aaa = await client.RequestAsync(route, data);
+            var aaa = await client.RequestAsync<string>(route, data);
             //Console.WriteLine(aaa);
             Console.WriteLine(1);
 

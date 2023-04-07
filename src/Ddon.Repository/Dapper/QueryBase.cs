@@ -3,237 +3,266 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Ddon.Repositiry.Dapper
+namespace Ddon.Repository.Dapper;
+
+public abstract class QueryBase
 {
-    public abstract class QueryBase
+    private bool _isResolveCondition;
+
+    /// <summary>
+    /// 是否只查询软删除数据
+    /// </summary>
+    private readonly bool _isNotQueryDelete;
+
+    /// <summary>
+    /// WHERE 查询条件 "AND模式"
+    /// </summary>
+    private readonly List<QueryWhereInfo> _wheres = new();
+
+    /// <summary>
+    /// 排序字段
+    /// </summary>
+    private readonly List<string> _sorts = new();
+
+    protected QueryBase(bool isNotQueryDelete = false)
     {
-        private bool _isResolveCondition;
+        _isNotQueryDelete = isNotQueryDelete;
+    }
 
-        /// <summary>
-        /// 是否只查询软删除数据
-        /// </summary>
-        private readonly bool _isNotQueryDelete;
+    /// <summary>
+    /// SELECT 部分的 SQL
+    /// </summary>
+    /// <returns></returns>
+    protected abstract string SelectSql();
 
-        /// <summary>
-        /// WHERE 查询条件 "AND模式"
-        /// </summary>
-        private readonly List<QueryWhereInfo> _wheres = new();
+    /// <summary>
+    /// FROM 部分的 SQL
+    /// </summary>
+    /// <returns></returns>
+    protected abstract string FromSql();
 
-        /// <summary>
-        /// 排序字段
-        /// </summary>
-        protected readonly List<string> Sorts = new();
+    // /// <summary>
+    // /// JOIN 部分的 SQL
+    // /// </summary>
+    // /// <returns></returns>
+    // protected abstract string JoinSql();
+
+    /// <summary>
+    /// WHERE 条件在此方法内进行添加
+    /// </summary>
+    /// <returns></returns>
+    protected abstract void WhereSql();
+
+    /// <summary>
+    /// 排序条件在此方法内进行添加
+    /// </summary>
+    /// <returns></returns>
+    protected abstract void SortSql();
 
 
-        public QueryBase(bool isNotQueryDelete = false)
+    protected virtual void AddWhere(string whereString, AndOr andOr = AndOr.And)
+    {
+        _wheres.Add(new QueryWhereInfo(whereString, andOr));
+    }
+
+
+    protected void AddSort(string sortString, SortType sortType = SortType.Asc)
+    {
+        var sort = $"{sortString} {sortType}";
+        if (!_sorts.Contains(sort))
         {
-            _isNotQueryDelete = isNotQueryDelete;
+            _sorts.Add(sort);
+        }
+    }
+
+    /// <summary>
+    /// 获取完整的查询 SQL
+    /// </summary>
+    /// <returns></returns>
+    public virtual string BuildCompleteSql()
+    {
+        InitCondition();
+
+        StringBuilder sqlBuilder = new();
+        sqlBuilder.Append(BuildSelectSql()).Append(BuildFromSql()).Append(BuildWhereSql()).Append(BuildOrderBy());
+
+        return sqlBuilder.ToString();
+    }
+
+    public StringBuilder BuildSelectSql()
+    {
+        InitCondition();
+
+        StringBuilder sqlBuilder = new();
+        sqlBuilder.Append(SelectSql()).Append(Environment.NewLine);
+        return sqlBuilder;
+    }
+
+    public StringBuilder BuildFromSql()
+    {
+        InitCondition();
+
+        StringBuilder sqlBuilder = new();
+        var fromSql = FromSql();
+        if (fromSql.IsNullOrWhiteSpace())
+        {
+            return sqlBuilder;
         }
 
-        /// <summary>
-        /// SELECT 部分的 SQL
-        /// </summary>
-        /// <returns></returns>
-        protected abstract string SelectSql();
+        sqlBuilder.Append(FromSql()).Append(Environment.NewLine);
 
-        /// <summary>
-        /// FROM 部分的 SQL
-        /// </summary>
-        /// <returns></returns>
-        protected abstract string FromSql();
+        // var joinSql = JoinSql();
+        // if (!joinSql.IsNullOrWhiteSpace())
+        // {
+        //     sqlBuilder.Append(JoinSql()).Append(Environment.NewLine);
+        // }
 
-        /// <summary>
-        /// JOIN 部分的 SQL
-        /// </summary>
-        /// <returns></returns>
-        protected abstract string JoinSql();
+        return sqlBuilder;
+    }
 
-        /// <summary>
-        /// WHERE 条件在此方法内进行添加
-        /// </summary>
-        /// <returns></returns>
-        protected abstract void WhereSql();
+    public StringBuilder BuildWhereSql()
+    {
+        InitCondition();
 
-        /// <summary>
-        /// 排序条件在此方法内进行添加
-        /// </summary>
-        /// <returns></returns>
-        protected abstract void SortSql();
+        StringBuilder sqlBuilder = new();
+        var whereSql = string.Join(string.Empty, _wheres.Select(x => $" {x.AndOr} {x.WhereSql}"));
+        sqlBuilder.Append("WHERE 1 = 1").Append(whereSql).Append(Environment.NewLine);
 
+        return sqlBuilder;
+    }
 
-        protected virtual void AddWhere(string whereString, AndOr andOr = AndOr.And)
+    public StringBuilder BuildOrderBy()
+    {
+        InitCondition();
+
+        StringBuilder sqlBuilder = new();
+
+        if (_sorts.Any())
         {
-            _wheres.Add(new QueryWhereInfo(whereString, andOr));
+            sqlBuilder.Append("ORDER BY ").Append(string.Join(",", _sorts));
         }
 
+        return sqlBuilder;
+    }
 
-        protected void AddSort(string sortString, SortType sortType = SortType.Asc)
+    private void InitCondition()
+    {
+        if (_isResolveCondition) return;
+        lock (this)
         {
-            var sort = $"{sortString} {sortType}";
-            if (!Sorts.Contains(sort))
+            if (_isResolveCondition)
             {
-                Sorts.Add(sort);
+                return;
             }
-        }
 
-        /// <summary>
-        /// 获取完整的查询 SQL
-        /// </summary>
-        /// <returns></returns>
-        public virtual string BuildCompleteSql()
-        {
-            InitCondition();
-            StringBuilder sqlBuilder = new();
-            sqlBuilder.Append(BuildSelectSql()).Append(BuildFromSql()).Append(BuildWhereSql());
+            WhereSql();
+            SortSql();
 
-            if (Sorts.Any())
+            if (_isNotQueryDelete)
             {
-                sqlBuilder.Append("ORDER BY ").Append(string.Join(",", Sorts)).Append(Environment.NewLine);
-            }
-            return sqlBuilder.ToString();
-        }
-
-        public string BuildSelectSql()
-        {
-            StringBuilder sqlBuilder = new();
-            sqlBuilder.Append(SelectSql()).Append(Environment.NewLine);
-            return sqlBuilder.ToString();
-        }
-
-        public string BuildFromSql()
-        {
-            var fromSql = FromSql();
-            if (fromSql.IsNullOrWhiteSpace())
-            {
-                return string.Empty;
+                AddWhere("IsDeleted = 0");
             }
 
-            StringBuilder sqlBuilder = new();
-            sqlBuilder.Append(FromSql()).Append(Environment.NewLine);
-
-            var joinSql = JoinSql();
-            if (!joinSql.IsNullOrWhiteSpace())
-            {
-                sqlBuilder.Append(JoinSql()).Append(Environment.NewLine);
-            }
-
-            return sqlBuilder.ToString();
-        }
-
-        public string BuildWhereSql()
-        {
-            InitCondition();
-            StringBuilder sqlBuilder = new();
-
-            var whereSql = string.Join(string.Empty, _wheres.Select(x => $" {x.AndOr} {x.WhereSql}"));
-            sqlBuilder.Append("WHERE 1 = 1").Append(whereSql).Append(Environment.NewLine);
-            return sqlBuilder.ToString();
-        }
-
-        protected void InitCondition()
-        {
-            if (_isResolveCondition) return;
-            lock (this)
-            {
-                if (!_isResolveCondition)
-                {
-                    WhereSql();
-                    SortSql();
-
-                    if (_isNotQueryDelete)
-                    {
-                        AddWhere("IsDeleted = 0", AndOr.And);
-                    }
-
-                    _isResolveCondition = true;
-                }
-            }
+            _isResolveCondition = true;
         }
     }
+}
 
-    public abstract class QueryPageBase : QueryBase
+public abstract class QueryPageBase : QueryBase
+{
+    private readonly int _maxPageCount;
+
+    /// <summary>
+    /// 单页容量(最大20万)
+    /// </summary>
+    public int PageCount
     {
-        private int _maxPageCount;
-
-        /// <summary>
-        /// 单页容量(最大20万)
-        /// </summary>
-        public int PageCount
-        {
-            get => _maxPageCount >= 200000 ? 200000 : _maxPageCount;
-            set => _maxPageCount = value;
-        }
-
-        public int PageIndex { get; set; } = 0;
-
-        /// <summary>
-        /// 获取完整的查询 SQL
-        /// </summary>
-        /// <returns></returns>
-        public override string BuildCompleteSql()
-        {
-            var tempMaxResultCount = PageCount <= 0 ? 0 : PageCount;
-            var tempSkipCount = (PageIndex <= 0 ? 0 : PageIndex - 1) * PageCount;
-
-            // TODO 提供不同的SQL分页方式
-            return $"{base.BuildCompleteSql()} OFFSET {tempSkipCount} ROWS FETCH NEXT {tempMaxResultCount} ROWS ONLY";
-        }
+        get => _maxPageCount >= 200000 ? 200000 : _maxPageCount;
+        init => _maxPageCount = value;
     }
 
-    public class QueryWhereInfo
+    public int PageIndex { get; init; }
+
+    /// <summary>
+    /// 获取完整的查询 SQL
+    /// </summary>
+    /// <returns></returns>
+    public override string BuildCompleteSql()
     {
-        public QueryWhereInfo(string whereSql, AndOr andOr = AndOr.And)
-        {
-            WhereSql = whereSql;
-            AndOr = andOr;
-        }
-
-        /// <summary>
-        ///  完整的 where 条件语句
-        ///  例：o.OrderNo = @OrderNo
-        /// </summary>
-        public string WhereSql { get; set; }
-
-        /// <summary>
-        /// WHERE 条件之间的"与"和"或"关系
-        /// </summary>
-        public AndOr AndOr { get; set; }
+        var sqlBuilder = new StringBuilder();
+        sqlBuilder.Append(base.BuildCompleteSql()).Append(Environment.NewLine);
+        sqlBuilder.Append(BuildPageSql());
+        return sqlBuilder.ToString();
     }
 
-    public enum AndOr
+    public StringBuilder BuildPageSql()
     {
-        And,
-        Or
+        // TODO 提供不同的SQL分页方式
+        
+        var sqlBuilder = new StringBuilder();
+        
+        var tempMaxResultCount = PageCount <= 0 ? 0 : PageCount;
+        var tempSkipCount = (PageIndex <= 0 ? 0 : PageIndex - 1) * PageCount;
+        sqlBuilder.Append($"OFFSET {tempSkipCount} ROWS FETCH NEXT {tempMaxResultCount} ROWS ONLY");
+        
+        return sqlBuilder;
     }
+}
 
-    public enum SortType
+public class QueryWhereInfo
+{
+    public QueryWhereInfo(string whereSql, AndOr andOr = AndOr.And)
     {
-        /// <summary>
-        /// 升序
-        /// </summary>
-        Asc,
-        /// <summary>
-        /// 降序
-        /// </summary>
-        Desc
+        WhereSql = whereSql;
+        AndOr = andOr;
     }
 
-    public class PageResult<T>
+    /// <summary>
+    ///  完整的 where 条件语句
+    ///  例：o.OrderNo = @OrderNo
+    /// </summary>
+    public string WhereSql { get; set; }
+
+    /// <summary>
+    /// WHERE 条件之间的"与"和"或"关系
+    /// </summary>
+    public AndOr AndOr { get; set; }
+}
+
+public enum AndOr
+{
+    And,
+    Or
+}
+
+public enum SortType
+{
+    /// <summary>
+    /// 升序
+    /// </summary>
+    Asc,
+
+    /// <summary>
+    /// 降序
+    /// </summary>
+    Desc
+}
+
+public class PageResult<T>
+{
+    public PageResult(IEnumerable<T> items, long totalCount)
     {
-        public PageResult(IEnumerable<T> items, long totalCount)
-        {
-            Items = items;
-            TotalCount = totalCount;
-        }
-
-        /// <summary>
-        ///  集合数据
-        /// </summary>
-        public IEnumerable<T> Items { get; set; }
-
-        /// <summary>
-        /// 总记录数
-        /// </summary>
-        public long TotalCount { get; set; }
+        Items = items;
+        TotalCount = totalCount;
     }
+
+    /// <summary>
+    ///  集合数据
+    /// </summary>
+    public IEnumerable<T> Items { get; set; }
+
+    /// <summary>
+    /// 总记录数
+    /// </summary>
+    public long TotalCount { get; set; }
 }

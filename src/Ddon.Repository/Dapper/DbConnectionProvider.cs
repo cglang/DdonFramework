@@ -1,30 +1,29 @@
 ﻿using System;
 using System.Data;
 
-namespace Ddon.Repository.Dapper
+namespace Ddon.Repository.Dapper;
+
+public class DbConnectionProvider
 {
-    public class DbConnectionProvider
+    private static IDbConnection? _connection = null;
+
+    public static IDbConnection Connection
     {
-        private static IDbConnection? connection = null;
-
-        public static IDbConnection Connection
+        get
         {
-            get
-            {
-                if (connection is null)
-                    throw new Exception($"IDbConnection 未初始化");
+            if (_connection is null)
+                throw new Exception($"IDbConnection 未初始化");
 
-                return connection;
-            }
-            private set
-            {
-                connection = value;
-            }
+            return _connection;
         }
-
-        public static void Init(IDbConnection connection)
+        private set
         {
-            Connection = connection;
+            _connection = value;
         }
+    }
+
+    public static void Init(IDbConnection connection)
+    {
+        Connection = connection;
     }
 }
