@@ -16,9 +16,9 @@ namespace Ddon.Identity
     {
         private readonly ICache _cache;
         private readonly ICurrentUserInfoAccessor<TKey> _userInfo;
-        private readonly AppSettings _appSettings;
+        private readonly IdentitySettings _appSettings;
 
-        public Auth(ICache cache, ICurrentUserInfoAccessor<TKey> userInfo, IOptions<AppSettings> options)
+        public Auth(ICache cache, ICurrentUserInfoAccessor<TKey> userInfo, IOptions<IdentitySettings> options)
         {
             _cache = cache;
             _userInfo = userInfo;

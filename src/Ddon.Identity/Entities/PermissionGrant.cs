@@ -4,10 +4,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Identity.Entities
 {
-    public class PermissionGrant<TKey> : Entity<TKey> where TKey : IEquatable<TKey>
+    public class PermissionGrant<TKey> : Entity<TKey> 
+        where TKey : IEquatable<TKey>
     {
-        [AllowNull]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public PermissionGrantType Type { get; set; }
 

@@ -1,39 +1,31 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Ddon.Core.Services.Guids;
 using Ddon.Domain.Entities;
 using Ddon.Domain.Entities.Auditing;
-using Ddon.Repositiry.Extensions;
+using Ddon.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Repositiry
 {
-    public class BasicDbContext<TDbContext> : DbContext where TDbContext : DbContext
+    public class BasicDbContext<TDbContext> : DbContext, IDbContextSoftDelete
+        where TDbContext : DbContext
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        private IGuidGenerator? GuidGenerator => _serviceProvider.GetRequiredService<IGuidGenerator>();
-
         public BasicDbContext(IServiceProvider serviceProvider, DbContextOptions<TDbContext> options) : base(options)
         {
-            _serviceProvider = serviceProvider;
-
-            Initialize();
+            if (serviceProvider is not null)
+            {
+                var guidGenerator = serviceProvider.GetRequiredService<IGuidGenerator>();
+                BasicDbContext.Initialize(ChangeTracker, guidGenerator);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // 使用EntityFrameWork查询时过滤软删除的数据
-            var softDeleteTypes = modelBuilder.Model.GetEntityTypes().Where(x => typeof(ISoftDelete).IsAssignableFrom(x.ClrType));
-            Parallel.ForEach(softDeleteTypes, x =>
-            {
-                modelBuilder.Entity(x.ClrType).AddQueryFilter<ISoftDelete>(e => !e.IsDeleted);
-            });
+            OnModleSoftDelete(modelBuilder);
 
             //var multiTenantTypes = modelBuilder.Model.GetEntityTypes().Where(x => typeof(IMultTenant<TKey>).IsAssignableFrom(x.ClrType));
             //Parallel.ForEach(multiTenantTypes, x =>
@@ -42,12 +34,36 @@ namespace Ddon.Repositiry
             //});
         }
 
-        public virtual void Initialize()
-        {
-            ChangeTracker.CascadeDeleteTiming = CascadeTiming.OnSaveChanges;
 
-            ChangeTracker.Tracked += ChangeTracker_Tracked;
-            ChangeTracker.StateChanged += ChangeTracker_StateChanged;
+        public void OnModleSoftDelete(ModelBuilder modelBuilder)
+        {
+            DbContextSoftDelete.Builder(modelBuilder);
+        }
+    }
+
+
+    public class BasicDbContext
+    {
+        private readonly ChangeTracker _changeTracker;
+        private readonly IGuidGenerator _guidGenerator;
+
+        public BasicDbContext(ChangeTracker changeTracker, IGuidGenerator guidGenerator)
+        {
+            _changeTracker = changeTracker;
+            _guidGenerator = guidGenerator;
+        }
+
+        public static void Initialize(ChangeTracker changeTracker, IGuidGenerator guidGenerator)
+        {
+            new BasicDbContext(changeTracker, guidGenerator).Initialize();
+        }
+
+        public void Initialize()
+        {
+            _changeTracker.CascadeDeleteTiming = CascadeTiming.OnSaveChanges;
+
+            _changeTracker.Tracked += ChangeTracker_Tracked;
+            _changeTracker.StateChanged += ChangeTracker_StateChanged;
         }
 
         protected virtual void ChangeTracker_Tracked(object? sender, EntityTrackedEventArgs e)
@@ -80,13 +96,13 @@ namespace Ddon.Repositiry
         {
             if (entry.Entity is IEntity<Guid> entityWithGuidId)
             {
-                if (GuidGenerator != null) entityWithGuidId.Id = GuidGenerator.Create();
+                if (_guidGenerator != null) entityWithGuidId.Id = _guidGenerator.Create();
                 else entityWithGuidId.Id = Guid.NewGuid();
             }
 
             if (entry.Entity is IEntity<string> entityWithStringId)
             {
-                if (GuidGenerator != null) entityWithStringId.Id = GuidGenerator.Create().ToString();
+                if (_guidGenerator != null) entityWithStringId.Id = _guidGenerator.Create().ToString();
                 else entityWithStringId.Id = Guid.NewGuid().ToString();
             }
 

@@ -33,7 +33,7 @@ namespace Ddon.Identity
 
             services.AddScoped<ICurrentUserInfoAccessor<TKey>, CurrentUserInfoAccessor<TKey>>();
 
-            var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>();
+            var appSettings = configuration.GetSection(nameof(IdentitySettings)).Get<IdentitySettings>();
             services.AddSingleton(appSettings!);
 
             services.AddTransient<Auth<TKey>>();

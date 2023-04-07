@@ -1,18 +1,16 @@
-﻿using Ddon.Domain.Entities;
-using System;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
+using Ddon.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Ddon.Identity.Entities
 {
-    public class UserRole<TKey> : Entity<TKey> where TKey : IEquatable<TKey>
+    public class UserRole<TKey> : IdentityUserRole<TKey>, IEntity<TKey>
+        where TKey : IEquatable<TKey>
     {
-        public UserRole(TKey userId, TKey roleId)
-        {
-            UserId = userId;
-            RoleId = roleId;
-        }
-
-        public virtual TKey UserId { get; set; }
-
-        public virtual TKey RoleId { get; set; }
+        [Key, NotNull, Column(Order = 0)]
+        public TKey Id { get; set; } = default!;
     }
 }

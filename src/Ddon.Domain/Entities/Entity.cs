@@ -1,21 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ddon.Domain.Entities
 {
-    public abstract class Entity : IEntity
+    public class Entity<TKey> : IEntity<TKey> where TKey : IEquatable<TKey>
     {
-        public abstract object[] GetKeys();
-    }
-
-    public class Entity<TKey> : Entity, IEntity<TKey> where TKey : IEquatable<TKey>
-    {
-        [Key]
+        [Key, NotNull, Column(Order = 0)]
         public TKey Id { get; set; } = default!;
-
-        public override object[] GetKeys()
-        {
-            return new object[] { Id! };
-        }
     }
 }

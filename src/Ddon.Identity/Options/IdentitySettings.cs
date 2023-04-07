@@ -2,7 +2,7 @@
 
 namespace Ddon.Identity.Options
 {
-    public class AppSettings : ISingletonDependency
+    public class IdentitySettings : ISingletonDependency
     {
         /// <summary>
         /// 系统管理员名称
