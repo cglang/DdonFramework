@@ -5,19 +5,9 @@ using System.Text;
 
 namespace Ddon.Repositiry.Dapper
 {
-    public abstract class QueryBase<TTenantKey>
+    public abstract class QueryBase
     {
         private bool _isResolveCondition;
-
-        /// <summary>
-        /// 租户 Id
-        /// </summary>
-        public TTenantKey? TenantId { get; set; }
-
-        /// <summary>
-        /// 是否只查询租户数据
-        /// </summary>
-        private readonly bool _isQueryTenant;
 
         /// <summary>
         /// 是否只查询软删除数据
@@ -32,14 +22,11 @@ namespace Ddon.Repositiry.Dapper
         /// <summary>
         /// 排序字段
         /// </summary>
-        private readonly List<string> _sorts = new();
+        protected readonly List<string> Sorts = new();
 
 
-        public QueryBase(TTenantKey? tenantId = default, bool isNotQueryDelete = true)
+        public QueryBase(bool isNotQueryDelete = false)
         {
-            TenantId = tenantId;
-
-            _isQueryTenant = tenantId is not null;
             _isNotQueryDelete = isNotQueryDelete;
         }
 
@@ -50,7 +37,7 @@ namespace Ddon.Repositiry.Dapper
         protected abstract string SelectSql();
 
         /// <summary>
-        /// FORM 部分的 SQL
+        /// FROM 部分的 SQL
         /// </summary>
         /// <returns></returns>
         protected abstract string FromSql();
@@ -83,9 +70,9 @@ namespace Ddon.Repositiry.Dapper
         protected void AddSort(string sortString, SortType sortType = SortType.Asc)
         {
             var sort = $"{sortString} {sortType}";
-            if (!_sorts.Contains(sort))
+            if (!Sorts.Contains(sort))
             {
-                _sorts.Add(sort);
+                Sorts.Add(sort);
             }
         }
 
@@ -93,15 +80,15 @@ namespace Ddon.Repositiry.Dapper
         /// 获取完整的查询 SQL
         /// </summary>
         /// <returns></returns>
-        public string BuildCompleteSql()
+        public virtual string BuildCompleteSql()
         {
             InitCondition();
             StringBuilder sqlBuilder = new();
             sqlBuilder.Append(BuildSelectSql()).Append(BuildFromSql()).Append(BuildWhereSql());
 
-            if (_sorts.Any())
+            if (Sorts.Any())
             {
-                sqlBuilder.Append("ORDER BY ").Append(string.Join(",", _sorts)).Append(Environment.NewLine);
+                sqlBuilder.Append("ORDER BY ").Append(string.Join(",", Sorts)).Append(Environment.NewLine);
             }
             return sqlBuilder.ToString();
         }
@@ -158,24 +145,95 @@ namespace Ddon.Repositiry.Dapper
                         AddWhere("IsDeleted = 0", AndOr.And);
                     }
 
-                    if (_isQueryTenant)
-                    {
-                        AddWhere("TenantId = @TenantId", AndOr.And);
-                    }
-
                     _isResolveCondition = true;
                 }
             }
         }
-
     }
 
-    public abstract class QueryBase : QueryBase<Guid?>
+    public abstract class QueryPageBase : QueryBase
     {
-        public QueryBase(Guid? tenantId = default, bool isNotQueryDelete = true) :
-            base(tenantId, isNotQueryDelete)
-        {
+        private int _maxPageCount;
 
+        /// <summary>
+        /// 单页容量(最大20万)
+        /// </summary>
+        public int PageCount
+        {
+            get => _maxPageCount >= 200000 ? 200000 : _maxPageCount;
+            set => _maxPageCount = value;
         }
+
+        public int PageIndex { get; set; } = 0;
+
+        /// <summary>
+        /// 获取完整的查询 SQL
+        /// </summary>
+        /// <returns></returns>
+        public override string BuildCompleteSql()
+        {
+            var tempMaxResultCount = PageCount <= 0 ? 0 : PageCount;
+            var tempSkipCount = (PageIndex <= 0 ? 0 : PageIndex - 1) * PageCount;
+
+            // TODO 提供不同的SQL分页方式
+            return $"{base.BuildCompleteSql()} OFFSET {tempSkipCount} ROWS FETCH NEXT {tempMaxResultCount} ROWS ONLY";
+        }
+    }
+
+    public class QueryWhereInfo
+    {
+        public QueryWhereInfo(string whereSql, AndOr andOr = AndOr.And)
+        {
+            WhereSql = whereSql;
+            AndOr = andOr;
+        }
+
+        /// <summary>
+        ///  完整的 where 条件语句
+        ///  例：o.OrderNo = @OrderNo
+        /// </summary>
+        public string WhereSql { get; set; }
+
+        /// <summary>
+        /// WHERE 条件之间的"与"和"或"关系
+        /// </summary>
+        public AndOr AndOr { get; set; }
+    }
+
+    public enum AndOr
+    {
+        And,
+        Or
+    }
+
+    public enum SortType
+    {
+        /// <summary>
+        /// 升序
+        /// </summary>
+        Asc,
+        /// <summary>
+        /// 降序
+        /// </summary>
+        Desc
+    }
+
+    public class PageResult<T>
+    {
+        public PageResult(IEnumerable<T> items, long totalCount)
+        {
+            Items = items;
+            TotalCount = totalCount;
+        }
+
+        /// <summary>
+        ///  集合数据
+        /// </summary>
+        public IEnumerable<T> Items { get; set; }
+
+        /// <summary>
+        /// 总记录数
+        /// </summary>
+        public long TotalCount { get; set; }
     }
 }
