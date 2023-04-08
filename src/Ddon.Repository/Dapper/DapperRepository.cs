@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using Ddon.Domain.Entities;
-using Ddon.Repository.Dapper.Generator;
+using Ddon.Repository.Dapper.SqlGenerator;
+using Ddon.Repository.Dapper.SqlGenerator.Expressions;
 
 namespace Ddon.Repository.Dapper;
 
@@ -24,15 +26,10 @@ public class DapperRepository : IDapperRepository
         return DbConnection.QueryFirstOrDefault<T>(sql, param);
     }
 
-    public Task<IEnumerable<T>> QueryAsync<T>(object param) where T : class
-    {
-        throw new NotImplementedException();
-    }
-
     public T? FirstOrDefault<T>(object param) where T : class, IEntity
     {
         var keyValuePair = BuildParams(param);
-        var sql = $"{BuildSelectSql<T>()} WHERE {string.Join(" AND ", keyValuePair.Value)}";
+        var sql = $"{BuildSelectFromSql<T>()} WHERE {string.Join(" AND ", keyValuePair.Value)}";
         return FirstOrDefault<T>(sql, param);
     }
 
@@ -46,15 +43,10 @@ public class DapperRepository : IDapperRepository
         return DbConnection.QueryFirstOrDefaultAsync<T?>(sql, param);
     }
 
-    public IEnumerable<T> Query<T>(object param) where T : class
-    {
-        throw new NotImplementedException();
-    }
-
     public Task<T?> FirstOrDefaultAsync<T>(object param) where T : class, IEntity
     {
         var keyValuePair = BuildParams(param);
-        var sql = $"{BuildSelectSql<T>()} WHERE {string.Join(" AND ", keyValuePair.Value)}";
+        var sql = $"{BuildSelectFromSql<T>()} WHERE {string.Join(" AND ", keyValuePair.Value)}";
         return FirstOrDefaultAsync<T>(sql, param);
     }
 
@@ -63,17 +55,14 @@ public class DapperRepository : IDapperRepository
         return FirstOrDefaultAsync<T>(query.BuildCompleteSql(), query);
     }
 
-    public T? FirstOrDefaultById<T, TKey>(TKey key)
-        where T : class, IEntity<TKey>
-        where TKey : IEquatable<TKey>
+    public T? FirstOrDefaultById<T, TKey>(TKey key) where T : class, IEntity<TKey> where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>();
         return FirstOrDefault<T>(sql, new { Key = key });
     }
 
     public Task<T?> FirstOrDefaultByIdAsync<T, TKey>(TKey key)
-        where T : class, IEntity<TKey>
-        where TKey : IEquatable<TKey>
+        where T : class, IEntity<TKey> where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>();
         return FirstOrDefaultAsync<T>(sql, new { Key = key });
@@ -82,6 +71,20 @@ public class DapperRepository : IDapperRepository
     public IEnumerable<T> Query<T>(string sql, object? param = null)
     {
         return DbConnection.Query<T>(sql, param);
+    }
+
+    public T? FirstOrDefault<T>(Expression<Func<T, bool>> predicate) where T : class, IEntity
+    {
+        var query = new SqlGenerator<T>().AppendWherePredicateQuery(predicate);
+        var sql = BuildSelectFromSql<T>().Append(query.SqlBuilder).ToString();
+        return FirstOrDefault<T>(sql, query.Param);
+    }
+
+    public Task<T?> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate) where T : class, IEntity
+    {
+        var query = new SqlGenerator<T>().AppendWherePredicateQuery(predicate);
+        var sql = BuildSelectFromSql<T>().Append(query.SqlBuilder).ToString();
+        return FirstOrDefaultAsync<T>(sql, query.Param);
     }
 
     public IEnumerable<T> Query<T>(QueryBase query) where T : class
@@ -115,42 +118,53 @@ public class DapperRepository : IDapperRepository
         return new PageResult<T>(data, count);
     }
 
-    public IEnumerable<T> QueryByIds<T, TKey>(TKey[] keys)
-        where T : class, IEntity<TKey>
-        where TKey : IEquatable<TKey>
+    public IEnumerable<T> QueryByIds<T, TKey>(TKey[] keys) where T : class, IEntity<TKey> where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>(true);
         return Query<T>(sql, new { Key = keys });
     }
 
     public Task<IEnumerable<T>> QueryByIdsAsync<T, TKey>(TKey[] keys)
-        where T : class, IEntity<TKey>
-        where TKey : IEquatable<TKey>
+        where T : class, IEntity<TKey> where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>(true);
         return QueryAsync<T>(sql, new { Key = keys });
     }
 
+    public IEnumerable<T> Query<T>(Expression<Func<T, bool>> predicate) where T : class, IEntity
+    {
+        var query = new SqlGenerator<T>().AppendWherePredicateQuery(predicate);
+        var sql = BuildSelectFromSql<T>().Append(query.SqlBuilder).ToString();
+        return Query<T>(sql, query.Param);
+    }
+
+    public Task<IEnumerable<T>> QueryAsync<T>(Expression<Func<T, bool>> predicate) where T : class, IEntity
+    {
+        var query = new SqlGenerator<T>().AppendWherePredicateQuery(predicate);
+        var sql = BuildSelectFromSql<T>().Append(query.SqlBuilder).ToString();
+        return QueryAsync<T>(sql, query.Param);
+    }
+
     private static string BuildWhereKeySqlByTable<T>(bool isIDs = false) where T : class
     {
-        var tableName = SqlGenerator<T>.TableName;
-        var primaryKeys = SqlGenerator<T>.GetPrimaryKeys();
-        var fields = SqlGenerator<T>.GetFields();
-        var alias = fields.Select(p => $"{p.Key} {p.Value}");
-
-        var sql = new StringBuilder();
-        sql.Append($"SELECT {string.Join(",", alias)}").Append(Environment.NewLine);
-        sql.Append($"FROM {tableName}").Append(Environment.NewLine);
+        var tableName = GeneratorExpression<T>.TableName;
+        var primaryKeys = GeneratorExpression<T>.GetPrimaryKeys();
+        var sql = BuildSelectSql<T>().Append($"FROM {tableName}").Append(Environment.NewLine);
         sql.Append($"WHERE {primaryKeys.FirstOrDefault().Key} {(isIDs ? "IN" : "=")} @Key");
         return sql.ToString();
     }
 
-    private static string BuildSelectSql<T>() where T : class
+    private static StringBuilder BuildSelectFromSql<T>() where T : class
     {
-        var tableName = SqlGenerator<T>.TableName;
-        var fields = SqlGenerator<T>.GetFields();
+        var tableName = GeneratorExpression<T>.TableName;
+        return BuildSelectSql<T>().Append($"FROM {tableName}").Append(Environment.NewLine);
+    }
+
+    private static StringBuilder BuildSelectSql<T>() where T : class
+    {
+        var fields = GeneratorExpression<T>.GetFields();
         var alias = fields.Select(p => $"{p.Key} {p.Value}");
-        return $"SELECT {string.Join(",", alias)} FROM {tableName}";
+        return new StringBuilder($"SELECT {string.Join(",", alias)}").Append(Environment.NewLine);
     }
 
     private static KeyValuePair<DynamicParameters, List<string>> BuildParams(object param)

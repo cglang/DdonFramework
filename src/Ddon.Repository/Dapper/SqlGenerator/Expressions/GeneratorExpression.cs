@@ -4,10 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 
-namespace Ddon.Repository.Dapper.Generator;
+namespace Ddon.Repository.Dapper.SqlGenerator.Expressions;
 
-public partial class SqlGenerator<T>
-    where T : class
+public class GeneratorExpression<T> where T : class
 {
     public static string TableName
     {
