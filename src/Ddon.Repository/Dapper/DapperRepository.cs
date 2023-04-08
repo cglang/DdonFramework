@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Linq;
-using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using Ddon.Domain.Entities;
+using Ddon.Repository.Dapper.Generator;
 
 namespace Ddon.Repository.Dapper;
 
@@ -16,74 +14,69 @@ public class DapperRepository : IDapperRepository
 {
     public DapperRepository()
     {
-        DbConnection = DbConnectionProvider.Connection;
-    }
-
-    public DapperRepository(IDbConnection dbConnection)
-    {
-        DbConnection = dbConnection;
+        DbConnection = DapperInitialization.Connection;
     }
 
     public IDbConnection DbConnection { get; }
 
-    public T FirstOrDefault<T>(string sql, object? param = null)
+    public T? FirstOrDefault<T>(string sql, object? param = null)
     {
         return DbConnection.QueryFirstOrDefault<T>(sql, param);
     }
 
-    public Task<IEnumerable<T>> QueryAsync<T>(object param)
+    public Task<IEnumerable<T>> QueryAsync<T>(object param) where T : class
     {
         throw new NotImplementedException();
     }
 
-    public T FirstOrDefault<T>(object param) where T : IEntity
+    public T? FirstOrDefault<T>(object param) where T : class, IEntity
     {
-        var para = BuildParams(param);
-        var sql = $"{BuildSelectSql<T>()} WHERE {string.Join(" AND ", para.Value)}";
+        var keyValuePair = BuildParams(param);
+        var sql = $"{BuildSelectSql<T>()} WHERE {string.Join(" AND ", keyValuePair.Value)}";
         return FirstOrDefault<T>(sql, param);
     }
 
-    public T FirstOrDefault<T>(QueryBase query)
+    public T? FirstOrDefault<T>(QueryBase query) where T : class
     {
         return FirstOrDefault<T>(query.BuildCompleteSql(), query);
     }
 
-    public Task<T> FirstOrDefaultAsync<T>(string sql, object? param = null)
+    public Task<T?> FirstOrDefaultAsync<T>(string sql, object? param = null)
     {
-        return DbConnection.QueryFirstOrDefaultAsync<T>(sql, param);
+        return DbConnection.QueryFirstOrDefaultAsync<T?>(sql, param);
     }
 
-    public IEnumerable<T> Query<T>(object param)
+    public IEnumerable<T> Query<T>(object param) where T : class
     {
         throw new NotImplementedException();
     }
 
-    public Task<T> FirstOrDefaultAsync<T>(object param) where T : IEntity
+    public Task<T?> FirstOrDefaultAsync<T>(object param) where T : class, IEntity
     {
-        var para = BuildParams(param);
-        var sql = $"{BuildSelectSql<T>()} WHERE {string.Join(" AND ", para.Value)}";
+        var keyValuePair = BuildParams(param);
+        var sql = $"{BuildSelectSql<T>()} WHERE {string.Join(" AND ", keyValuePair.Value)}";
         return FirstOrDefaultAsync<T>(sql, param);
     }
 
-    public Task<T> FirstOrDefaultAsync<T>(QueryBase query)
+    public Task<T?> FirstOrDefaultAsync<T>(QueryBase query) where T : class
     {
         return FirstOrDefaultAsync<T>(query.BuildCompleteSql(), query);
     }
 
-    public T FirstOrDefaultById<T, TKey>(TKey key)
-        where T : IEntity<TKey>
+    public T? FirstOrDefaultById<T, TKey>(TKey key)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>();
-        return FirstOrDefault<T>(sql);
+        return FirstOrDefault<T>(sql, new { Key = key });
     }
 
-    public Task<T> FirstOrDefaultByIdAsync<T, TKey>(TKey key)
-        where T : IEntity<TKey>
+    public Task<T?> FirstOrDefaultByIdAsync<T, TKey>(TKey key)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>();
-        return FirstOrDefaultAsync<T>(sql);
+        return FirstOrDefaultAsync<T>(sql, new { Key = key });
     }
 
     public IEnumerable<T> Query<T>(string sql, object? param = null)
@@ -91,12 +84,12 @@ public class DapperRepository : IDapperRepository
         return DbConnection.Query<T>(sql, param);
     }
 
-    public IEnumerable<T> Query<T>(QueryBase query)
+    public IEnumerable<T> Query<T>(QueryBase query) where T : class
     {
         return Query<T>(query.BuildCompleteSql(), query);
     }
 
-    public PageResult<T> Query<T>(QueryPageBase query)
+    public PageResult<T> Query<T>(QueryPageBase query) where T : class
     {
         var data = Query<T>(query.BuildCompleteSql(), query);
         var count = Count(query);
@@ -109,12 +102,12 @@ public class DapperRepository : IDapperRepository
         return DbConnection.QueryAsync<T>(sql, param);
     }
 
-    public Task<IEnumerable<T>> QueryAsync<T>(QueryBase query)
+    public Task<IEnumerable<T>> QueryAsync<T>(QueryBase query) where T : class
     {
         return QueryAsync<T>(query.BuildCompleteSql(), query);
     }
 
-    public async Task<PageResult<T>> QueryAsync<T>(QueryPageBase query)
+    public async Task<PageResult<T>> QueryAsync<T>(QueryPageBase query) where T : class
     {
         var data = await QueryAsync<T>(query.BuildCompleteSql(), query);
         var count = await CountAsync(query);
@@ -122,45 +115,42 @@ public class DapperRepository : IDapperRepository
         return new PageResult<T>(data, count);
     }
 
-    public IEnumerable<T> QueryByIds<T, TKey>(IEnumerable<TKey> keys)
-        where T : IEntity<TKey>
+    public IEnumerable<T> QueryByIds<T, TKey>(TKey[] keys)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>(true);
         return Query<T>(sql, new { Key = keys });
     }
 
-    public Task<IEnumerable<T>> QueryByIdsAsync<T, TKey>(IEnumerable<TKey> keys)
-        where T : IEntity<TKey>
+    public Task<IEnumerable<T>> QueryByIdsAsync<T, TKey>(TKey[] keys)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>
     {
         var sql = BuildWhereKeySqlByTable<T>(true);
         return QueryAsync<T>(sql, new { Key = keys });
     }
 
-    private static string BuildWhereKeySqlByTable<T>(bool isIDs = false)
+    private static string BuildWhereKeySqlByTable<T>(bool isIDs = false) where T : class
     {
-        var tableName = GetTableName<T>();
-        var pk = ReadOnlyQueryExtensions.GetPrimaryKeys<T>();
-        var fields = ReadOnlyQueryExtensions.GetFields<T>();
+        var tableName = SqlGenerator<T>.TableName;
+        var primaryKeys = SqlGenerator<T>.GetPrimaryKeys();
+        var fields = SqlGenerator<T>.GetFields();
         var alias = fields.Select(p => $"{p.Key} {p.Value}");
-        return
-            $"SELECT {string.Join(",", alias)} FROM {tableName}(NOLOCK) WHERE {pk.FirstOrDefault().Key} {(isIDs ? "IN" : "=")} @Key";
+
+        var sql = new StringBuilder();
+        sql.Append($"SELECT {string.Join(",", alias)}").Append(Environment.NewLine);
+        sql.Append($"FROM {tableName}").Append(Environment.NewLine);
+        sql.Append($"WHERE {primaryKeys.FirstOrDefault().Key} {(isIDs ? "IN" : "=")} @Key");
+        return sql.ToString();
     }
 
-    private static string BuildSelectSql<T>()
+    private static string BuildSelectSql<T>() where T : class
     {
-        var tableName = GetTableName<T>();
-        var fields = ReadOnlyQueryExtensions.GetFields<T>();
+        var tableName = SqlGenerator<T>.TableName;
+        var fields = SqlGenerator<T>.GetFields();
         var alias = fields.Select(p => $"{p.Key} {p.Value}");
-        return $"SELECT {string.Join(",", alias)} FROM {tableName}(NOLOCK)";
-    }
-
-    private static string GetTableName<T>()
-    {
-        var att = typeof(T).GetCustomAttribute<TableAttribute>();
-        if (att == null) throw new NotSupportedException("TableAttribute does not exist");
-        return att.Name;
+        return $"SELECT {string.Join(",", alias)} FROM {tableName}";
     }
 
     private static KeyValuePair<DynamicParameters, List<string>> BuildParams(object param)
@@ -202,59 +192,5 @@ public class DapperRepository : IDapperRepository
     {
         var sql = $"SELECT COUNT(1) {query.BuildFromSql()} {query.BuildWhereSql()}";
         return CountAsync(sql, query);
-    }
-}
-
-public class ReadOnlyQueryExtensions
-{
-    private static readonly ConcurrentDictionary<Type, Dictionary<string, string>> Fields;
-
-    private static readonly ConcurrentDictionary<Type, Dictionary<string, string>> PrimaryKeyFields;
-
-    static ReadOnlyQueryExtensions()
-    {
-        Fields = new ConcurrentDictionary<Type, Dictionary<string, string>>();
-        PrimaryKeyFields = new ConcurrentDictionary<Type, Dictionary<string, string>>();
-    }
-
-    public static Dictionary<string, string> GetFields<T>()
-    {
-        return Fields.GetOrAdd(typeof(T), _ =>
-        {
-            var props = typeof(T).GetProperties().Where(p => p.GetCustomAttribute<NotMappedAttribute>() == null);
-            var result = new Dictionary<string, string>();
-            foreach (var prop in props)
-            {
-                if (prop.PropertyType.IsGenericType &&
-                    prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
-                    continue;
-                if (prop.GetCustomAttribute<ForeignKeyAttribute>() != null)
-                    continue;
-                if (prop.PropertyType.GetCustomAttribute<TableAttribute>() != null)
-                    continue;
-
-                var col = prop.GetCustomAttribute<ColumnAttribute>();
-                result.Add(string.IsNullOrWhiteSpace(col?.Name) ? prop.Name : col.Name, prop.Name);
-            }
-
-            return result;
-        });
-    }
-
-
-    public static Dictionary<string, string> GetPrimaryKeys<T>()
-    {
-        return PrimaryKeyFields.GetOrAdd(typeof(T), _ =>
-        {
-            var props = typeof(T).GetProperties().Where(t => t.GetCustomAttribute<KeyAttribute>() != null);
-            var result = new Dictionary<string, string>();
-            foreach (var prop in props)
-            {
-                var col = prop.GetCustomAttribute<ColumnAttribute>();
-                result.Add(string.IsNullOrWhiteSpace(col?.Name) ? prop.Name : col.Name, prop.Name);
-            }
-
-            return result;
-        });
     }
 }

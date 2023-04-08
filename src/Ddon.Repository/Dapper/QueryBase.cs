@@ -170,7 +170,7 @@ public abstract class QueryBase
 
 public abstract class QueryPageBase : QueryBase
 {
-    private readonly int _maxPageCount;
+    private int _maxPageCount = 20;
 
     /// <summary>
     /// 单页容量(最大20万)
@@ -178,10 +178,10 @@ public abstract class QueryPageBase : QueryBase
     public int PageCount
     {
         get => _maxPageCount >= 200000 ? 200000 : _maxPageCount;
-        init => _maxPageCount = value;
+        set => _maxPageCount = value <= 0 ? 20 : value;
     }
 
-    public int PageIndex { get; init; }
+    public int PageIndex { get; set; }
 
     /// <summary>
     /// 获取完整的查询 SQL
@@ -198,13 +198,23 @@ public abstract class QueryPageBase : QueryBase
     public StringBuilder BuildPageSql()
     {
         // TODO 提供不同的SQL分页方式
-        
+
         var sqlBuilder = new StringBuilder();
-        
+
         var tempMaxResultCount = PageCount <= 0 ? 0 : PageCount;
         var tempSkipCount = (PageIndex <= 0 ? 0 : PageIndex - 1) * PageCount;
-        sqlBuilder.Append($"OFFSET {tempSkipCount} ROWS FETCH NEXT {tempMaxResultCount} ROWS ONLY");
-        
+        switch (DapperInitialization.DatabaseType)
+        {
+            case DatabaseType.Mssql:
+                sqlBuilder.Append($"OFFSET {tempSkipCount} ROWS FETCH NEXT {tempMaxResultCount} ROWS ONLY");
+                break;
+            case DatabaseType.Sqlite:
+                sqlBuilder.Append($"LIMIT {tempMaxResultCount} OFFSET {tempSkipCount}");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
         return sqlBuilder;
     }
 }

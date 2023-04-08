@@ -14,47 +14,47 @@ public interface IDapperRepository
 
     Task<IEnumerable<T>> QueryAsync<T>(string sql, object? param = default);
 
-    T FirstOrDefault<T>(string sql, object? param = default);
+    T? FirstOrDefault<T>(string sql, object? param = default);
 
-    Task<T> FirstOrDefaultAsync<T>(string sql, object? param = default);
+    Task<T?> FirstOrDefaultAsync<T>(string sql, object? param = default);
 
 
     // 以下需要表对应实体
-        
-    IEnumerable<T> Query<T>(object param);
 
-    Task<IEnumerable<T>> QueryAsync<T>(object param);
-        
-    T FirstOrDefault<T>(object param) where T : IEntity;
+    IEnumerable<T> Query<T>(object param) where T : class;
 
-    Task<T> FirstOrDefaultAsync<T>(object param) where T : IEntity;
+    Task<IEnumerable<T>> QueryAsync<T>(object param) where T : class;
 
-    T FirstOrDefaultById<T, TKey>(TKey key)
-        where T : IEntity<TKey>
+    T? FirstOrDefault<T>(object param) where T : class, IEntity;
+
+    Task<T?> FirstOrDefaultAsync<T>(object param) where T : class, IEntity;
+
+    T? FirstOrDefaultById<T, TKey>(TKey key)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>;
 
-    Task<T> FirstOrDefaultByIdAsync<T, TKey>(TKey key)
-        where T : IEntity<TKey>
+    Task<T?> FirstOrDefaultByIdAsync<T, TKey>(TKey key)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>;
 
-    IEnumerable<T> QueryByIds<T, TKey>(IEnumerable<TKey> keys)
-        where T : IEntity<TKey>
+    IEnumerable<T> QueryByIds<T, TKey>(TKey[] keys)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>;
 
-    Task<IEnumerable<T>> QueryByIdsAsync<T, TKey>(IEnumerable<TKey> keys)
-        where T : IEntity<TKey>
+    Task<IEnumerable<T>> QueryByIdsAsync<T, TKey>(TKey[] keys)
+        where T : class, IEntity<TKey>
         where TKey : IEquatable<TKey>;
 
     // 使用查询对象
-    IEnumerable<T> Query<T>(QueryBase query);
+    IEnumerable<T> Query<T>(QueryBase query) where T : class;
 
-    Task<IEnumerable<T>> QueryAsync<T>(QueryBase query);
+    Task<IEnumerable<T>> QueryAsync<T>(QueryBase query) where T : class;
 
-    T FirstOrDefault<T>(QueryBase query);
+    T? FirstOrDefault<T>(QueryBase query) where T : class;
 
-    Task<T> FirstOrDefaultAsync<T>(QueryBase query);
+    Task<T?> FirstOrDefaultAsync<T>(QueryBase query) where T : class;
 
-    PageResult<T> Query<T>(QueryPageBase query);
+    PageResult<T> Query<T>(QueryPageBase query) where T : class;
 
-    Task<PageResult<T>> QueryAsync<T>(QueryPageBase query);
+    Task<PageResult<T>> QueryAsync<T>(QueryPageBase query) where T : class;
 }
