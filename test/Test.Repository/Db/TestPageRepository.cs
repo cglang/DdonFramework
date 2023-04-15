@@ -1,6 +1,6 @@
 ﻿using System;
 using Ddon.Core.Use.Di;
-using Ddon.Domain.Entities.Auditing;
+using Ddon.Domain.BaseObject;
 using Microsoft.EntityFrameworkCore;
 
 namespace Test.Repository.Db
@@ -10,7 +10,7 @@ namespace Test.Repository.Db
         public DbSet<TestPageEntity> TestPage { get; set; }
     }
 
-    public class TestPageEntity : AuditedAggregateRoot<Guid>
+    public class TestPageEntity : AuditEntity<Guid>
     {
         public string? Title { get; set; }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Ddon.Domain.Dtos
+namespace Ddon.Domain.Extensions.ValueObject
 {
     public class PageResult<T>
     {

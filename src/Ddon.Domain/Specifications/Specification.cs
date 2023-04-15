@@ -1,5 +1,5 @@
-﻿using Ddon.Domain.Dtos;
-using Ddon.Domain.Entities;
+﻿using Ddon.Domain.Entities;
+using Ddon.Domain.Extensions.ValueObject;
 using Ddon.Domain.Specifications.Builder;
 using System;
 using System.Collections.Generic;

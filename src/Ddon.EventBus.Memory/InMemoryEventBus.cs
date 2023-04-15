@@ -13,14 +13,15 @@ namespace Ddon.EventBus
         {
             _mediator = mediator;
         }
-        public async Task PublishAsync(INotification notification, CancellationToken cancellationToken = default)
+
+        public Task PublishAsync(INotification notification, CancellationToken cancellationToken = default)
         {
-            await _mediator.Publish(notification, cancellationToken);
+            return _mediator.Publish(notification, cancellationToken);
         }
 
-        public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
-            return await _mediator.Send(request, cancellationToken);
+            return _mediator.Send(request, cancellationToken);
         }
     }
 }

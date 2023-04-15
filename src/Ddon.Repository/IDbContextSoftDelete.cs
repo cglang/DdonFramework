@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Ddon.Domain.Entities.Auditing;
+using Ddon.Domain.BaseObject;
 using Ddon.Repositiry.Extensions;
 using Microsoft.EntityFrameworkCore;
 

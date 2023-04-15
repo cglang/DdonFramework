@@ -41,7 +41,7 @@ namespace Ddon.Identity.Manager
         {
             var hash = Encryptor.MD5Hash(password);
             return await _userRepository.User.AsNoTracking()
-                .AnyAsync(u => u.UserName == userName && u.PasswordHash.Equals(hash));
+                .AnyAsync(u => u.UserName == userName && hash.Equals(u.PasswordHash));
         }
 
         public async Task<Role<TKey>> CreateRoleAsync(string name)
@@ -54,9 +54,8 @@ namespace Ddon.Identity.Manager
 
         public async Task AddUserPermissionAsync(TKey userId, string permissionName)
         {
-            var user = await _userRepository.User.FirstOrDefaultAsync(x => x.Id.Equals(userId));
-            if (user == null)
-                throw new ApplicationServiceException("没有要添加此权限的用户");
+            var user = await _userRepository.User.FirstOrDefaultAsync(x => x.Id.Equals(userId))
+                ?? throw new ApplicationServiceException("没有要添加此权限的用户");
 
             var have = await _permissionGrantRepository.PermissionGrant.AnyAsync(x =>
                 x.Name.Equals(permissionName) && x.GrantKey.Equals(userId));
@@ -78,13 +77,9 @@ namespace Ddon.Identity.Manager
 
         public async Task RemoveUserPermissionAsync(TKey userId, string permissionName)
         {
-            var permission =
-                await _permissionGrantRepository.PermissionGrant.FirstOrDefaultAsync(x =>
-                    x.GrantKey.Equals(userId) && x.Name.Equals(permissionName));
-            if (permission == null)
-            {
-                throw new ApplicationServiceException("没有未此角色赋予此权限");
-            }
+            var permission = await _permissionGrantRepository.PermissionGrant
+                .FirstOrDefaultAsync(x => x.GrantKey.Equals(userId) && x.Name.Equals(permissionName))
+                ?? throw new ApplicationServiceException("没有未此角色赋予此权限");
 
             await _permissionGrantRepository.PermissionGrant.DeleteAsync(permission.Id);
 
@@ -93,9 +88,8 @@ namespace Ddon.Identity.Manager
 
         public async Task AddRolePermissionAsync(TKey roleId, string permissionName)
         {
-            var role = await _roleRepository.Role.FirstOrDefaultAsync(x => x.Id.Equals(roleId));
-            if (role == null)
-                throw new ApplicationServiceException("没有此要添加权限的角色");
+            var role = await _roleRepository.Role.FirstOrDefaultAsync(x => x.Id.Equals(roleId))
+                ?? throw new ApplicationServiceException("没有此要添加权限的角色");
 
             var have = await _permissionGrantRepository.PermissionGrant.AnyAsync(x =>
                 x.Name.Equals(permissionName) && x.GrantKey.Equals(roleId));
@@ -117,13 +111,9 @@ namespace Ddon.Identity.Manager
 
         public async Task RemoveRolePermissionAsync(TKey roleId, string permissionName)
         {
-            var permission =
-                await _permissionGrantRepository.PermissionGrant.FirstOrDefaultAsync(x =>
-                    x.GrantKey.Equals(roleId) && x.Name.Equals(permissionName));
-            if (permission == null)
-            {
-                throw new ApplicationServiceException("没有未改角色赋予此权限");
-            }
+            var permission = await _permissionGrantRepository.PermissionGrant
+                .FirstOrDefaultAsync(x => x.GrantKey.Equals(roleId) && x.Name.Equals(permissionName))
+                ?? throw new ApplicationServiceException("没有未改角色赋予此权限");
 
             await _permissionGrantRepository.PermissionGrant.DeleteAsync(permission.Id);
 
@@ -132,10 +122,8 @@ namespace Ddon.Identity.Manager
 
         public async Task DeleteRoleAsync(TKey id)
         {
-            var entity = await _roleRepository.Role.FirstOrDefaultAsync(x => x.Id.Equals(id));
-
-            if (entity is null)
-                throw new ApplicationServiceException("没有此Id的记录");
+            var entity = await _roleRepository.Role.FirstOrDefaultAsync(x => x.Id.Equals(id))
+                ?? throw new ApplicationServiceException("没有此Id的记录");
 
             await _roleRepository.Role.DeleteAsync(entity.Id);
 
@@ -149,11 +137,8 @@ namespace Ddon.Identity.Manager
 
         public async Task<Role<TKey>> UpdateRoleAsync(Role<TKey> entity)
         {
-            var roleEntity = await _roleRepository.Role.FirstOrDefaultAsync(x => x.Id.Equals(entity.Id));
-            if (roleEntity is null)
-            {
-                throw new ApplicationServiceException("没有此角色");
-            }
+            var roleEntity = await _roleRepository.Role.FirstOrDefaultAsync(x => x.Id.Equals(entity.Id))
+                ?? throw new ApplicationServiceException("没有此角色");
 
             roleEntity.Name = entity.Name;
             roleEntity.NormalizedName = entity.NormalizedName;

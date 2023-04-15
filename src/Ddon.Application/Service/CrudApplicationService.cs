@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Ddon.Application.Dtos;
-using Ddon.Domain.Dtos;
 using Ddon.Domain.Entities;
+using Ddon.Domain.Extensions.ValueObject;
 using Ddon.Domain.Repositories;
 
 namespace Ddon.Application.Service

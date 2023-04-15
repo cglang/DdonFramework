@@ -16,7 +16,7 @@ namespace Ddon.Repository
             Load<CoreModule>(services, configuration);
             Load<CacheModule>(services, configuration);
 
-            services.AddTransient<IUnitOfWork<TDbContext>, UnitOfWork<TDbContext>>();
+            services.AddScoped<IUnitOfWork<TDbContext>, UnitOfWork<TDbContext>>();
             services.AddDbContext<TDbContext>(optionBuilder);
         }
     }

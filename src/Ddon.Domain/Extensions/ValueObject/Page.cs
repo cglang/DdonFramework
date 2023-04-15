@@ -1,7 +1,7 @@
 ﻿using Ddon.Domain.Entities;
 using System;
 
-namespace Ddon.Domain.Dtos
+namespace Ddon.Domain.Extensions.ValueObject
 {
     public class Page
     {

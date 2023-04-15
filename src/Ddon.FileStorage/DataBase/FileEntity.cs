@@ -1,8 +1,8 @@
-﻿using Ddon.Domain.Entities.Auditing;
+﻿using Ddon.Domain.BaseObject;
 
 namespace Ddon.FileStorage.DataBase
 {
-    public class FileEntity : AuditedAggregateRoot<string>
+    public class FileEntity : AuditEntity<string>
     {
         /// <summary>
         /// 名称

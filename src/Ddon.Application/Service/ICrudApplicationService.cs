@@ -1,4 +1,4 @@
-﻿using Ddon.Domain.Dtos;
+﻿using Ddon.Domain.Extensions.ValueObject;
 using System.Threading.Tasks;
 
 namespace Ddon.Application.Service

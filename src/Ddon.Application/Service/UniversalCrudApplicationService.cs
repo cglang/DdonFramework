@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Ddon.Application.Dtos;
-using Ddon.Domain.Dtos;
 using Ddon.Domain.Entities;
+using Ddon.Domain.Extensions.ValueObject;
 using Ddon.Domain.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 

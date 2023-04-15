@@ -1,7 +1,7 @@
 ﻿using System;
 using Ddon.Core.Services.Guids;
+using Ddon.Domain.BaseObject;
 using Ddon.Domain.Entities;
-using Ddon.Domain.Entities.Auditing;
 using Ddon.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -106,7 +106,7 @@ namespace Ddon.Repositiry
                 else entityWithStringId.Id = Guid.NewGuid().ToString();
             }
 
-            if (entry.Entity is IAuditedObject entity)
+            if (entry.Entity is IAuditEntity entity)
             {
                 entity.CreationTime = DateTime.UtcNow;
             }
@@ -114,7 +114,7 @@ namespace Ddon.Repositiry
 
         protected virtual void ApplyAbpConceptsForModifiedEntity(EntityEntry entry)
         {
-            if (entry.Entity is IAuditedObject entity)
+            if (entry.Entity is IAuditEntity entity)
             {
                 entity.LastModificationTime = DateTime.UtcNow;
             }

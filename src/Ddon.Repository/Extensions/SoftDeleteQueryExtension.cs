@@ -1,4 +1,4 @@
-﻿using Ddon.Domain.Entities.Auditing;
+﻿using Ddon.Domain.BaseObject;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Linq.Expressions;

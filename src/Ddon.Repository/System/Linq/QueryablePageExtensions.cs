@@ -1,11 +1,11 @@
-﻿using Ddon.Domain.Dtos;
-using Ddon.Domain.Specifications;
+﻿using Ddon.Domain.Specifications;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Ddon.Domain.Extensions.ValueObject;
 
 // ReSharper disable once CheckNamespace
 namespace System.Linq

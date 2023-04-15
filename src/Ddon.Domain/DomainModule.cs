@@ -1,4 +1,5 @@
 ﻿using Ddon.Core;
+using Ddon.Domain.Event;
 using Ddon.EventBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,8 @@ namespace Ddon.Identity
         {
             Load<CoreModule>(services, configuration);
             Load<EventBusModule>(services, configuration);
+
+            services.AddScoped<IDomainEventBus, DomainEventBus>();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Ddon.Domain.Entities.Auditing
+﻿namespace Ddon.Domain.BaseObject
 {
     public interface ISoftDelete
     {

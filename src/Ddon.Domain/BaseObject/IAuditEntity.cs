@@ -1,16 +1,16 @@
-using System;
+ï»¿using System;
 
-namespace Ddon.Domain.Entities.Auditing
+namespace Ddon.Domain.BaseObject
 {
-    public interface IAuditedObject
+    public interface IAuditEntity
     {
         /// <summary>
-        /// ´´½¨Ê±¼ä
+        /// åˆ›å»ºæ—¶é—´
         /// </summary>
         DateTime CreationTime { get; set; }
 
         /// <summary>
-        /// ×îºóÒ»´ÎĞŞ¸ÄÊ±¼ä
+        /// æœ€åä¸€æ¬¡ä¿®æ”¹æ—¶é—´
         /// </summary>
         DateTime? LastModificationTime { get; set; }
     }

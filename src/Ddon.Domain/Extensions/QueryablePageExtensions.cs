@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Ddon.Domain.Dtos;
+using Ddon.Domain.Extensions.ValueObject;
 using Ddon.Domain.Specifications;
 
 namespace Ddon.Domain.Extensions;
@@ -11,7 +10,7 @@ namespace Ddon.Domain.Extensions;
 /// <summary>
 /// Some useful extension methods for <see cref="IQueryable{TEntity}"/>.
 /// </summary>
-public static class QueryablePageExtensions
+public static partial class QueryablePageExtensions
 {
     /// <summary>
     /// 排序分页查询
@@ -110,41 +109,5 @@ public static class QueryablePageExtensions
         string propertyName)
     {
         return QueryableHelper<TEntity>.OrderByDescending(queryable, propertyName);
-    }
-
-    public class QueryableHelper
-    {
-        protected static readonly ConcurrentDictionary<string, LambdaExpression> Cached = new();
-    }
-
-    private class QueryableHelper<TEntity> : QueryableHelper
-    {
-        public static IQueryable<TEntity> OrderBy(IQueryable<TEntity> queryable, string propertyName)
-        {
-            dynamic keySelector = GetLambdaExpression(propertyName);
-            return Queryable.OrderBy(queryable, keySelector);
-        }
-
-        public static IQueryable<TEntity> OrderByDescending(IQueryable<TEntity> queryable, string propertyName)
-        {
-            dynamic keySelector = GetLambdaExpression(propertyName);
-            return Queryable.OrderByDescending(queryable, keySelector);
-        }
-
-        private static LambdaExpression GetLambdaExpression(string propertyName)
-        {
-            var key = $"{typeof(TEntity).FullName}.{propertyName}";
-            if (Cached.ContainsKey(key))
-            {
-                return Cached[key];
-            }
-
-            var param = Expression.Parameter(typeof(TEntity));
-            var body = Expression.Property(param, propertyName);
-            var keySelector = Expression.Lambda(body, param);
-            Cached[key] = keySelector;
-
-            return keySelector;
-        }
     }
 }
