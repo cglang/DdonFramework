@@ -16,4 +16,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Ddon.TuuTools\Ddon.TuuTools.csproj" />
+  </ItemGroup>
+
 </Project>

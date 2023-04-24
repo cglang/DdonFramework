@@ -1,4 +1,4 @@
-using Ddon.Core;
+﻿using Ddon.Core;
 using System.Linq;
 
 namespace System.Collections.Generic

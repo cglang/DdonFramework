@@ -1,9 +1,8 @@
-﻿using Ddon.Core.Use.Di;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace System.Runtime
 {
-    public class OSPlatformProvider : IOSPlatformProvider, ITransientDependency
+    public class OSPlatformProvider : IOSPlatformProvider
     {
         public virtual OSPlatform GetCurrentOSPlatform()
         {

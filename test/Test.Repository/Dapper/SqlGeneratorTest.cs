@@ -33,5 +33,6 @@ class TestTable
 {
     public int Id { get; set; }
 
+    [Column("CreateDate")]
     public DateTime CreateTime { get; set; }
 }

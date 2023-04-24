@@ -1,5 +1,4 @@
-﻿
-using Ddon.Core.Use.Socket;
+﻿using Ddon.TuuTools.Socket;
 using System.Text;
 
 var result = string.Empty;

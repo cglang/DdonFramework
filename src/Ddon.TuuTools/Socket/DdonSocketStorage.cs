@@ -1,0 +1,31 @@
+﻿using System.Collections.Concurrent;
+
+namespace Ddon.TuuTools.Socket;
+
+public static class DdonSocketStorage
+{
+    private static readonly ConcurrentDictionary<Guid, DdonSocketCore> Pairs = new();
+
+    public static IEnumerable<DdonSocketCore> Clients => Pairs.Values;
+
+    public static DdonSocketCore? GetClient(Guid socketId)
+    {
+        return Pairs.ContainsKey(socketId) ? Pairs[socketId] : null;
+    }
+
+    public static IEnumerable<DdonSocketCore> GetClients(IEnumerable<Guid> socketIds)
+    {
+        return Pairs.Values.Where(x => socketIds.Contains(x.SocketId));
+    }
+
+    public static bool Add(DdonSocketCore session)
+    {
+        return !Pairs.ContainsKey(session.SocketId) && Pairs.TryAdd(session.SocketId, session);
+    }
+
+    public static void Remove(Guid clientId)
+    {
+        if (Pairs.ContainsKey(clientId))
+            Pairs.Remove(clientId, out _);
+    }
+}
