@@ -1,18 +1,15 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using Ddon.TuuTools.Socket.Exceptions;
+using Ddon.TuuTools.Socket.Handler;
 using Ddon.TuuTools.System;
 
 namespace Ddon.TuuTools.Socket;
 
-public class DdonSocketCore : IDisposable
+public class DdonSocketCore : DdonSocketCoreHandler, IDisposable
 {
     private readonly TcpClient _tcpClient;
     private readonly Stream _stream;
-
-    private Func<DdonSocketCore, Memory<byte>, Task>? _byteHandler;
-    private Func<DdonSocketCore, string, Task>? _stringHandler;
-    private Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
 
     public Guid SocketId { get; } = Guid.NewGuid();
 
@@ -30,8 +27,8 @@ public class DdonSocketCore : IDisposable
         Func<DdonSocketCore, Memory<byte>, Task>? byteHandler,
         Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler = null) : this(tcpClient)
     {
-        _byteHandler += byteHandler;
-        _exceptionHandler += exceptionHandler;
+        ByteHandler += byteHandler;
+        ExceptionHandler += exceptionHandler;
     }
 
     private void ConsecutiveReadStream()
@@ -56,26 +53,26 @@ public class DdonSocketCore : IDisposable
         }
         catch (Exception ex)
         {
-            if (_exceptionHandler != null)
+            if (ExceptionHandler != null)
             {
                 var socketEx = new DdonSocketException(ex, SocketId);
-                await _exceptionHandler(this, socketEx);
+                await ExceptionHandler(this, socketEx);
             }
         }
     }
 
     private Task InitialHandle(Memory<byte> data, Type type)
     {
-        if (_byteHandler != null && type == Type.Byte)
+        if (ByteHandler != null && type == Type.Byte)
         {
-            return _byteHandler(this, data);
+            return ByteHandler(this, data);
         }
-        else if (_stringHandler != null && type == Type.Text)
+        else if (StringHandler != null && type == Type.Text)
         {
-            return _stringHandler(this, Encoding.UTF8.GetString(data.Span));
+            return StringHandler(this, Encoding.UTF8.GetString(data.Span));
         }
         else
-        { 
+        {
             return Task.CompletedTask;
         }
     }
@@ -107,21 +104,21 @@ public class DdonSocketCore : IDisposable
         return await SendBytesAsync(data.GetBytes(), Type.Text);
     }
 
-    public DdonSocketCore ByteHandler(Func<DdonSocketCore, Memory<byte>, Task>? byteHandler)
+    public DdonSocketCore BindByteHandler(Func<DdonSocketCore, Memory<byte>, Task>? byteHandler)
     {
-        _byteHandler += byteHandler;
+        ByteHandler += byteHandler;
         return this;
     }
 
-    public DdonSocketCore StringHandler(Func<DdonSocketCore, string, Task>? stringHandler)
+    public DdonSocketCore BindStringHandler(Func<DdonSocketCore, string, Task>? stringHandler)
     {
-        _stringHandler += stringHandler;
+        StringHandler += stringHandler;
         return this;
     }
 
-    public DdonSocketCore ExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
+    public DdonSocketCore BindExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
     {
-        _exceptionHandler += exceptionHandler;
+        ExceptionHandler += exceptionHandler;
         return this;
     }
 
@@ -149,9 +146,9 @@ public class DdonSocketCore : IDisposable
         }
 
         // 清理非托管资源
-        _byteHandler = null;
-        _exceptionHandler = null;
-        _stringHandler = null;
+        ByteHandler = null;
+        ExceptionHandler = null;
+        StringHandler = null;
 
         _disposed = true;
     }

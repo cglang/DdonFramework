@@ -38,7 +38,7 @@ namespace System.IO
                 int readLength = await stream.ReadAsync(data.Slice(index, buffsize));
                 index += readLength;
 
-                if (readLength == 0) throw new SocketException();
+                if (readLength == 0) return data;
             }
             while (index < length);
 

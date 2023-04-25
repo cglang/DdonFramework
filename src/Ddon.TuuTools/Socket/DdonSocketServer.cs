@@ -1,17 +1,13 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using Ddon.TuuTools.Socket.Exceptions;
+using Ddon.TuuTools.Socket.Handler;
 
 namespace Ddon.TuuTools.Socket;
 
-public class DdonSocketServer
+public class DdonSocketServer : DdonSocketServerHandler
 {
     private readonly TcpListener _listener;
-
-    private Func<DdonSocketCore, Task>? _connectHandler;
-    private Func<DdonSocketCore, Memory<byte>, Task>? _byteHandler;
-    private Func<DdonSocketCore, string, Task>? _stringHandler;
-    private Func<DdonSocketCore, DdonSocketException, Task>? _exceptionHandler;
 
     public DdonSocketServer(string host, int port)
     {
@@ -23,51 +19,56 @@ public class DdonSocketServer
         _listener = new TcpListener(ipAddress, port);
     }
 
-    public DdonSocketServer ByteHandler(Func<DdonSocketCore, Memory<byte>, Task>? byteHandler)
+    public DdonSocketServer BindByteHandler(Func<DdonSocketCore, Memory<byte>, Task>? byteHandler)
     {
-        _byteHandler = byteHandler;
+        ByteHandler += byteHandler;
         return this;
     }
 
-    public DdonSocketServer StringHandler(Func<DdonSocketCore, string, Task>? stringHandler)
+    public DdonSocketServer BindStringHandler(Func<DdonSocketCore, string, Task>? stringHandler)
     {
-        _stringHandler += stringHandler;
+        StringHandler += stringHandler;
         return this;
     }
 
-    public DdonSocketServer ExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
+    public DdonSocketServer BindExceptionHandler(Func<DdonSocketCore, DdonSocketException, Task>? exceptionHandler)
     {
-        _exceptionHandler += exceptionHandler;
+        ExceptionHandler += exceptionHandler;
         return this;
     }
 
-    public DdonSocketServer ConnectHandler(Func<DdonSocketCore, Task>? connectHandler)
+    public DdonSocketServer BindConnectHandler(Func<DdonSocketCore, Task>? connectHandler)
     {
-        _connectHandler += connectHandler;
+        ConnectHandler += connectHandler;
         return this;
     }
 
     public void Start()
     {
-        _listener.Start();
         Task<Task>.Factory.StartNew(Function, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+    }
+
+    public Task StartAsync()
+    {
+        return Function();
     }
 
     private async Task Function()
     {
+        _listener.Start();
         while (true)
         {
             var client = await _listener.AcceptTcpClientAsync();
             var session = new DdonSocketCore(client);
-            session.ByteHandler(_byteHandler);
-            session.StringHandler(_stringHandler);
-            session.ExceptionHandler(_exceptionHandler);
-            session.ExceptionHandler(DefaultExceptionHandler);
+            session.BindByteHandler(ByteHandler);
+            session.BindStringHandler(StringHandler);
+            session.BindExceptionHandler(ExceptionHandler);
+            session.BindExceptionHandler(DefaultExceptionHandler);
 
             DdonSocketStorage.Add(session);
 
-            if (_connectHandler != null)
-                await _connectHandler(session);
+            if (ConnectHandler != null)
+                await ConnectHandler(session);
             else
                 throw new Exception();
         }
@@ -76,9 +77,6 @@ public class DdonSocketServer
     private static readonly Func<DdonSocketCore, DdonSocketException, Task>? DefaultExceptionHandler = (_, ex) =>
     {
         DdonSocketStorage.Remove(ex.SocketId);
-#if DEBUG
-        Console.WriteLine($"移除一个：{ex.SocketId}");
-#endif
         return Task.CompletedTask;
     };
 }

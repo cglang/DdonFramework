@@ -16,12 +16,12 @@ namespace Test.Core.Tests
         {
             var result = string.Empty;
             DdonSocket.CreateServer("127.0.0.1", 5356)
-                .StringHandler(async (a, b) =>
+                .BindStringHandler(async (a, b) =>
                 {
                     await Task.CompletedTask;
                     result = b;
                 })
-                .ByteHandler(async (a, b) =>
+                .BindByteHandler(async (a, b) =>
                 {
                     await Task.CompletedTask;
                     result = Encoding.UTF8.GetString(b.Span);
