@@ -63,16 +63,25 @@ public class DdonSocketCore : DdonSocketCoreHandler, IDisposable
 
     private Task InitialHandle(Memory<byte> data, Type type)
     {
-        if (ByteHandler != null && type == Type.Byte)
+        try
         {
-            return ByteHandler(this, data);
+            if (ByteHandler != null && type == Type.Byte)
+            {
+                return ByteHandler(this, data);
+            }
+            else if (StringHandler != null && type == Type.Text)
+            {
+                return StringHandler(this, Encoding.UTF8.GetString(data.Span));
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
         }
-        else if (StringHandler != null && type == Type.Text)
+        catch (Exception ex)
         {
-            return StringHandler(this, Encoding.UTF8.GetString(data.Span));
-        }
-        else
-        {
+            if (ExceptionHandler != null)
+                return ExceptionHandler(this, new(ex, this.SocketId));
             return Task.CompletedTask;
         }
     }
