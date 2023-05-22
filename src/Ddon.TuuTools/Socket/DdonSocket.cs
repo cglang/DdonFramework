@@ -9,40 +9,49 @@ public static class DdonSocket
 
     public static DdonSocketServer CreateServer(int port) => new(IPAddress.Loopback, port);
 
-    public static DdonSocketCore CreateClient(string serverhost, int port) => new(serverhost, port);
+    public static DdonSocketSession CreateClient(string serverhost, int port) => new(serverhost, port);
 
     public static DdonSocketServer CreateServer<THandlerProvider>(string host, int port)
-        where THandlerProvider : IDdonSocketServerHandlerProvider, new()
+        where THandlerProvider : IDdonSocketServerHandler, new()
     {
         var handle = new THandlerProvider();
 
-        return CreateServer(host, port)
+        var server = CreateServer(host, port);
+        server.BindConnectHandler(handle.ConnectHandler)
             .BindStringHandler(handle.StringHandler)
             .BindByteHandler(handle.ByteHandler)
-            .BindConnectHandler(handle.ConnectHandler)
+            .BindDisconnectHandler(handle.Disconnect)
             .BindExceptionHandler(handle.ExceptionHandler);
+
+        return server;
     }
 
     public static DdonSocketServer CreateServer<THandlerProvider>(int port)
-        where THandlerProvider : IDdonSocketServerHandlerProvider, new()
+        where THandlerProvider : IDdonSocketServerHandler, new()
     {
         var handle = new THandlerProvider();
 
-        return CreateServer(port)
+        var server = CreateServer(port);
+        server.BindConnectHandler(handle.ConnectHandler)
             .BindStringHandler(handle.StringHandler)
             .BindByteHandler(handle.ByteHandler)
-            .BindConnectHandler(handle.ConnectHandler)
+            .BindDisconnectHandler(handle.Disconnect)
             .BindExceptionHandler(handle.ExceptionHandler);
+
+        return server;
     }
 
-    public static DdonSocketCore CreateClient<THandlerProvider>(string serverhost, int port)
-        where THandlerProvider : IDdonSocketCoreHandlerProvider, new()
+    public static DdonSocketSession CreateClient<THandlerProvider>(string serverhost, int port)
+        where THandlerProvider : IDdonSocketSessionHandler, new()
     {
         var handle = new THandlerProvider();
 
-        return CreateClient(serverhost, port)
-            .BindStringHandler(handle.StringHandler)
+        var client = CreateClient(serverhost, port);
+        client.BindStringHandler(handle.StringHandler)
             .BindByteHandler(handle.ByteHandler)
+            .BindDisconnectHandler(handle.Disconnect)
             .BindExceptionHandler(handle.ExceptionHandler);
+
+        return client;
     }
 }

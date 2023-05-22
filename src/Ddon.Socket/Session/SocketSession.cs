@@ -22,7 +22,7 @@ namespace Ddon.Socket.Session
     public class SocketSession : IDisposable
     {
         private readonly Func<SocketSession, DdonSocketException, Task>? _exceptionHandler;
-        private readonly DdonSocketCore _conn;
+        private readonly DdonSocketSession _conn;
 
         public Guid SessionId { get; } = Guid.NewGuid();
 
@@ -32,7 +32,7 @@ namespace Ddon.Socket.Session
 
         private static ILogger Logger => ServiceProvider.GetRequiredService<ILogger<SocketSession>>();
 
-        private Func<DdonSocketCore, DdonSocketException, Task> ConnExceptionHandler => async (_, ex) =>
+        private Func<DdonSocketSession, DdonSocketException, Task> ConnExceptionHandler => async (_, ex) =>
         {
             if (_exceptionHandler is not null) await _exceptionHandler.Invoke(this, ex);
         };
@@ -40,7 +40,7 @@ namespace Ddon.Socket.Session
         public SocketSession(TcpClient tcpClient, Func<SocketSession, DdonSocketException, Task>? exceptionHandler)
         {
             _exceptionHandler = exceptionHandler;
-            _conn = new DdonSocketCore(tcpClient, ByteHandler, ConnExceptionHandler);
+            _conn = new DdonSocketSession(tcpClient, ByteHandler, ConnExceptionHandler);
         }
 
         private static void ResponseHandle(DdonSocketPackageInfo<Memory<byte>> info)
@@ -75,7 +75,7 @@ namespace Ddon.Socket.Session
             DdonSocketResponsePool.Remove(id);
         }
 
-        private Func<DdonSocketCore, Memory<byte>, Task> ByteHandler => async (conn, bytes) =>
+        private Func<DdonSocketSession, Memory<byte>, Task> ByteHandler => async (conn, bytes) =>
         {
             try
             {

@@ -15,18 +15,20 @@ namespace Test.Core.Tests
         public async Task CoreBaseTest()
         {
             var result = string.Empty;
-            DdonSocket.CreateServer("127.0.0.1", 5356)
-                .BindStringHandler(async (a, b) =>
-                {
-                    await Task.CompletedTask;
-                    result = b;
-                })
-                .BindByteHandler(async (a, b) =>
-                {
-                    await Task.CompletedTask;
-                    result = Encoding.UTF8.GetString(b.Span);
-                })
-                .Start();
+            var server = DdonSocket.CreateServer("127.0.0.1", 5356);
+
+            server.BindStringHandler(async (a, b) =>
+            {
+                await Task.CompletedTask;
+                result = b;
+            })
+            .BindByteHandler(async (a, b) =>
+            {
+                await Task.CompletedTask;
+                result = Encoding.UTF8.GetString(b.Span);
+            });
+
+            server.Start();
 
             var core = DdonSocket.CreateClient("127.0.0.1", 5356);
 

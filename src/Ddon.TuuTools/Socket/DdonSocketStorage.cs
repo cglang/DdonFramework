@@ -4,21 +4,21 @@ namespace Ddon.TuuTools.Socket;
 
 public static class DdonSocketStorage
 {
-    private static readonly ConcurrentDictionary<Guid, DdonSocketCore> Pairs = new();
+    private static readonly ConcurrentDictionary<Guid, DdonSocketSession> Pairs = new();
 
-    public static IEnumerable<DdonSocketCore> Clients => Pairs.Values;
+    public static IEnumerable<DdonSocketSession> Clients => Pairs.Values;
 
-    public static DdonSocketCore? GetClient(Guid socketId)
+    public static DdonSocketSession? GetClient(Guid socketId)
     {
         return Pairs.ContainsKey(socketId) ? Pairs[socketId] : null;
     }
 
-    public static IEnumerable<DdonSocketCore> GetClients(IEnumerable<Guid> socketIds)
+    public static IEnumerable<DdonSocketSession> GetClients(IEnumerable<Guid> socketIds)
     {
         return Pairs.Values.Where(x => socketIds.Contains(x.SocketId));
     }
 
-    public static bool Add(DdonSocketCore session)
+    public static bool Add(DdonSocketSession session)
     {
         return !Pairs.ContainsKey(session.SocketId) && Pairs.TryAdd(session.SocketId, session);
     }
