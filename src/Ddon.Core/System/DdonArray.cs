@@ -1,4 +1,8 @@
-﻿namespace Ddon.TuuTools.System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Ddon.TuuTools.System;
 
 public static class DdonArray
 {

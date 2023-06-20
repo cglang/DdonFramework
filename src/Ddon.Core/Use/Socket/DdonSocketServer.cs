@@ -1,5 +1,7 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Ddon.TuuTools.Socket.Exceptions;
 using Ddon.TuuTools.Socket.Handler;
 
