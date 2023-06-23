@@ -53,10 +53,14 @@ namespace Ddon.AspNetCore.Filters
         {
             if (context.Result is ObjectResult objectResult)
             {
-                if (objectResult.StatusCode == StatusCodes.Status200OK)
+                if (objectResult.StatusCode is null or StatusCodes.Status200OK)
                     context.Result = await UniteHandleAsync(true, string.Empty, StatusCodes.Status200OK, objectResult.Value);
                 else
                     context.Result = await UniteHandleAsync(false, string.Empty, StatusCodes.Status200OK, objectResult.Value);
+            }
+            else if (context.Result is EmptyResult)
+            {
+                context.Result = await UniteHandleAsync(true, string.Empty, StatusCodes.Status200OK);
             }
             await next();
         }
