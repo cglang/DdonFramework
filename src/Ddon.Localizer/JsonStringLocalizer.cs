@@ -1,12 +1,12 @@
-﻿using Ddon.Cache;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Ddon.Cache;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 
 namespace Ddon.Localizer
 {
@@ -21,9 +21,6 @@ namespace Ddon.Localizer
         {
             _cache = cache;
             _options = options;
-
-            var fullFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
-            LoadLocalizer(fullFilePath).Wait();
         }
 
         public LocalizedString this[string name]
@@ -58,22 +55,29 @@ namespace Ddon.Localizer
 
         private async Task<string?> GetStringAsync(string key)
         {
-            var cacheKey = $"{_options.Value.CacheKeyPrefix}_{key}";
+            var languageCacheValue = await _cache.GetAsync<bool>($"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}");
+            if (!languageCacheValue)
+            {
+                await LoadLocalizer();
+            }
+            var cacheKey = $"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}_{key}";
             var cacheValue = await _cache.GetAsync<string>(cacheKey);
             if (!string.IsNullOrEmpty(cacheValue)) return cacheValue;
 
             return default;
         }
 
-        public async Task LoadLocalizer(string fullFilePath)
+        private async Task LoadLocalizer()
         {
+            var fullFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
             using var streamReader = new StreamReader(fullFilePath);
             var json = await streamReader.ReadToEndAsync();
             var lkvs = await PullDeserialize(json);
 
-            Parallel.ForEach(lkvs, lkv =>
+            await _cache.SetAsync($"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}", true);
+            Parallel.ForEach(lkvs, async lkv =>
             {
-                _cache.SetAsync($"{_options.Value.CacheKeyPrefix}_{lkv.Key}", lkv.Value);
+                await _cache.SetAsync($"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}_{lkv.Key}", lkv.Value);
             });
         }
 
