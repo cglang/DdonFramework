@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Ddon.Cache;
@@ -55,23 +56,20 @@ namespace Ddon.Localizer
 
         private async Task<string?> GetStringAsync(string key)
         {
-            var languageCacheValue = await _cache.GetAsync<bool>($"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}");
-            if (!languageCacheValue)
-            {
-                await LoadLocalizer();
-            }
-            var cacheKey = $"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}_{key}";
-            var cacheValue = await _cache.GetAsync<string>(cacheKey);
-            if (!string.IsNullOrEmpty(cacheValue)) return cacheValue;
+            var prefixKey = new StringBuilder(_options.Value.CacheKeyPrefix).Append('_').Append(CultureInfo.CurrentCulture.Name);
 
-            return default;
+            var languageCacheValue = await _cache.GetAsync<bool>(prefixKey.ToString());
+            if (!languageCacheValue) await LoadLocalizer();
+
+            return await _cache.GetAsync<string>(prefixKey.Append($"_{key}").ToString());
         }
 
         private async Task LoadLocalizer()
         {
             var fullFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
-            using var streamReader = new StreamReader(fullFilePath);
-            var json = await streamReader.ReadToEndAsync();
+            if (!File.Exists(fullFilePath)) return;
+
+            var json = await File.ReadAllTextAsync(fullFilePath);
             var lkvs = await PullDeserialize(json);
 
             await _cache.SetAsync($"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}", true);
