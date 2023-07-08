@@ -1,4 +1,6 @@
 ﻿using System;
+using Ddon.Core.Services.IdWorker.Guids;
+using Microsoft.Extensions.Options;
 
 namespace Ddon.Core.Services.IdWorker.Snowflake
 {
@@ -24,7 +26,7 @@ namespace Ddon.Core.Services.IdWorker.Snowflake
     /// <summary>
     /// 雪花算法
     /// </summary>
-    public class SnowflakeGenerator
+    public class SnowflakeGenerator : ISnowflakeGenerator
     {
         /// <summary>
         /// 机器ID
@@ -86,6 +88,13 @@ namespace Ddon.Core.Services.IdWorker.Snowflake
         /// </summary>
         private static readonly Random RANDOM = new();
 
+        /// <summary>
+        /// CTOR
+        /// </summary>
+        public SnowflakeGenerator(IOptions<SnowflakeGeneratorOptions> snowflakeOptions)
+        {
+            workerId = snowflakeOptions.Value.GetDefaultWorkerId();
+        }
 
         /// <summary>
         /// CTOR
@@ -97,24 +106,13 @@ namespace Ddon.Core.Services.IdWorker.Snowflake
         }
 
         /// <summary>
-        /// nowflake Builder
+        /// SnowflakeGenerator Builder
         /// </summary>
         /// <param name="workerId">机器Id</param>
-        /// <returns>SnowflakeGenerator Instance</returns>
-        public static SnowflakeGenerator Create(uint workerId)
+        /// <returns></returns>
+        public static SnowflakeGenerator Init(uint workerId = SnowflakeGeneratorOptions.DefaultWorkerId)
         {
             return new SnowflakeGenerator(workerId);
-        }
-
-        /// <summary>
-        /// Snowflake Builder
-        /// </summary>
-        /// <param name="workerId">机器Id</param>
-        /// <param name="lowConcurrency">是否低并发模式</param>
-        /// <returns>SnowflakeGenerator Instance</returns>
-        public static SnowflakeGenerator Create(uint workerId, bool lowConcurrency)
-        {
-            return Create(workerId);
         }
 
         /// <summary>

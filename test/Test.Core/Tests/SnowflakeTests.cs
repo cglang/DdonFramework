@@ -10,7 +10,7 @@ namespace Test.Core.Tests
         [TestMethod]
         public void IdGeneratorTest()
         {
-            SnowflakeGenerator snowflake = SnowflakeGenerator.Create(1);
+            var snowflake = SnowflakeGenerator.Init(1);
 
             for (int i = 0; i < 1000; i++)
             {

@@ -7,10 +7,8 @@ using Ddon.Identity.Manager;
 using Ddon.Identity.Options;
 using Ddon.Identity.Permission;
 using Ddon.Identity.Repositories;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace Ddon.Identity
 {
@@ -23,11 +21,7 @@ namespace Ddon.Identity
         {
             Load<CacheModule>(services, configuration);
 
-            services.AddIdentityCore<User<TKey>>()
-                .AddRoles<Role<TKey>>()
-                .AddEntityFrameworkStores<TDbContext>();
-
-            services.AddScoped<UserInfoInitMiddleware<TKey>>();
+            services.AddIdentityCore<User<TKey>>().AddRoles<Role<TKey>>().AddEntityFrameworkStores<TDbContext>();            
 
             services.AddScoped<IIdentityManager<TKey>, IdentityManager<TDbContext, TKey>>();
 
@@ -38,17 +32,13 @@ namespace Ddon.Identity
 
             services.AddScoped<ICurrentUserInfoAccessor<TKey>, CurrentUserInfoAccessor<TKey>>();
 
+            // TODO: perf
             var appSettings = configuration.GetSection(nameof(IdentitySettings)).Get<IdentitySettings>();
             services.AddSingleton(appSettings!);
 
             services.AddScoped<Auth<TKey>>();
 
             services.AddSingleton<IPermissionDefinitionProvider, TPermissions>();
-        }
-
-        public override void HttpMiddleware(IApplicationBuilder app, IHostEnvironment env)
-        {
-            app.UseUserInfoInit<TKey>();
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Ddon.Core;
-using Ddon.Core.Services.Guids;
+using Ddon.Core.Services.IdWorker.Guids;
 using Ddon.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

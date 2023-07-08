@@ -1,13 +1,13 @@
-﻿using Ddon.Domain.UserInfo;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Ddon.Domain.UserInfo;
 using Ddon.Identity.Repositories;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Identity
+namespace Ddon.AspNetCore
 {
     public class UserInfoInitMiddleware<TKey> : IMiddleware where TKey : IEquatable<TKey>
     {

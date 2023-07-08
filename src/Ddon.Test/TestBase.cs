@@ -2,7 +2,6 @@
 using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace Ddon.Test
 {
@@ -15,10 +14,10 @@ namespace Ddon.Test
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             IConfiguration configuration = configurationBuilder.Build();
 
-            var services = new ServiceCollection();
+            IServiceCollection services = new ServiceCollection();
 
-            services.LoadModule<CoreModule>(configuration);
-            services.LoadModule<TModule>(configuration);
+            //services.LoadModule<CoreModule>(configuration);
+            //services.LoadModule<TModule>(configuration);
 
             ServiceProvider = services.BuildServiceProvider().GetService<IServiceProvider>()!;
         }

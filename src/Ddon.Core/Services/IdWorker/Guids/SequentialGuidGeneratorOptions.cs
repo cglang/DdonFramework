@@ -1,4 +1,4 @@
-﻿namespace Ddon.Core.Services.Guids
+﻿namespace Ddon.Core.Services.IdWorker.Guids
 {
     public class SequentialGuidGeneratorOptions
     {

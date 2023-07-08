@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
 
-namespace Ddon.Core.Services.Guids
+namespace Ddon.Core.Services.IdWorker.Guids
 {
     /* This code is taken from jhtodd/SequentialGuid https://github.com/jhtodd/SequentialGuid/blob/master/SequentialGuid/Classes/SequentialGuid.cs */
 
@@ -12,13 +12,26 @@ namespace Ddon.Core.Services.Guids
     /// </summary>
     public class SequentialGuidGenerator : IGuidGenerator
     {
-        public SequentialGuidGeneratorOptions Options { get; }
+        private SequentialGuidGeneratorOptions Options { get; set; }
 
         private static readonly RandomNumberGenerator RandomNumberGenerator = RandomNumberGenerator.Create();
 
         public SequentialGuidGenerator(IOptions<SequentialGuidGeneratorOptions> options)
         {
             Options = options.Value;
+        }
+
+        private SequentialGuidGenerator(SequentialGuidType sequentialGuidType)
+        {
+            Options = new SequentialGuidGeneratorOptions()
+            {
+                DefaultSequentialGuidType = sequentialGuidType
+            };
+        }
+
+        public static SequentialGuidGenerator Init(SequentialGuidType sequentialGuidType = SequentialGuidType.SequentialAtEnd)
+        {
+            return new SequentialGuidGenerator(sequentialGuidType);
         }
 
         public Guid Create()
@@ -51,10 +64,10 @@ namespace Ddon.Core.Services.Guids
             // Using millisecond resolution for our 48-bit timestamp gives us
             // about 5900 years before the timestamp overflows and cycles.
             // Hopefully this should be sufficient for most purposes. :)
-            long timestamp = DateTime.UtcNow.Ticks / 10000L;
+            var timestamp = DateTime.UtcNow.Ticks / 10000L;
 
             // Then get the bytes
-            byte[] timestampBytes = BitConverter.GetBytes(timestamp);
+            var timestampBytes = BitConverter.GetBytes(timestamp);
 
             // Since we're converting from an Int64, we have to reverse on
             // little-endian systems.
@@ -63,7 +76,7 @@ namespace Ddon.Core.Services.Guids
                 Array.Reverse(timestampBytes);
             }
 
-            byte[] guidBytes = new byte[16];
+            var guidBytes = new byte[16];
 
             switch (guidType)
             {

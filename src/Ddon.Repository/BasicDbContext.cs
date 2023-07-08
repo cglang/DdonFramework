@@ -1,5 +1,5 @@
 ﻿using System;
-using Ddon.Core.Services.Guids;
+using Ddon.Core.Services.IdWorker;
 using Ddon.Domain.BaseObject;
 using Ddon.Domain.Entities;
 using Ddon.Repository;
@@ -9,53 +9,21 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Repositiry
 {
-    public class BasicDbContext<TDbContext> : DbContext, IDbContextSoftDelete
-        where TDbContext : DbContext
-    {
-        public BasicDbContext(IServiceProvider serviceProvider, DbContextOptions<TDbContext> options) : base(options)
-        {
-            if (serviceProvider is not null)
-            {
-                var guidGenerator = serviceProvider.GetRequiredService<IGuidGenerator>();
-                BasicDbContext.Initialize(ChangeTracker, guidGenerator);
-            }
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            OnModleSoftDelete(modelBuilder);
-
-            //var multiTenantTypes = modelBuilder.Model.GetEntityTypes().Where(x => typeof(IMultTenant<TKey>).IsAssignableFrom(x.ClrType));
-            //Parallel.ForEach(multiTenantTypes, x =>
-            //{
-            //    modelBuilder.Entity(x.ClrType).AddQueryFilter<IMultTenant<TKey>>(e => e.TenantId.Equals(Tenant.Id));
-            //});
-        }
-
-
-        public void OnModleSoftDelete(ModelBuilder modelBuilder)
-        {
-            DbContextSoftDelete.Builder(modelBuilder);
-        }
-    }
-
 
     public class BasicDbContext
     {
         private readonly ChangeTracker _changeTracker;
-        private readonly IGuidGenerator _guidGenerator;
+        private readonly IIdGenerator _idGenerator;
 
-        public BasicDbContext(ChangeTracker changeTracker, IGuidGenerator guidGenerator)
+        public BasicDbContext(ChangeTracker changeTracker, IIdGenerator guidGenerator)
         {
             _changeTracker = changeTracker;
-            _guidGenerator = guidGenerator;
+            _idGenerator = guidGenerator;
         }
 
-        public static void Initialize(ChangeTracker changeTracker, IGuidGenerator guidGenerator)
+        public static void Initialize(ChangeTracker changeTracker, IIdGenerator idGenerator)
         {
-            new BasicDbContext(changeTracker, guidGenerator).Initialize();
+            new BasicDbContext(changeTracker, idGenerator).Initialize();
         }
 
         public void Initialize()
@@ -96,14 +64,15 @@ namespace Ddon.Repositiry
         {
             if (entry.Entity is IEntity<Guid> entityWithGuidId)
             {
-                if (_guidGenerator != null) entityWithGuidId.Id = _guidGenerator.Create();
-                else entityWithGuidId.Id = Guid.NewGuid();
+                entityWithGuidId.Id = _idGenerator.CreateGuid();
             }
-
-            if (entry.Entity is IEntity<string> entityWithStringId)
+            else if (entry.Entity is IEntity<long> entityWithLongId)
             {
-                if (_guidGenerator != null) entityWithStringId.Id = _guidGenerator.Create().ToString();
-                else entityWithStringId.Id = Guid.NewGuid().ToString();
+                entityWithLongId.Id = _idGenerator.CreateId();
+            }
+            else if (entry.Entity is IEntity<string> entityWithStringId)
+            {
+                entityWithStringId.Id = _idGenerator.CreateGuid().ToString();
             }
 
             if (entry.Entity is IAuditEntity entity)
@@ -128,6 +97,37 @@ namespace Ddon.Repositiry
                 entry.Entity.As<ISoftDelete>().IsDeleted = true;
                 entry.State = EntityState.Modified;
             }
+        }
+    }
+
+    public class BasicDbContext<TDbContext> : DbContext, IDbContextSoftDelete
+        where TDbContext : DbContext
+    {
+        public BasicDbContext(IServiceProvider serviceProvider, DbContextOptions<TDbContext> options) : base(options)
+        {
+            if (serviceProvider is not null)
+            {
+                var idGenerator = serviceProvider.GetRequiredService<IIdGenerator>();
+                BasicDbContext.Initialize(ChangeTracker, idGenerator);
+            }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            OnModleSoftDelete(modelBuilder);
+
+            //var multiTenantTypes = modelBuilder.Model.GetEntityTypes().Where(x => typeof(IMultTenant<TKey>).IsAssignableFrom(x.ClrType));
+            //Parallel.ForEach(multiTenantTypes, x =>
+            //{
+            //    modelBuilder.Entity(x.ClrType).AddQueryFilter<IMultTenant<TKey>>(e => e.TenantId.Equals(Tenant.Id));
+            //});
+        }
+
+        public void OnModleSoftDelete(ModelBuilder modelBuilder)
+        {
+            DbContextSoftDelete.Builder(modelBuilder);
         }
     }
 }

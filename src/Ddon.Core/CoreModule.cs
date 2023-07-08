@@ -1,5 +1,7 @@
 ﻿using System.Runtime;
-using Ddon.Core.Services.Guids;
+using Ddon.Core.Services.IdWorker;
+using Ddon.Core.Services.IdWorker.Guids;
+using Ddon.Core.Services.IdWorker.Snowflake;
 using Ddon.Core.Services.LazyService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +15,19 @@ public class CoreModule : Module
         services.AddAutoInject();
 
         services.AddTransient<ILazyServiceProvider, LazyServiceProvider>();
+
+        var sequentialGuidGeneratorOptions = configuration.GetSection(nameof(SequentialGuidGeneratorOptions)).Get<SequentialGuidGeneratorOptions>() ?? new();
+        services.AddOptions().Configure<SequentialGuidGeneratorOptions>(options =>
+            options.DefaultSequentialGuidType = sequentialGuidGeneratorOptions.GetDefaultSequentialGuidType());
         services.AddTransient<IGuidGenerator, SequentialGuidGenerator>();
+
+        var snowflakeGeneratorOptions = configuration.GetSection(nameof(SnowflakeGeneratorOptions)).Get<SnowflakeGeneratorOptions>() ?? new();
+        services.AddOptions().Configure<SnowflakeGeneratorOptions>(options =>
+            options.WorkerId = snowflakeGeneratorOptions.GetDefaultWorkerId());
+        services.AddTransient<ISnowflakeGenerator, SnowflakeGenerator>();
+
+        services.AddTransient<IIdGenerator, IdGenerator>();
+
         services.AddSingleton<IOSPlatformProvider, OSPlatformProvider>();
     }
 }

@@ -12,12 +12,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Filters"  />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
     <ProjectReference Include="..\Ddon.Identity\Ddon.Identity.csproj" />
+    <ProjectReference Include="..\Ddon.Jwt\Ddon.Jwt.csproj" />
   </ItemGroup>
 
 </Project>

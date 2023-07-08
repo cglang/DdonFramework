@@ -1,4 +1,4 @@
-﻿namespace Ddon.Core.Services.Guids
+﻿namespace Ddon.Core.Services.IdWorker.Guids
 {
     /// <summary>
     /// 顺序 GUID 类型

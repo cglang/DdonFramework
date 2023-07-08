@@ -1,7 +1,6 @@
-﻿using Ddon.Core.Use.Di;
-using System;
+﻿using System;
 
-namespace Ddon.Core.Services.Guids
+namespace Ddon.Core.Services.IdWorker.Guids
 {
     public interface IGuidGenerator
     {

@@ -1,5 +1,5 @@
 ﻿using System;
-using Ddon.Core.Services.Guids;
+using Ddon.Core.Services.IdWorker;
 using Ddon.Identity.Entities;
 using Ddon.Repositiry;
 using Ddon.Repository;
@@ -26,8 +26,8 @@ namespace Ddon.Identity
         {
             if (serviceProvider is not null)
             {
-                var guidGenerator = serviceProvider.GetRequiredService<IGuidGenerator>();
-                BasicDbContext.Initialize(ChangeTracker, guidGenerator);
+                var idGenerator = serviceProvider.GetRequiredService<IIdGenerator>();
+                BasicDbContext.Initialize(ChangeTracker, idGenerator);
             }
         }
 

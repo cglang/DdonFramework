@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Ddon.AspNetCore;
 using Ddon.Core;
 using Ddon.FileStorage.DataBase;
 using Ddon.FileStorage.Service;
@@ -32,8 +33,10 @@ namespace Ddon.FileStorage
             services.AddTransient<DatabaseMigrate>();
         }
 
-        public override void HttpMiddleware(IApplicationBuilder app, IHostEnvironment env)
+        public override void OnApplicationInitialization(ApplicationInitializationContext context)
         {
+            var app = context.GetApplicationBuilder();
+
             var root = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "FileStorage");
             app.UseStaticFiles(new StaticFileOptions
             {

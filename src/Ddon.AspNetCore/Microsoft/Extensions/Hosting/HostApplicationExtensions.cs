@@ -1,20 +1,19 @@
-﻿using Ddon.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Ddon.Core;
 using Ddon.Core.Use.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-// ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.Hosting;
 
 public static class HostApplicationExtensions
 {
-    public static IServiceCollection LoadModule<TMoudle>(this IServiceCollection services,
-        IConfiguration configuration
-    )
+    public static IServiceCollection LoadModule<TMoudle>(
+        this IServiceCollection services,
+        IConfiguration configuration)
         where TMoudle : Module, new()
     {
         var module = new TMoudle();
@@ -26,9 +25,10 @@ public static class HostApplicationExtensions
         return services;
     }
 
-    public static IHostBuilder CreateApplication<TMoudle>(this IHostBuilder hostBuilder,
-        Action<IServiceCollection> configureDelegate
-    ) where TMoudle : Module, new()
+    public static IHostBuilder CreateApplication<TMoudle>(
+        this IHostBuilder hostBuilder,
+        Action<IServiceCollection> configureDelegate)
+        where TMoudle : Module, new()
     {
         hostBuilder.ConfigureServices((_, services) =>
         {
@@ -44,15 +44,17 @@ public static class HostApplicationExtensions
         return hostBuilder;
     }
 
-    public static async Task InitApplicationHttpMiddlewareAsync(this IApplicationBuilder app,
-        IHostEnvironment env)
+    public static async Task InitApplicationInitializationAsync(this IApplicationBuilder app)
     {
+        ObjectAccessor.ApplicationBuilder ??= app;
+
         foreach (var module in ModuleInfo.Instance.Modules)
         {
-            var myMethod = module.GetType().GetMethod(nameof(ModuleCore.HttpMiddleware))!;
-            await DdonInvoke.InvokeAsync(module, myMethod, app, env);
+            var onApplicationInitializationMethod = module.GetType().GetMethod(nameof(ModuleCore.OnApplicationInitialization))!;
+            var context = new ApplicationInitializationContext(app.ApplicationServices);
+            await DdonInvoke.InvokeAsync(module, onApplicationInitializationMethod, context);
         }
-        
+
         ModuleInfo.Instance.Dispose();
     }
 }

@@ -1,9 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Core
 {
@@ -11,14 +9,14 @@ namespace Ddon.Core
     {
         internal readonly HashSet<string> LoadedModule;
 
-        internal readonly HashSet<ModuleCore> Modules;
+        public readonly HashSet<ModuleCore> Modules;
 
         private ModuleInfo()
         {
             LoadedModule = new HashSet<string>();
             Modules = new HashSet<ModuleCore>();
         }
-        
+
         public static readonly ModuleInfo Instance = new Lazy<ModuleInfo>(() => new ModuleInfo()).Value;
 
         private bool _disposed;
@@ -40,7 +38,7 @@ namespace Ddon.Core
 
             LoadedModule.Clear();
             Modules.Clear();
-            
+
             _disposed = true;
         }
     }
@@ -84,7 +82,7 @@ namespace Ddon.Core
             }
         }
 
-        public virtual void HttpMiddleware(IApplicationBuilder app, IHostEnvironment env) { }
+        public virtual void OnApplicationInitialization(ApplicationInitializationContext context) { }
 
         public static bool CacheModule(ModuleCore module)
         {
@@ -106,5 +104,15 @@ namespace Ddon.Core
     {
         public abstract void Load(IServiceCollection services, IConfiguration configuration,
             Action<TOption> optionBuilder);
+    }
+
+    public class ApplicationInitializationContext
+    {
+        public IServiceProvider ServiceProvider { get; set; }
+
+        public ApplicationInitializationContext(IServiceProvider serviceProvider)
+        {
+            ServiceProvider = serviceProvider;
+        }
     }
 }
