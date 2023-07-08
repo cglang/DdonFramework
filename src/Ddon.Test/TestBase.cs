@@ -2,10 +2,11 @@
 using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Ddon.Test
 {
-    public class TestBase<TModule> where TModule : Module, new()
+    public class TestBase<TModule> : IDisposable where TModule : Module, new()
     {
         protected IServiceProvider ServiceProvider { get; }
 
@@ -16,10 +17,15 @@ namespace Ddon.Test
 
             IServiceCollection services = new ServiceCollection();
 
-            //services.LoadModule<CoreModule>(configuration);
-            //services.LoadModule<TModule>(configuration);
+            services.LoadModule<CoreModule>(configuration);
+            services.LoadModule<TModule>(configuration);
 
             ServiceProvider = services.BuildServiceProvider().GetService<IServiceProvider>()!;
+        }
+
+        public void Dispose()
+        {
+            ModuleInfo.Instance.ClearCache();
         }
     }
 }

@@ -7,17 +7,22 @@ namespace Ddon.Core
 {
     public class ModuleInfo : IDisposable
     {
-        internal readonly HashSet<string> LoadedModule;
+        internal readonly HashSet<string> LoadedModuleCache;
 
         public readonly HashSet<ModuleCore> Modules;
 
         private ModuleInfo()
         {
-            LoadedModule = new HashSet<string>();
+            LoadedModuleCache = new HashSet<string>();
             Modules = new HashSet<ModuleCore>();
         }
 
         public static readonly ModuleInfo Instance = new Lazy<ModuleInfo>(() => new ModuleInfo()).Value;
+
+        public void ClearCache()
+        {
+            Instance.LoadedModuleCache.Clear();
+        }
 
         private bool _disposed;
 
@@ -36,7 +41,7 @@ namespace Ddon.Core
 
             if (disposing) { }
 
-            LoadedModule.Clear();
+            LoadedModuleCache.Clear();
             Modules.Clear();
 
             _disposed = true;
@@ -87,9 +92,9 @@ namespace Ddon.Core
         public static bool CacheModule(ModuleCore module)
         {
             var moduleType = module.GetType();
-            if (ModuleInfo.Instance.LoadedModule.Contains(moduleType.FullName ?? moduleType.Name)) return false;
+            if (ModuleInfo.Instance.LoadedModuleCache.Contains(moduleType.FullName ?? moduleType.Name)) return false;
 
-            ModuleInfo.Instance.LoadedModule.Add(moduleType.FullName ?? moduleType.Name);
+            ModuleInfo.Instance.LoadedModuleCache.Add(moduleType.FullName ?? moduleType.Name);
             ModuleInfo.Instance.Modules.Add(module);
             return true;
         }

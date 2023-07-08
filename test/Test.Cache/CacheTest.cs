@@ -7,7 +7,7 @@ namespace Test.Cache
     [TestClass]
     public class CacheTest : TestBase<TestCacheMemoryModule>
     {
-        readonly ICache _cache;
+        private readonly ICache _cache;
 
         public CacheTest()
         {
@@ -17,8 +17,7 @@ namespace Test.Cache
         [TestMethod]
         public void BaseTestMethod()
         {
-            var cache = ServiceProvider.GetRequiredService<ICache>();
-            Assert.IsNotNull(cache);
+            Assert.IsNotNull(_cache);
         }
 
         [TestMethod]
