@@ -4,9 +4,26 @@ namespace Test.Core.TestInvokeClasses
 {
     public class TestClass
     {
-        public async Task<string> MethodAsync(string a) { await Task.Delay(1); return a; }
-        public string MethodSync(string value) => value;
+        public async Task<string> Method1Async(string p)
+        {
+            await Task.CompletedTask;
+            return p;
+        }
 
+        public async Task Method2Async(string _)
+        {
+            await Task.CompletedTask;
+        }
+
+        public string Method1(string p)
+        {
+            return p;
+        }
+
+        public void Method2(string _)
+        {
+            return;
+        }
 
         public int MethodSingleParameterInt(int number) => number;
         public long MethodSingleParameterLong(long number) => number;

@@ -1,4 +1,4 @@
-using Ddon.Core.Use.Reflection;
+﻿using Ddon.Core.Use.Reflection;
 using Ddon.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
@@ -15,17 +15,24 @@ namespace Test.Core.Tests
         /// </summary>
         /// <returns></returns>
         [TestMethod]
-        public async Task TestInvokeBaseSyncOrAsyncMethod()
+        public async Task T2()
         {
             var obj = "result";
 
             // 异步方法测试
-            var result1 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodAsync), obj);
-            Assert.AreEqual(result1, obj);
+            var asyncResult1 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.Method1Async), obj);
+            Assert.AreEqual(asyncResult1, obj);
+
+            var asyncResult2 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.Method2Async), obj);
+            Assert.IsTrue(asyncResult2 == null);
+
 
             // 同步方法测试
-            var result = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.MethodSync), obj);
-            Assert.AreEqual(result, obj);
+            var result1 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.Method1), obj);
+            Assert.AreEqual(result1, obj);
+
+            var result2 = await DdonInvoke.InvokeAsync(nameof(TestClass), nameof(TestClass.Method2), obj);
+            Assert.IsTrue(result2 == null);
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -122,18 +123,34 @@ namespace Ddon.Core.Use.Reflection
         {
             dynamic? invokeResult = method.Invoke(instance, parameter);
 
-            if (method.ReturnType.IsAssignableTo(typeof(Task)))
+            if (IsMethodAsync(method))
             {
                 await invokeResult!;
-                return null;
-            }
-
-            if (method.ReturnType.IsAssignableTo(typeof(Task<>)))
-            {
-                return await invokeResult!;
+                if (HasMethodReturnValue(method))
+                {
+                    return await invokeResult!;
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             return invokeResult;
+        }
+
+        public static bool IsMethodAsync(MethodInfo method)
+        {
+            return method.IsDefined(typeof(AsyncStateMachineAttribute), inherit: false);
+        }
+
+        public static bool HasMethodReturnValue(MethodInfo method)
+        {
+            Type returnType = method.ReturnType;
+
+            return returnType.IsGenericType &&
+                   (returnType.GetGenericTypeDefinition() == typeof(Task<>) ||
+                    returnType.GetGenericTypeDefinition() == typeof(ValueTask<>));
         }
     }
 }
