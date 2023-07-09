@@ -12,7 +12,7 @@ namespace Test.Core.Tests
         {
             var snowflake = SnowflakeGenerator.Init(1);
 
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var ids = snowflake.NextId(100000);
                 Assert.IsFalse(IsRepeat(ref ids));

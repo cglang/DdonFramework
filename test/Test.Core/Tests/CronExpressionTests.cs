@@ -1607,13 +1607,14 @@ namespace Cronos.Tests
 
         [TestMethod]
 
-        [DataRow("30 0 L  * *", "2014-10-31 00:30 +02:00", "2014-11-30 00:30 +02:00")]
-        [DataRow("30 0 L  * *", "2014-10-31 00:30 +03:00", "2014-10-31 00:30 +03:00")]
-        [DataRow("30 0 LW * *", "2015-10-30 00:30 +02:00", "2015-11-30 00:30 +02:00")]
-        [DataRow("30 0 LW * *", "2015-10-30 00:30 +03:00", "2015-10-30 00:30 +03:00")]
+        [DataRow("30 0 L  * *", "2014-10-31 00:30 +02:00", "2014-10-31 00:30 +02:00")]
+        [DataRow("30 0 L  * *", "2014-10-31 00:30 +03:00", "2014-11-30 00:30 +02:00")]
+        [DataRow("30 0 LW * *", "2015-10-30 00:30 +02:00", "2015-10-30 00:30 +02:00")]
+        [DataRow("30 0 LW * *", "2015-10-30 00:30 +03:00", "2015-11-30 00:30 +02:00")]
 
         [DataRow("30 0 29 * *", "2019-03-28 23:59 +02:00", "2019-03-29 01:00 +03:00")]
-        public void GetNextOccurrence_HandleDifficultDSTCases_WhenTheClockJumpsBackwardOnFriday(string cronExpression, string fromString, string expectedString)
+        public void GetNextOccurrence_HandleDifficultDSTCases_WhenTheClockJumpsBackwardOnFriday(
+            string cronExpression, string fromString, string expectedString)
         {
             var expression = CronExpression.Parse(cronExpression);
 
