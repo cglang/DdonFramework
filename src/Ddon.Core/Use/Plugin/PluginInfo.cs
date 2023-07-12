@@ -4,12 +4,12 @@ namespace Ddon.Core.Use.Plugin;
 
 public class PluginInfo
 {
-    public PluginInfo(string name, string version, string author, DateTime lastTime)
+    public PluginInfo(string name, string version, string author)
     {
         Name = name;
         Version = version;
         Author = author;
-        LastTime = lastTime;
+        LoadTime = DateTime.UtcNow;
     }
 
     public string Name { set; get; }
@@ -18,5 +18,5 @@ public class PluginInfo
 
     public string Author { set; get; }
 
-    public DateTime LastTime { set; get; }
+    public DateTime LoadTime { set; get; }
 }

@@ -63,7 +63,7 @@ namespace Test.ConsoleApp
     {
         public PluginInfo GetPluginInformation()
         {
-            return new PluginInfo("测试插件", "0.0.1", "cglang", DateTime.Now);
+            return new PluginInfo("测试插件", "0.0.1", "cglang");
         }
 
         public Task LoadAsync()
