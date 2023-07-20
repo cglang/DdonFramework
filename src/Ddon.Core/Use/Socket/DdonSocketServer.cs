@@ -2,10 +2,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Ddon.TuuTools.Socket.Exceptions;
-using Ddon.TuuTools.Socket.Handler;
+using Ddon.Core.Use.Socket.Exceptions;
 
-namespace Ddon.TuuTools.Socket;
+namespace Ddon.Core.Use.Socket;
 
 public class DdonSocketServer : DdonSocketServerBase
 {
@@ -36,14 +35,14 @@ public class DdonSocketServer : DdonSocketServerBase
                 .BindExceptionHandler(DefaultExceptionHandler)
                 .BindDisconnectHandler(DisconnectHandler);
 
-            await session.SendBytesAsync(session.SocketId.ToByteArray(), 0);
+            //await session.SendBytesAsync(session.SocketId.ToByteArray(), 0);
 
             DdonSocketStorage.Add(session);
 
             if (ConnectHandler != null)
                 await ConnectHandler(session);
-            else
-                throw new Exception();
+
+            session.Start();
         }
     }
 

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ddon.TuuTools.System;
+namespace Ddon.Core.Use.Socket;
 
-public static class DdonArray
+public static class ByteArrayHelper
 {
     /// <summary>
     /// 合并多个byte[]，
@@ -49,7 +49,6 @@ public static class DdonArray
     /// <returns> 返回处理完毕的byte[] </returns>
     public static byte[] ByteCut(Span<byte> bytes, byte cut = 0x00)
     {
-        // TODO : 优化
         List<byte> list = new(bytes.ToArray());
         for (var i = list.Count - 1; i >= 0; i--)
         {

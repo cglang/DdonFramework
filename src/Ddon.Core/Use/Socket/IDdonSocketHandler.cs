@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Ddon.TuuTools.Socket.Exceptions;
+using Ddon.Core.Use.Socket.Exceptions;
 
-namespace Ddon.TuuTools.Socket.Handler
+namespace Ddon.Core.Use.Socket
 {
     public interface IDdonSocketSessionHandler
     {
         Task ExceptionHandler(DdonSocketSession session, DdonSocketException exception);
 
-        Task StringHandler(DdonSocketSession session, string data);
+        Task StringHandler(DdonSocketSession session, string text);
 
         Task ByteHandler(DdonSocketSession session, Memory<byte> data);
 

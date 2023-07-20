@@ -1,10 +1,9 @@
 ﻿using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core.Services.LazyService.Static;
+using Ddon.Core.Use.Socket;
+using Ddon.Core.Use.Socket.Exceptions;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
-using Ddon.TuuTools.Socket;
-using Ddon.TuuTools.Socket.Exceptions;
-using Ddon.TuuTools.System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -164,7 +163,7 @@ namespace Ddon.Socket.Session
                         var methodReturnJsonBytes = JsonSerialize(responseData).GetBytes();
                         var responseHeadBytes = head.Response().GetBytes();
 
-                        DdonArray.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
+                        ByteArrayHelper.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
                         await _conn.SendBytesAsync(sendBytes);
                         break;
                     }
@@ -190,7 +189,7 @@ namespace Ddon.Socket.Session
         {
             var requetBytes = new DdonSocketSessionHeadInfo(default, DdonSocketMode.String, route).GetBytes();
             var dataBytes = JsonSerialize(data).GetBytes();
-            DdonArray.MergeArrays(out byte[] contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
+            ByteArrayHelper.MergeArrays(out byte[] contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
             await _conn.SendBytesAsync(contentBytes);
         }
 
@@ -210,7 +209,7 @@ namespace Ddon.Socket.Session
 
             var requetBytes = new DdonSocketSessionHeadInfo(response.Id, DdonSocketMode.Request, route).GetBytes();
             var dataBytes = JsonSerialize(data).GetBytes();
-            DdonArray.MergeArrays(out var contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
+            ByteArrayHelper.MergeArrays(out var contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
             await _conn.SendBytesAsync(contentBytes);
 
             return await taskCompletion.Task;
@@ -245,7 +244,7 @@ namespace Ddon.Socket.Session
             head.FileName = Path.GetFileName(fileStream.Name);
             var headBytes = head.GetBytes();
 
-            DdonArray.MergeArrays(out var cb, BitConverter.GetBytes(headBytes.Length), head.GetBytes(), await fileStream.ReadAllBytesAsync());
+            ByteArrayHelper.MergeArrays(out var cb, BitConverter.GetBytes(headBytes.Length), head.GetBytes(), await fileStream.ReadAllBytesAsync());
             await _conn.SendBytesAsync(cb);
 
             //var request = new DdonSocketRequest(Guid.NewGuid(), DdonSocketMode.File, route);

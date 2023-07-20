@@ -1,5 +1,5 @@
-﻿using Ddon.Socket.Session;
-using Ddon.TuuTools.Socket.Exceptions;
+﻿using Ddon.Core.Use.Socket.Exceptions;
+using Ddon.Socket.Session;
 using System;
 using System.Threading.Tasks;
 

@@ -1,4 +1,4 @@
-﻿using Ddon.TuuTools.Socket;
+﻿using Ddon.Core.Use.Socket;
 
 namespace Ddon.Socket.Session.Model
 {

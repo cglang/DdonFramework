@@ -1,7 +1,6 @@
 ﻿using System.Net;
-using Ddon.TuuTools.Socket.Handler;
 
-namespace Ddon.TuuTools.Socket;
+namespace Ddon.Core.Use.Socket;
 
 public static class DdonSocket
 {
@@ -9,12 +8,10 @@ public static class DdonSocket
 
     public static DdonSocketServer CreateServer(int port) => new(IPAddress.Loopback, port);
 
-    public static DdonSocketSession CreateClient(string serverhost, int port) => new(serverhost, port);
-
-    public static DdonSocketServer CreateServer<THandlerProvider>(string host, int port)
-        where THandlerProvider : IDdonSocketServerHandler, new()
+    public static DdonSocketServer CreateServer<TSocketHandler>(string host, int port)
+        where TSocketHandler : IDdonSocketServerHandler, new()
     {
-        var handle = new THandlerProvider();
+        var handle = new TSocketHandler();
 
         var server = CreateServer(host, port);
         server.BindConnectHandler(handle.ConnectHandler)
@@ -26,10 +23,10 @@ public static class DdonSocket
         return server;
     }
 
-    public static DdonSocketServer CreateServer<THandlerProvider>(int port)
-        where THandlerProvider : IDdonSocketServerHandler, new()
+    public static DdonSocketServer CreateServer<TSocketHandler>(int port)
+        where TSocketHandler : IDdonSocketServerHandler, new()
     {
-        var handle = new THandlerProvider();
+        var handle = new TSocketHandler();
 
         var server = CreateServer(port);
         server.BindConnectHandler(handle.ConnectHandler)
@@ -41,10 +38,12 @@ public static class DdonSocket
         return server;
     }
 
-    public static DdonSocketSession CreateClient<THandlerProvider>(string serverhost, int port)
-        where THandlerProvider : IDdonSocketSessionHandler, new()
+    public static DdonSocketSession CreateClient(string serverhost, int port) => new(serverhost, port);
+
+    public static DdonSocketSession CreateClient<TSocketHandler>(string serverhost, int port)
+        where TSocketHandler : IDdonSocketSessionHandler, new()
     {
-        var handle = new THandlerProvider();
+        var handle = new TSocketHandler();
 
         var client = CreateClient(serverhost, port);
         client.BindStringHandler(handle.StringHandler)

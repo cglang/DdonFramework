@@ -3,11 +3,9 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Ddon.TuuTools.Socket.Exceptions;
-using Ddon.TuuTools.Socket.Handler;
-using Ddon.TuuTools.System;
+using Ddon.Core.Use.Socket.Exceptions;
 
-namespace Ddon.TuuTools.Socket;
+namespace Ddon.Core.Use.Socket;
 
 public class DdonSocketSession : DdonSocketSessionBase, IDisposable
 {
@@ -16,12 +14,18 @@ public class DdonSocketSession : DdonSocketSessionBase, IDisposable
     public DdonSocketSession(TcpClient tcpClient) : base(tcpClient.GetStream())
     {
         _tcpClient = tcpClient;
+
+        var data = new byte[16];
+        tcpClient.GetStream().Read(data);
+        SocketId = new Guid(data);
     }
 
     public DdonSocketSession(TcpClient tcpClient, Guid socketId) : base(tcpClient.GetStream())
     {
         _tcpClient = tcpClient;
+        
         SocketId = socketId;
+        tcpClient.GetStream().Write(SocketId.ToByteArray());       
     }
 
     public DdonSocketSession(string host, int port) : this(new TcpClient(host, port)) { }
@@ -54,7 +58,7 @@ public class DdonSocketSession : DdonSocketSessionBase, IDisposable
                 catch (Exception ex)
                 {
                     if (ExceptionHandler != null)
-                        await ExceptionHandler(this, new(ex, this.SocketId));
+                        await ExceptionHandler(this, new(ex, SocketId));
                 }
             }
         }
@@ -86,8 +90,7 @@ public class DdonSocketSession : DdonSocketSessionBase, IDisposable
             return StringHandler(this, Encoding.UTF8.GetString(data.Span));
         }
         else
-        {
-            SocketId = new Guid(data.Span);
+        {            
             return Task.CompletedTask;
         }
     }
@@ -140,7 +143,7 @@ public class DdonSocketSession : DdonSocketSessionBase, IDisposable
 
         public byte[] GetBytes()
         {
-            DdonArray.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
+            ByteArrayHelper.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
             return bytes;
         }
 

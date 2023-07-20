@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using Ddon.Core;
+using Ddon.Core.Use.Reflection;
 using Ddon.EventBus.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,14 +15,11 @@ public class ScheduledModule : Module
         services.AddHostedService<ScheduledHostService>();
         services.AddScoped<ScheduledService>();
 
-        var baseType = typeof(IScheduled);
+        var implementTypes = AssemblyHelper.FindImplementType(typeof(IScheduled), AppDomain.CurrentDomain.GetAssemblies());
 
-        var implementTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes())
-            .Where(type => type != baseType && baseType.IsAssignableFrom(type) && type.IsClass).ToList();
-
-        implementTypes.ForEach(implementType =>
+        foreach (var implementType in implementTypes)
         {
             services.AddScoped(implementType);
-        });
+        }
     }
 }

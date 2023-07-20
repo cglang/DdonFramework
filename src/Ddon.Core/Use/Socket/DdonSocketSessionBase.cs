@@ -2,10 +2,9 @@
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.TuuTools.Socket.Exceptions;
-using Ddon.TuuTools.System;
+using Ddon.Core.Use.Socket.Exceptions;
 
-namespace Ddon.TuuTools.Socket.Handler
+namespace Ddon.Core.Use.Socket
 {
     public abstract class DdonSocketSessionHandlerBase : IDdonSocketSessionBindHandler
     {
@@ -67,7 +66,7 @@ namespace Ddon.TuuTools.Socket.Handler
             var lengthByte = BitConverter.GetBytes(data.Length);
             var typeByte = new[] { (byte)type };
 
-            DdonArray.MergeArrays(out byte[] contentBytes, lengthByte, typeByte, data);
+            ByteArrayHelper.MergeArrays(out var contentBytes, lengthByte, typeByte, data);
             return Stream.WriteAsync(contentBytes);
         }
 
@@ -80,35 +79,5 @@ namespace Ddon.TuuTools.Socket.Handler
         {
             return SendBytesAsync(data.GetBytes(), DataType.Text);
         }
-    }
-
-    public abstract class DdonSocketServerBase : DdonSocketSessionHandlerBase, IDdonSocketServerBindHandler
-    {
-        protected Func<DdonSocketSession, Task>? ConnectHandler;
-
-        public IDdonSocketServerBindHandler BindConnectHandler(Func<DdonSocketSession, Task>? connectHandler)
-        {
-            ConnectHandler += connectHandler;
-            return this;
-        }
-
-        public void Start() => Task<Task>.Factory.StartNew(Function, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-
-        public Task StartAsync() => Function();
-
-        protected abstract Task Function();
-    }
-
-    public interface IDdonSocketSession
-    {
-        Guid SocketId { get; }
-
-        void Start();
-
-        Task StartAsync();
-
-        ValueTask SendBytesAsync(byte[] data, DataType type = DataType.Byte);
-
-        ValueTask SendStringAsync(string data);
     }
 }

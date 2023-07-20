@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Ddon.TuuTools.Socket.Exceptions;
+using Ddon.Core.Use.Socket.Exceptions;
 
-namespace Ddon.TuuTools.Socket.Handler
+namespace Ddon.Core.Use.Socket
 {
     public interface IDdonSocketSessionBindHandler
     {
@@ -15,8 +15,16 @@ namespace Ddon.TuuTools.Socket.Handler
         IDdonSocketSessionBindHandler BindDisconnectHandler(Func<DdonSocketSession, Task>? disconnectHandler);
     }
 
-    public interface IDdonSocketServerBindHandler : IDdonSocketSessionBindHandler
+    public interface IDdonSocketServerBindHandler
     {
+        IDdonSocketServerBindHandler BindByteHandler(Func<DdonSocketSession, Memory<byte>, Task>? byteHandler);
+
+        IDdonSocketServerBindHandler BindStringHandler(Func<DdonSocketSession, string, Task>? stringHandler);
+
+        IDdonSocketServerBindHandler BindExceptionHandler(Func<DdonSocketSession, DdonSocketException, Task>? exceptionHandler);
+
+        IDdonSocketServerBindHandler BindDisconnectHandler(Func<DdonSocketSession, Task>? disconnectHandler);
+
         IDdonSocketServerBindHandler BindConnectHandler(Func<DdonSocketSession, Task>? connectHandler);
     }
 }

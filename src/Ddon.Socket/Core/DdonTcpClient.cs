@@ -4,11 +4,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Ddon.Core.Use.Socket;
 using Ddon.Socket.Core.Enums;
 using Ddon.Socket.Core.Handle;
-using Ddon.TuuTools.Socket;
 using Ddon.TuuTools.Socket.Exceptions;
-using Ddon.TuuTools.System;
 
 namespace Ddon.Socket.Core;
 
@@ -44,7 +43,7 @@ public abstract class DdonTcpClientBase : IDdonTcpClient
         var lengthByte = BitConverter.GetBytes(data.Length);
         var typeByte = new[] { (byte)type };
 
-        DdonArray.MergeArrays(out byte[] contentBytes, lengthByte, typeByte, data);
+        ByteArrayHelper.MergeArrays(out byte[] contentBytes, lengthByte, typeByte, data);
         return Stream.WriteAsync(contentBytes, cancellationToken);
     }
 
@@ -161,7 +160,7 @@ public class DdonTcpClient : DdonTcpClientBase
 
         public byte[] GetBytes()
         {
-            DdonArray.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
+            ByteArrayHelper.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
             return bytes;
         }
 

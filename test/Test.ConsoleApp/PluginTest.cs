@@ -1,10 +1,6 @@
-﻿using System.IO;
-using System.Runtime.Serialization;
-using System.Xml.Linq;
-using Ddon.Core.Use.Plugin;
+﻿using Ddon.Core.Use.Plugin;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 
 namespace Test.ConsoleApp
@@ -19,7 +15,7 @@ namespace Test.ConsoleApp
 
             IOptions<PluginOptions> options = Options.Create(new PluginOptions("plugin"));
 
-            IPluginFileListenerServer fileL = new PluginFileListenerServer(new ConsoleLogger("test"), options);
+            IPluginFileListenerServer fileL = new PluginFileListenerServer(new ConsoleLogger("test"), options, new PluginsLoader());
 
             fileL.Start();
 

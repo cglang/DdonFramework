@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Ddon.TuuTools.Socket.Exceptions;
+using Ddon.Core.Use.Socket.Exceptions;
 
 namespace Ddon.Socket.Core.Handle
 {
