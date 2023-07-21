@@ -2,7 +2,7 @@
 
 namespace Ddon.Socket.Session
 {
-    internal class DdonSocketResponseHandler
+    internal class DdonSocketResponse
     {
         public Guid Id { get; }
 
@@ -11,7 +11,7 @@ namespace Ddon.Socket.Session
         public Action<string> ActionThen;
         public Action<string> ExceptionThen;
 
-        public DdonSocketResponseHandler(Action<string> action, Action<string> exception)
+        public DdonSocketResponse(Action<string> action, Action<string> exception)
         {
             Id = Guid.NewGuid();
 

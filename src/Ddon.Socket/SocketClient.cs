@@ -1,90 +1,61 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Threading.Tasks;
-using Ddon.Core.Services.LazyService.Static;
-using Ddon.Core.Use.Socket.Exceptions;
+using Ddon.Core.Use.Socket;
+using Ddon.Socket.Handler;
+using Ddon.Socket.Options;
 using Ddon.Socket.Session;
-using Ddon.Socket.Session.Route;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Socket
 {
-    public class SocketClient<TDdonSocketRouteMapLoadBase> where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
+    public class SocketClient : SocketCoreSession
     {
-        private IServiceProvider ServiceProvider => LazyServiceProvider.LazyServicePrivider.ServiceProvider;
-        private ILogger Logger => ServiceProvider.GetRequiredService<ILogger<SocketClient<TDdonSocketRouteMapLoadBase>>>();
+        private readonly SocketClientOption _option;
+        private readonly ILogger<SocketClient> _logger;
 
-        protected SocketSession Session { get; set; }
-
-        private readonly string _host;
-        private readonly int _post;
-
-        protected SocketClient(string host, int post, bool isReconnection)
+        public SocketClient(SocketClientOption option, SocketSessionHandler handle, ILogger<SocketClient> logger) : base(option.Host, option.Port)
         {
-            _host = host;
-            _post = post;
+            BindStringHandler(handle.StringHandler);
+            BindByteHandler(handle.ByteHandler);
+            BindDisconnectHandler(handle.DisconnectHandler);
+            BindExceptionHandler(handle.ExceptionHandler);
 
-            if (isReconnection)
-            {
-                ExceptionHandler += ReconnectionHandler;
-            }
-            ExceptionHandler += DefaultExceptionHandler;
+            if (option.IsReconnection)
+                BindDisconnectHandler(ReconnectionHandler);
 
-            //Session = new SocketSession2(new TcpClient(host, post), ExceptionHandler);
+            _option = option;
+            _logger = logger;
         }
 
-        public static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post, bool isReconnection = true)
+        public new Task StartAsync()
         {
-            LazyServiceProvider.InitServiceProvider(serviceProvider);
-            DdonSocketRouteMap.Init<TDdonSocketRouteMapLoadBase>();
-            var t = new SocketClient<TDdonSocketRouteMapLoadBase>(host, post, isReconnection);
-            return t.Session;
+            DdonSocketResponsePool.Start();
+            return base.StartAsync();
         }
 
-        private Func<SocketSession, DdonSocketException, Task> ExceptionHandler { get; }
-
-        private Func<SocketSession, DdonSocketException, Task> DefaultExceptionHandler => async (conn, ex) =>
+        public new void Start()
         {
-            if (ex.InnerException is ObjectDisposedException)
-            {
-                Logger?.LogWarning(ex.InnerException, "远程连接已断开");
-            }
-            else
-            {
-                Logger?.LogError(ex, "Scoket 异常");
-                await Task.CompletedTask;
-            }
-        };
+            DdonSocketResponsePool.Start();
+            base.Start();
+        }
 
-        private Func<SocketSession, DdonSocketException, Task> ReconnectionHandler => async (a, b) =>
+        private Func<SocketCoreSession, Task> ReconnectionHandler => async session =>
         {
             for (int number = 1; ; number++)
             {
                 try
                 {
-                    //Session = new SocketSession2(new TcpClient(_host, _post), ExceptionHandler);
-                    Logger?.LogInformation("断线重连成功,重试次数:{0}", number);
+                    _tcpClient = new TcpClient(_option.Host, _option.Port);
+                    _logger.LogInformation("断线重连成功,重试次数:{number}", number);
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Logger?.LogWarning(ex, "正在尝试断线重连,已重试次数:{0}", number);
+                    _logger.LogWarning(ex, "正在尝试断线重连,已重试次数:{number}", number);
                     await Task.Delay(100);
                 }
             }
         };
-    }
-
-    public class SocketClient : SocketClient<DeafultDdonSocketRouteMap>
-    {
-        protected SocketClient(string host, int post, bool isReconnection) : base(host, post, isReconnection) { }
-
-        public new static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post, bool isReconnection = true)
-        {
-            LazyServiceProvider.InitServiceProvider(serviceProvider);
-            DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();
-            var t = new SocketClient(host, post, isReconnection);
-            return t.Session;
-        }
     }
 }

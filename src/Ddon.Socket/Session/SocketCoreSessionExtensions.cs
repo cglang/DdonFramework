@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Unicode;
 using System.Threading.Tasks;
 using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core.Use.Socket;
@@ -12,28 +8,20 @@ using Ddon.Socket.Session.Model;
 
 namespace Ddon.Socket.Session
 {
-    public class SocketSession
+    public static class SocketCoreSessionExtensions
     {
-        public Guid SessionId { get; internal set; }
-        private readonly DdonSocketSession _conn;
-
-        public SocketSession(DdonSocketSession socketSession)
-        {
-            _conn = socketSession;
-        }
-
         /// <summary>
         /// 发送数据
         /// </summary>
         /// <param name="route">路由</param>
         /// <param name="data">数据</param>
         /// <returns></returns>
-        public async Task SendAsync(string route, object data)
+        public static async Task SendAsync(this SocketCoreSession session, string route, object data)
         {
             var requetBytes = new DdonSocketSessionHeadInfo(default, DdonSocketMode.String, route).GetBytes();
             var dataBytes = SerializeHelper.JsonSerialize(data).GetBytes();
             ByteArrayHelper.MergeArrays(out var contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
-            await _conn.SendBytesAsync(contentBytes);
+            await session.SendBytesAsync(contentBytes);
         }
 
         /// <summary>
@@ -43,17 +31,17 @@ namespace Ddon.Socket.Session
         /// <param name="data">数据</param>
         /// <returns></returns>
         /// <exception cref="DdonSocketRequestException">请求超时异样</exception>
-        private async Task<string> RequestAsync(string route, object data)
+        private static async Task<string> RequestAsync(this SocketCoreSession session, string route, object data)
         {
             var taskCompletion = new TaskCompletionSource<string>();
 
-            var response = new DdonSocketResponseHandler(taskCompletion.SetResult, _ => taskCompletion.SetException(new DdonSocketRequestException("请求超时")));
+            var response = new DdonSocketResponse(taskCompletion.SetResult, _ => taskCompletion.SetException(new DdonSocketRequestException("请求超时")));
             DdonSocketResponsePool.Add(response);
 
             var requetBytes = new DdonSocketSessionHeadInfo(response.Id, DdonSocketMode.Request, route).GetBytes();
             var dataBytes = SerializeHelper.JsonSerialize(data).GetBytes();
             ByteArrayHelper.MergeArrays(out var contentBytes, BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
-            await _conn.SendBytesAsync(contentBytes);
+            await session.SendBytesAsync(contentBytes);
 
             return await taskCompletion.Task;
         }
@@ -65,9 +53,9 @@ namespace Ddon.Socket.Session
         /// <param name="data">数据</param>
         /// <returns></returns>
         /// <exception cref="DdonSocketRequestException">进行Socket请求是发生异常</exception>
-        public async Task<T?> RequestAsync<T>(string route, object data)
+        public static async Task<T?> RequestAsync<T>(this SocketCoreSession session, string route, object data)
         {
-            var resData = await RequestAsync(route, data);
+            var resData = await session.RequestAsync(route, data);
             try
             {
                 return SerializeHelper.JsonDeserialize<T>(resData);

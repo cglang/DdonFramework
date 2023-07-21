@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ddon.Core.Use.Socket;
 
 namespace Ddon.Socket.Session
 {
@@ -10,22 +11,22 @@ namespace Ddon.Socket.Session
 
         public static SessionStorage Instance = new Lazy<SessionStorage>(() => new SessionStorage()).Value;
 
-        private readonly Dictionary<Guid, SocketSession> Pairs = new();
+        private readonly Dictionary<Guid, SocketCoreSession> Pairs = new();
 
-        public IEnumerable<SocketSession> Sessions => Pairs.Values;
+        public IEnumerable<SocketCoreSession> Sessions => Pairs.Values;
 
 
-        public SocketSession? GetClient(Guid sessionId)
+        public SocketCoreSession? GetClient(Guid sessionId)
         {
             return Pairs.ContainsKey(sessionId) ? Pairs[sessionId] : null;
         }
 
-        public IEnumerable<SocketSession>? GetClients(IEnumerable<Guid> sessionIds)
+        public IEnumerable<SocketCoreSession>? GetClients(IEnumerable<Guid> sessionIds)
         {
             return Pairs.Values.Where(x => sessionIds.Contains(x.SessionId));
         }
 
-        public void Add(SocketSession session)
+        public void Add(SocketCoreSession session)
         {
             if (!Pairs.ContainsKey(session.SessionId))
                 Pairs.Add(session.SessionId, session);

@@ -1,4 +1,5 @@
 ﻿using Ddon.Socket;
+using Ddon.Socket.Session;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -9,10 +10,12 @@ namespace Test.SocketApplication.Client.Controllers
     public class WeatherForecastController : ControllerBase
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly SocketClientFactory socketClientFactory;
 
-        public WeatherForecastController(IServiceProvider serviceProvider)
+        public WeatherForecastController(IServiceProvider serviceProvider, SocketClientFactory socketClientFactory)
         {
             _serviceProvider = serviceProvider;
+            this.socketClientFactory = socketClientFactory;
         }
 
         /// <summary>
@@ -26,7 +29,7 @@ namespace Test.SocketApplication.Client.Controllers
             var data = new { Count = 1000 };
             var json = JsonSerializer.Serialize(data);
 
-            using var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
+            var client = socketClientFactory.Create();
 
             var aaa = await client.RequestAsync<string>(route, data);
             //Console.WriteLine(aaa);
@@ -38,10 +41,10 @@ namespace Test.SocketApplication.Client.Controllers
         [HttpGet("SendFile")]
         public async Task<IEnumerable<int>> Get3(string filepath)
         {
-            using var client = SocketClient.CreateClient(_serviceProvider, "127.0.0.1", 2222);
+            var client = socketClientFactory.Create();
 
             var route = "OpenSocketApi::ReceiveFile";
-            await client.SendFileAsync(route, filepath);
+            //await client.SendFileAsync(route, filepath);
 
             return Enumerable.Range(1, 5);
         }

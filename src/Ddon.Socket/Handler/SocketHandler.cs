@@ -12,23 +12,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Ddon.Socket.Handler;
 
-public class SocketServerHandler : IDdonSocketServerHandler
+public class SocketSessionHandler : ISocketCoreSessionHandler
 {
-    private readonly ILogger<SocketServerHandler> _logger;
-    private readonly DdonSocketInvoke _socketInvoke;
+    protected ILogger<SocketServerHandler> Logger { get; }
+    protected DdonSocketInvoke SocketInvoke { get; }
 
-    public SocketServerHandler(ILogger<SocketServerHandler> logger, DdonSocketInvoke socketInvoke)
+    public SocketSessionHandler(ILogger<SocketServerHandler> logger, DdonSocketInvoke socketInvoke)
     {
-        _logger = logger;
-        _socketInvoke = socketInvoke;
+        Logger = logger;
+        SocketInvoke = socketInvoke;
     }
 
-    public Task StringHandler(DdonSocketSession session, string text)
+    public Task StringHandler(SocketCoreSession session, string text)
     {
         throw new NotImplementedException();
     }
 
-    public async Task ByteHandler(DdonSocketSession session, Memory<byte> bytes)
+    public async Task ByteHandler(SocketCoreSession session, Memory<byte> bytes)
     {
         try
         {
@@ -51,13 +51,13 @@ public class SocketServerHandler : IDdonSocketServerHandler
                 case DdonSocketMode.String:
                     {
                         var data = Encoding.UTF8.GetString(dataBytes.Span);
-                        await _socketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, session, head);
+                        await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, session, head);
                         break;
                     }
                 case DdonSocketMode.Byte:
                     {
                         var data = Encoding.UTF8.GetString(dataBytes.Span);
-                        await _socketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, session, head);
+                        await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, session, head);
                         break;
                     }
                 case DdonSocketMode.File:
@@ -65,12 +65,12 @@ public class SocketServerHandler : IDdonSocketServerHandler
                         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File", DateTime.UtcNow.ToString("yyyy-MM-dd"));
                         Directory.CreateDirectory(filePath);
 
-                        var fullName = Path.Combine(filePath, $"{session.SocketId}.{DateTime.UtcNow:mmssffff}.{head.FileName ?? string.Empty}");
+                        var fullName = Path.Combine(filePath, $"{session.SessionId}.{DateTime.UtcNow:mmssffff}.{head.FileName ?? string.Empty}");
                         await using var fileStream = new FileStream(fullName, FileMode.CreateNew);
                         fileStream.Write(dataBytes.Span);
                         fileStream.Close();
 
-                        await _socketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, fullName, session, head);
+                        await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, fullName, session, head);
 
 
                         break;
@@ -78,7 +78,7 @@ public class SocketServerHandler : IDdonSocketServerHandler
                 case DdonSocketMode.Request:
                     {
                         var jsonData = Encoding.UTF8.GetString(dataBytes.Span);
-                        var methodReturn = await _socketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, session, head);
+                        var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, session, head);
 
                         var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
                         var methodReturnJsonBytes = SerializeHelper.JsonSerialize(responseData).GetBytes();
@@ -96,23 +96,16 @@ public class SocketServerHandler : IDdonSocketServerHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "ByteHandler 错误");
+            Logger.LogError(ex, "ByteHandler 错误");
         }
     }
 
-    public Task ConnectHandler(DdonSocketSession session)
-    {
-        // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
-        SessionStorage.Instance.Add(new SocketSession(session));
-        return Task.CompletedTask;
-    }
-
-    public Task DisconnectHandler(DdonSocketSession session)
+    public Task DisconnectHandler(SocketCoreSession session)
     {
         throw new NotImplementedException();
     }
 
-    public Task ExceptionHandler(DdonSocketSession session, DdonSocketException exception)
+    public Task ExceptionHandler(SocketCoreSession session, SocketException exception)
     {
         throw new NotImplementedException();
     }
@@ -147,5 +140,19 @@ public class SocketServerHandler : IDdonSocketServerHandler
         }
 
         DdonSocketResponsePool.Remove(id);
+    }
+}
+
+public class SocketServerHandler : SocketSessionHandler, ISocketCoreServerHandler
+{
+    public SocketServerHandler(ILogger<SocketServerHandler> logger, DdonSocketInvoke socketInvoke) : base(logger, socketInvoke)
+    {
+    }
+
+    public Task ConnectHandler(SocketCoreSession session)
+    {
+        // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
+        SessionStorage.Instance.Add(session);
+        return Task.CompletedTask;
     }
 }

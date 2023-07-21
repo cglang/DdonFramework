@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace Ddon.Core.Use.Socket
 {
-    public interface IDdonSocketSession
+    public interface ISocketCoreSession
     {
-        Guid SocketId { get; }
+        Guid SessionId { get; }
 
         void Start();
 

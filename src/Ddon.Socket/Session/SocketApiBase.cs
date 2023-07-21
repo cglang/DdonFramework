@@ -5,7 +5,7 @@ namespace Ddon.Socket.Session
 {
     public abstract class SocketApiBase
     {
-        public DdonSocketSession? Session { get; set; }
+        public Core.Use.Socket.SocketCoreSession? Session { get; set; }
 
         public DdonSocketSessionHeadInfo? Head { get; set; }
     }

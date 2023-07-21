@@ -21,7 +21,7 @@ namespace Ddon.Socket
             string className,
             string methodName,
             string parameter,
-            DdonSocketSession connection,
+            Core.Use.Socket.SocketCoreSession connection,
             DdonSocketSessionHeadInfo head)
         {
             using var scope = services.CreateScope();
@@ -41,7 +41,7 @@ namespace Ddon.Socket
             string className,
             string methodName,
             T parameter,
-            DdonSocketSession connection,
+            Core.Use.Socket.SocketCoreSession connection,
             DdonSocketSessionHeadInfo head) where T : notnull
         {
             using var scope = services.CreateScope();

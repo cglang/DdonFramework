@@ -3,37 +3,30 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Ddon.Core.Use.Socket.Exceptions;
 
 namespace Ddon.Core.Use.Socket;
 
-public class DdonSocketSession : DdonSocketSessionBase, IDisposable
-{
-    private readonly TcpClient _tcpClient;
-
-    public DdonSocketSession(TcpClient tcpClient) : base(tcpClient.GetStream())
+public class SocketCoreSession : SocketCoreSessionBase
+{    
+    public SocketCoreSession(TcpClient tcpClient) : base(tcpClient)
     {
-        _tcpClient = tcpClient;
-
         var data = new byte[16];
         tcpClient.GetStream().Read(data);
-        SocketId = new Guid(data);
+        SessionId = new Guid(data);
     }
 
-    public DdonSocketSession(TcpClient tcpClient, Guid socketId) : base(tcpClient.GetStream())
+    public SocketCoreSession(TcpClient tcpClient, Guid socketId) : base(tcpClient)
     {
-        _tcpClient = tcpClient;
-        
-        SocketId = socketId;
-        tcpClient.GetStream().Write(SocketId.ToByteArray());       
+        SessionId = socketId;
+        tcpClient.GetStream().Write(SessionId.ToByteArray());
     }
 
-    public DdonSocketSession(string host, int port) : this(new TcpClient(host, port)) { }
+    public SocketCoreSession(string host, int port) : this(new TcpClient(host, port)) { }
 
-    public DdonSocketSession(
+    public SocketCoreSession(
         TcpClient tcpClient,
-        Func<DdonSocketSession, Memory<byte>, Task>? byteHandler,
-        Func<DdonSocketSession, DdonSocketException, Task>? exceptionHandler = null) : this(tcpClient)
+        Func<SocketCoreSession, Memory<byte>, Task>? byteHandler,
+        Func<SocketCoreSession, Exceptions.SocketException, Task>? exceptionHandler = null) : this(tcpClient)
     {
         ByteHandler += byteHandler;
         ExceptionHandler += exceptionHandler;
@@ -58,7 +51,7 @@ public class DdonSocketSession : DdonSocketSessionBase, IDisposable
                 catch (Exception ex)
                 {
                     if (ExceptionHandler != null)
-                        await ExceptionHandler(this, new(ex, SocketId));
+                        await ExceptionHandler(this, new(ex, SessionId));
                 }
             }
         }
@@ -68,7 +61,7 @@ public class DdonSocketSession : DdonSocketSessionBase, IDisposable
 
             if (ExceptionHandler != null)
             {
-                var socketEx = new DdonSocketException(ex, SocketId);
+                var socketEx = new Exceptions.SocketException(ex, SessionId);
                 await ExceptionHandler(this, socketEx);
             }
 
@@ -90,45 +83,10 @@ public class DdonSocketSession : DdonSocketSessionBase, IDisposable
             return StringHandler(this, Encoding.UTF8.GetString(data.Span));
         }
         else
-        {            
+        {
             return Task.CompletedTask;
         }
     }
-
-    #region Dispose
-
-    private bool _disposed;
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            // 清理托管资源
-            Stream.Dispose();
-            _tcpClient.Close();
-            _tcpClient.Dispose();
-        }
-
-        // 清理非托管资源
-        ByteHandler = null;
-        ExceptionHandler = null;
-        StringHandler = null;
-
-        _disposed = true;
-    }
-
-    #endregion
 
     private readonly struct Head
     {

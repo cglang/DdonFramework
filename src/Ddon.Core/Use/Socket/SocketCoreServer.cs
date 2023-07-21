@@ -2,20 +2,19 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Ddon.Core.Use.Socket.Exceptions;
 
 namespace Ddon.Core.Use.Socket;
 
-public class DdonSocketServer : DdonSocketServerBase
+public class SocketCoreServer : SocketCoreServerBase
 {
     private readonly TcpListener _listener;
 
-    public DdonSocketServer(string host, int port)
+    public SocketCoreServer(string host, int port)
     {
         _listener = new TcpListener(IPAddress.Parse(host), port);
     }
 
-    public DdonSocketServer(IPAddress ipAddress, int port)
+    public SocketCoreServer(IPAddress ipAddress, int port)
     {
         _listener = new TcpListener(ipAddress, port);
     }
@@ -27,7 +26,7 @@ public class DdonSocketServer : DdonSocketServerBase
         {
             var client = await _listener.AcceptTcpClientAsync();
 
-            var session = new DdonSocketSession(client, Guid.NewGuid());
+            var session = new SocketCoreSession(client, Guid.NewGuid());
 
             session.BindByteHandler(ByteHandler)
                 .BindStringHandler(StringHandler)
@@ -35,9 +34,7 @@ public class DdonSocketServer : DdonSocketServerBase
                 .BindExceptionHandler(DefaultExceptionHandler)
                 .BindDisconnectHandler(DisconnectHandler);
 
-            //await session.SendBytesAsync(session.SocketId.ToByteArray(), 0);
-
-            DdonSocketStorage.Add(session);
+            SocketStorage.Add(session);
 
             if (ConnectHandler != null)
                 await ConnectHandler(session);
@@ -46,9 +43,9 @@ public class DdonSocketServer : DdonSocketServerBase
         }
     }
 
-    private static readonly Func<DdonSocketSession, DdonSocketException, Task>? DefaultExceptionHandler = (_, ex) =>
+    private static readonly Func<SocketCoreSession, Exceptions.SocketException, Task>? DefaultExceptionHandler = (_, ex) =>
     {
-        DdonSocketStorage.Remove(ex.SocketId);
+        SocketStorage.Remove(ex.SocketId);
         return Task.CompletedTask;
     };
 }

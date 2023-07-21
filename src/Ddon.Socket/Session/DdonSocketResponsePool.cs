@@ -10,7 +10,7 @@ namespace Ddon.Socket.Session
     /// </summary>
     internal class DdonSocketResponsePool
     {
-        internal static void Add(DdonSocketResponseHandler ddonSocketResponseHandler)
+        internal static void Add(DdonSocketResponse ddonSocketResponseHandler)
         {
             Datas.Instance.Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
             Datas.Instance.DelayQueue.Add(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(10));
@@ -18,7 +18,7 @@ namespace Ddon.Socket.Session
 
         internal static bool ContainsKey(Guid id) => Datas.Instance.Pairs.ContainsKey(id);
 
-        internal static DdonSocketResponseHandler Get(Guid id) => Datas.Instance.Pairs[id];
+        internal static DdonSocketResponse Get(Guid id) => Datas.Instance.Pairs[id];
 
         internal static void Remove(Guid id) => Datas.Instance.Pairs.Remove(id);
 
@@ -36,7 +36,7 @@ namespace Ddon.Socket.Session
 
             public static Datas Instance = new Lazy<Datas>(() => new Datas()).Value;
 
-            public readonly Dictionary<Guid, DdonSocketResponseHandler> Pairs;
+            public readonly Dictionary<Guid, DdonSocketResponse> Pairs;
             public readonly DelayQueue<Guid> DelayQueue;
 
             internal void Start()

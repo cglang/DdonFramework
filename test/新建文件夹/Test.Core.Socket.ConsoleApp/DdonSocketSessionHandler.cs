@@ -2,24 +2,24 @@
 using Ddon.Core.Use.Socket;
 using Ddon.Core.Use.Socket.Exceptions;
 
-class DdonSocketSessionHandler : IDdonSocketSessionHandler
+class DdonSocketSessionHandler : ISocketCoreSessionHandler
 {
-    public Task ByteHandler(DdonSocketSession session, Memory<byte> data)
+    public Task ByteHandler(SocketCoreSession session, Memory<byte> data)
     {
         return Task.Run(() => Console.WriteLine($"客户端：接收到Byte数据：{data.Length},{Encoding.UTF8.GetString(data.Span)}"));
     }
 
-    public Task DisconnectHandler(DdonSocketSession session)
+    public Task DisconnectHandler(SocketCoreSession session)
     {
-        return Task.Run(() => Console.WriteLine($"客户端：连接断开：{session.SocketId}"));
+        return Task.Run(() => Console.WriteLine($"客户端：连接断开：{session.SessionId}"));
     }
 
-    public Task ExceptionHandler(DdonSocketSession session, DdonSocketException exception)
+    public Task ExceptionHandler(SocketCoreSession session, SocketException exception)
     {
         return Task.Run(() => Console.WriteLine($"客户端：出现异常：{exception.Message}"));
     }
 
-    public Task StringHandler(DdonSocketSession session, string text)
+    public Task StringHandler(SocketCoreSession session, string text)
     {
         return Task.Run(() => Console.WriteLine($"客户端：接收到文本数据：{text}"));
     }

@@ -4,13 +4,13 @@ namespace Ddon.Core.Use.Socket;
 
 public static class DdonSocket
 {
-    public static DdonSocketServer CreateServer(string host, int port) => new(host, port);
+    public static SocketCoreServer CreateServer(string host, int port) => new(host, port);
 
-    public static DdonSocketServer CreateServer(int port) => new(IPAddress.Loopback, port);
+    public static SocketCoreServer CreateServer(int port) => new(IPAddress.Loopback, port);
 
-    public static DdonSocketServer CreateServer(IPAddress ipAddress, int port, IDdonSocketServerHandler handle)
+    public static SocketCoreServer CreateServer(IPAddress ipAddress, int port, ISocketCoreServerHandler handle)
     {
-        var server = new DdonSocketServer(ipAddress, port);
+        var server = new SocketCoreServer(ipAddress, port);
 
         server.BindConnectHandler(handle.ConnectHandler)
             .BindStringHandler(handle.StringHandler)
@@ -21,28 +21,25 @@ public static class DdonSocket
         return server;
     }
 
-    public static DdonSocketServer CreateServer(string host, int port, IDdonSocketServerHandler handle)
+    public static SocketCoreServer CreateServer(string host, int port, ISocketCoreServerHandler handle)
         => CreateServer(IPAddress.Parse(host), port, handle);
 
-    public static DdonSocketServer CreateServer(int port, IDdonSocketServerHandler handle)
-    => CreateServer(IPAddress.Loopback, port, handle);
+    public static SocketCoreServer CreateServer(int port, ISocketCoreServerHandler handle)
+        => CreateServer(IPAddress.Loopback, port, handle);
 
-    public static DdonSocketServer CreateServer<TSocketHandler>(string host, int port)
-        where TSocketHandler : IDdonSocketServerHandler, new()
+    public static SocketCoreServer CreateServer<TSocketHandler>(string host, int port)
+        where TSocketHandler : ISocketCoreServerHandler, new()
         => CreateServer(host, port, new TSocketHandler());
 
-    public static DdonSocketServer CreateServer<TSocketHandler>(int port)
-        where TSocketHandler : IDdonSocketServerHandler, new()
+    public static SocketCoreServer CreateServer<TSocketHandler>(int port)
+        where TSocketHandler : ISocketCoreServerHandler, new()
         => CreateServer(IPAddress.Loopback, port, new TSocketHandler());
 
 
-    public static DdonSocketSession CreateClient(string serverhost, int port) => new(serverhost, port);
+    public static SocketCoreSession CreateClient(string serverhost, int port) => new(serverhost, port);
 
-    public static DdonSocketSession CreateClient<TSocketHandler>(string serverhost, int port)
-        where TSocketHandler : IDdonSocketSessionHandler, new()
+    public static SocketCoreSession CreateClient(string serverhost, int port, ISocketCoreSessionHandler handle)
     {
-        var handle = new TSocketHandler();
-
         var client = CreateClient(serverhost, port);
         client.BindStringHandler(handle.StringHandler)
             .BindByteHandler(handle.ByteHandler)
@@ -51,4 +48,9 @@ public static class DdonSocket
 
         return client;
     }
+
+    public static SocketCoreSession CreateClient<TSocketHandler>(string serverhost, int port)
+        where TSocketHandler : ISocketCoreSessionHandler, new()
+        => CreateClient(serverhost, port, new TSocketHandler());
+
 }

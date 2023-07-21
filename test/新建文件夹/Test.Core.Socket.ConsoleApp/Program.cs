@@ -2,11 +2,11 @@
 using Ddon.Core.Use.Socket;
 
 var result = string.Empty;
-DdonSocketServer server = DdonSocket.CreateServer("127.0.0.1", 5356);
+SocketCoreServer server = DdonSocket.CreateServer("127.0.0.1", 5356);
 
 server.BindConnectHandler((session) =>
 {
-    return Task.Run(() => Console.WriteLine($"服务端：连接接入：{session.SocketId}"));
+    return Task.Run(() => Console.WriteLine($"服务端：连接接入：{session.SessionId}"));
 })
 .BindStringHandler(async (session, text) =>
 {
@@ -24,7 +24,7 @@ server.BindConnectHandler((session) =>
 })
 .BindDisconnectHandler((session) =>
 {
-    return Task.Run(() => Console.WriteLine($"服务端：连接断开：{session.SocketId}"));
+    return Task.Run(() => Console.WriteLine($"服务端：连接断开：{session.SessionId}"));
 });
 
 server.Start();
