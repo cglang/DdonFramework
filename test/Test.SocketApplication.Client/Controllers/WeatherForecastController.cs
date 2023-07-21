@@ -1,7 +1,6 @@
 ﻿using Ddon.Socket;
 using Ddon.Socket.Session;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace Test.SocketApplication.Client.Controllers
 {
@@ -9,44 +8,21 @@ namespace Test.SocketApplication.Client.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly SocketClientFactory socketClientFactory;
+        private readonly SocketClientFactory _socketClientFactory;
 
-        public WeatherForecastController(IServiceProvider serviceProvider, SocketClientFactory socketClientFactory)
+        public WeatherForecastController(SocketClientFactory socketClientFactory)
         {
-            _serviceProvider = serviceProvider;
-            this.socketClientFactory = socketClientFactory;
+            _socketClientFactory = socketClientFactory;
         }
 
-        /// <summary>
-        /// ���Ի���
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("GetAnalysisByDayAsync")]
-        public async Task<IEnumerable<int>> GetGetAnalysisByDayAsync()
+        [HttpGet("GetGenerateSequenceAsync")]
+        public async Task<IEnumerable<string>?> GetGenerateSequenceAsync()
         {
-            var route = "OpenSocketApi::GetAnalysisByDayAsync";
-            var data = new { Count = 1000 };
-            var json = JsonSerializer.Serialize(data);
+            var client = _socketClientFactory.Create();
 
-            var client = socketClientFactory.Create();
+            var route = "OpenSocketApi::GenerateSequence";
 
-            var aaa = await client.RequestAsync<string>(route, data);
-            //Console.WriteLine(aaa);
-            Console.WriteLine(1);
-
-            return Enumerable.Range(1, 5);
-        }
-
-        [HttpGet("SendFile")]
-        public async Task<IEnumerable<int>> Get3(string filepath)
-        {
-            var client = socketClientFactory.Create();
-
-            var route = "OpenSocketApi::ReceiveFile";
-            //await client.SendFileAsync(route, filepath);
-
-            return Enumerable.Range(1, 5);
+            return await client.RequestAsync<IEnumerable<string>>(route, new { Count = 1000 });
         }
     }
 }

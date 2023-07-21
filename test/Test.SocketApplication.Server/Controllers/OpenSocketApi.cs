@@ -16,23 +16,11 @@ namespace Test.WebApplication.Controllers
         /// <summary>
         /// 获取某天的N条热点
         /// </summary>
-        [SocketApi]
-        public async Task<IEnumerable<string>> GetAnalysisByDayAsync(AnalysisByDayInput input)
+        [SocketApi("GenerateSequence")]
+        public async Task<IEnumerable<string>> GetGenerateSequenceAsync(SequenceInput input)
         {
-            await Task.Delay(200);
-
+            await Task.CompletedTask;
             return Enumerable.Range(0, input.Count).Select(x => x.ToString());
-        }
-
-        /// <summary>
-        /// 接收文件测试
-        /// </summary>
-        [SocketApi("ReceiveFile")]
-        public async Task<bool> ReceiveFile(string filePath)
-        {
-            await Task.Delay(100);
-
-            return true;
         }
     }
 }

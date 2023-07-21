@@ -1,6 +1,6 @@
 ﻿namespace Test.WebApplication.Controllers
 {
-    public class AnalysisByDayInput
+    public class SequenceInput
     {
         public int Count { get; set; }
     }
