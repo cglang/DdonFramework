@@ -1,8 +1,7 @@
-﻿using Ddon.Core.Use.Queue;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using Ddon.Core.Use.Queue;
 
 namespace Ddon.Socket.Session
 {
@@ -56,7 +55,7 @@ namespace Ddon.Socket.Session
                                     Pairs[item].ExceptionThen.Invoke("请求超时");
                                 }
                             }
-                            Thread.Sleep(1);
+                            await Task.Delay(1);
                         }
                     }
                     catch (Exception ex)

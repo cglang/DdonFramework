@@ -9,7 +9,7 @@ class DdonSocketSessionHandler : IDdonSocketSessionHandler
         return Task.Run(() => Console.WriteLine($"客户端：接收到Byte数据：{data.Length},{Encoding.UTF8.GetString(data.Span)}"));
     }
 
-    public Task Disconnect(DdonSocketSession session)
+    public Task DisconnectHandler(DdonSocketSession session)
     {
         return Task.Run(() => Console.WriteLine($"客户端：连接断开：{session.SocketId}"));
     }

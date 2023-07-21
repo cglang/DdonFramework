@@ -1,12 +1,14 @@
-﻿using Ddon.Core.Use.Reflection;
+﻿using System;
+using System.Threading.Tasks;
+using Ddon.Core.Use.Reflection;
+using Ddon.Core.Use.Socket;
+using Ddon.Socket.Session;
 using Ddon.Socket.Session.Model;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 
-namespace Ddon.Socket.Session
+namespace Ddon.Socket
 {
-    internal class DdonSocketInvoke
+    public class DdonSocketInvoke
     {
         private readonly IServiceProvider services;
 
@@ -19,7 +21,7 @@ namespace Ddon.Socket.Session
             string className,
             string methodName,
             string parameter,
-            SocketSession connection,
+            DdonSocketSession connection,
             DdonSocketSessionHeadInfo head)
         {
             using var scope = services.CreateScope();
@@ -27,7 +29,7 @@ namespace Ddon.Socket.Session
             var instance = scope.ServiceProvider.GetService(classType) ??
                 throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (SocketApiCore)instance;
+            var ddonSocketService = (SocketApiBase)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 
@@ -39,7 +41,7 @@ namespace Ddon.Socket.Session
             string className,
             string methodName,
             T parameter,
-            SocketSession connection,
+            DdonSocketSession connection,
             DdonSocketSessionHeadInfo head) where T : notnull
         {
             using var scope = services.CreateScope();
@@ -47,7 +49,7 @@ namespace Ddon.Socket.Session
             var instance = scope.ServiceProvider.GetService(classType) ??
                 throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-            var ddonSocketService = (SocketApiCore)instance;
+            var ddonSocketService = (SocketApiBase)instance;
             ddonSocketService.Session = connection;
             ddonSocketService.Head = head;
 

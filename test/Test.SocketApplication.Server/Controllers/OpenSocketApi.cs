@@ -6,7 +6,7 @@ namespace Test.WebApplication.Controllers
     /// <summary>
     /// Socket API
     /// </summary>
-    public class OpenSocketApi : SocketApiCore, ITransientDependency
+    public class OpenSocketApi : SocketApiBase, ITransientDependency
     {
         /// <summary>
         /// 开放 API

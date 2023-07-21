@@ -1,12 +1,11 @@
-﻿using Ddon.Core.Services.LazyService.Static;
+﻿using System;
+using System.Threading.Tasks;
+using Ddon.Core.Services.LazyService.Static;
 using Ddon.Core.Use.Socket.Exceptions;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace Ddon.Socket
 {
@@ -31,7 +30,7 @@ namespace Ddon.Socket
             }
             ExceptionHandler += DefaultExceptionHandler;
 
-            Session = new SocketSession(new TcpClient(host, post), ExceptionHandler);
+            //Session = new SocketSession2(new TcpClient(host, post), ExceptionHandler);
         }
 
         public static SocketSession CreateClient(IServiceProvider serviceProvider, string host, int post, bool isReconnection = true)
@@ -59,13 +58,11 @@ namespace Ddon.Socket
 
         private Func<SocketSession, DdonSocketException, Task> ReconnectionHandler => async (a, b) =>
         {
-            Session.Dispose();
-
             for (int number = 1; ; number++)
             {
                 try
                 {
-                    Session = new SocketSession(new TcpClient(_host, _post), ExceptionHandler);
+                    //Session = new SocketSession2(new TcpClient(_host, _post), ExceptionHandler);
                     Logger?.LogInformation("断线重连成功,重试次数:{0}", number);
                     break;
                 }

@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace Ddon.Socket.Session
 {
-    internal class DdonSocketSessionStorage
+    internal class SessionStorage
     {
-        private DdonSocketSessionStorage() { }
+        private SessionStorage() { }
 
-        public static DdonSocketSessionStorage Instance = new Lazy<DdonSocketSessionStorage>(() => new DdonSocketSessionStorage()).Value;
+        public static SessionStorage Instance = new Lazy<SessionStorage>(() => new SessionStorage()).Value;
 
         private readonly Dictionary<Guid, SocketSession> Pairs = new();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Ddon.Socket.Serialize;
 
 namespace Ddon.Socket.Session.Model
 {
@@ -35,7 +36,7 @@ namespace Ddon.Socket.Session.Model
 
         public byte[] GetBytes()
         {
-            return Encoding.UTF8.GetBytes(SocketSession.JsonSerialize(this));
+            return Encoding.UTF8.GetBytes(SerializeHelper.JsonSerialize(this));
         }
     }
 }

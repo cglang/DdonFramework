@@ -12,7 +12,7 @@ namespace Ddon.Core.Use.Socket
 
         Task ByteHandler(DdonSocketSession session, Memory<byte> data);
 
-        Task Disconnect(DdonSocketSession session);
+        Task DisconnectHandler(DdonSocketSession session);
     }
 
     public interface IDdonSocketServerHandler : IDdonSocketSessionHandler

@@ -4,7 +4,8 @@ namespace Ddon.Socket.Session
 {
     internal class DdonSocketResponseHandler
     {
-        public Guid Id { get; } = Guid.NewGuid();
+        public Guid Id { get; }
+
         public bool IsCompleted { get; private set; }
 
         public Action<string> ActionThen;
@@ -12,6 +13,8 @@ namespace Ddon.Socket.Session
 
         public DdonSocketResponseHandler(Action<string> action, Action<string> exception)
         {
+            Id = Guid.NewGuid();
+
             ActionThen = _ => IsCompleted = true;
             ExceptionThen = _ => IsCompleted = true;
 

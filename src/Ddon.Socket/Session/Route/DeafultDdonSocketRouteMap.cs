@@ -11,7 +11,7 @@ namespace Ddon.Socket.Session.Route
         {
             var routes = new List<DdonSocketRoute>();
 
-            var baseType = typeof(SocketApiCore);
+            var baseType = typeof(SocketApiBase);
 
             var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes())
                 .Where(type => type != baseType && baseType.IsAssignableFrom(type)).ToList();
@@ -22,19 +22,11 @@ namespace Ddon.Socket.Session.Route
                 foreach (var method in methods)
                 {
                     var socketApi = method.GetCustomAttribute<SocketApiAttribute>();
-                    if (socketApi != null)
-                    {
-                        if (socketApi.Template != null)
-                        {
-                            var route = new DdonSocketRoute($"{type.Name}::{socketApi.Template}", type.Name, method.Name);
-                            routes.Add(route);
-                        }
-                        else
-                        {
-                            var route = new DdonSocketRoute($"{type.Name}::{method.Name}", type.Name, method.Name);
-                            routes.Add(route);
-                        }
-                    }
+                    if (socketApi == null) continue;
+
+                    var routeText = $"{type.Name}::{socketApi.Template ?? method.Name}";
+                    var route = new DdonSocketRoute(routeText, type.Name, method.Name);
+                    routes.Add(route);
                 }
             }
 

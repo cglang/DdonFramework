@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket.Hosting
 {
-    public class SocketBuilderContext
+    public class SocketServerOption
     {
         public string Host { get; private set; } = "0.0.0.0";
 

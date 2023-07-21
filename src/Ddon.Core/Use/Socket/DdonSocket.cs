@@ -8,35 +8,33 @@ public static class DdonSocket
 
     public static DdonSocketServer CreateServer(int port) => new(IPAddress.Loopback, port);
 
-    public static DdonSocketServer CreateServer<TSocketHandler>(string host, int port)
-        where TSocketHandler : IDdonSocketServerHandler, new()
+    public static DdonSocketServer CreateServer(IPAddress ipAddress, int port, IDdonSocketServerHandler handle)
     {
-        var handle = new TSocketHandler();
+        var server = new DdonSocketServer(ipAddress, port);
 
-        var server = CreateServer(host, port);
         server.BindConnectHandler(handle.ConnectHandler)
             .BindStringHandler(handle.StringHandler)
             .BindByteHandler(handle.ByteHandler)
-            .BindDisconnectHandler(handle.Disconnect)
+            .BindDisconnectHandler(handle.DisconnectHandler)
             .BindExceptionHandler(handle.ExceptionHandler);
 
         return server;
     }
+
+    public static DdonSocketServer CreateServer(string host, int port, IDdonSocketServerHandler handle)
+        => CreateServer(IPAddress.Parse(host), port, handle);
+
+    public static DdonSocketServer CreateServer(int port, IDdonSocketServerHandler handle)
+    => CreateServer(IPAddress.Loopback, port, handle);
+
+    public static DdonSocketServer CreateServer<TSocketHandler>(string host, int port)
+        where TSocketHandler : IDdonSocketServerHandler, new()
+        => CreateServer(host, port, new TSocketHandler());
 
     public static DdonSocketServer CreateServer<TSocketHandler>(int port)
         where TSocketHandler : IDdonSocketServerHandler, new()
-    {
-        var handle = new TSocketHandler();
+        => CreateServer(IPAddress.Loopback, port, new TSocketHandler());
 
-        var server = CreateServer(port);
-        server.BindConnectHandler(handle.ConnectHandler)
-            .BindStringHandler(handle.StringHandler)
-            .BindByteHandler(handle.ByteHandler)
-            .BindDisconnectHandler(handle.Disconnect)
-            .BindExceptionHandler(handle.ExceptionHandler);
-
-        return server;
-    }
 
     public static DdonSocketSession CreateClient(string serverhost, int port) => new(serverhost, port);
 
@@ -48,7 +46,7 @@ public static class DdonSocket
         var client = CreateClient(serverhost, port);
         client.BindStringHandler(handle.StringHandler)
             .BindByteHandler(handle.ByteHandler)
-            .BindDisconnectHandler(handle.Disconnect)
+            .BindDisconnectHandler(handle.DisconnectHandler)
             .BindExceptionHandler(handle.ExceptionHandler);
 
         return client;

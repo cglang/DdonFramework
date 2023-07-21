@@ -1,6 +1,7 @@
-using Ddon.FileStorage;
+ï»¿using Ddon.FileStorage;
 using Ddon.Socket;
 using Ddon.Socket.Hosting;
+using Microsoft.Extensions.Hosting;
 using Test.WebApplication.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,22 +23,23 @@ builder.Services.AddTransient<OpenSocketApi>();
 
 var app = builder.Build();
 
+
 var socketBuilder = SocketApplication.CreateBuilder(args, app.Services);
 socketBuilder.Configure(config =>
 {
     config.SetListenerInfo(2222);
     config.AddExceptionHandler(async (a, b) =>
     {
-        Console.WriteLine($"³öÏÖÁËÒì³£:{b.Message}");
+        Console.WriteLine($"å‡ºçŽ°äº†å¼‚å¸¸:{b.Message}");
         await Task.CompletedTask;
     });
     config.AddSocketAccessHandler(async (a, b) =>
     {
-        Console.WriteLine($"¿Í»§¶Ë½ÓÈë{a.SessionId}");
+        Console.WriteLine($"å®¢æˆ·ç«¯æŽ¥å…¥{a.SessionId}");
         await Task.CompletedTask;
     });
 });
-socketBuilder.Build().Run();
+_ = socketBuilder.Build().StartAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -51,3 +53,18 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+
+var builder2 = Host.CreateDefaultBuilder(args);
+
+builder2.ConfigureAppConfiguration(app => { });
+
+builder2.ConfigureServices((context, services) =>
+{
+    services.LoadModule<SocketModule>(context.Configuration);
+});
+
+var app2 = builder2.Build();
+
+app2.RunAsync();
