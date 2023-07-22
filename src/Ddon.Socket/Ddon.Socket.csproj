@@ -10,7 +10,6 @@
 	<Import Project="../../common.props" />
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 	</ItemGroup>
 
