@@ -6,7 +6,7 @@ using Ddon.Socket.Session;
 using Ddon.Socket.Session.Model;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ddon.Socket
+namespace Ddon.Socket.Utility
 {
     public class SocketInvoke
     {
