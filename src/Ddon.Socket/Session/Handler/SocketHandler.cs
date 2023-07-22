@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Ddon.Socket.Core;
 using Ddon.Socket.Exceptions;
-using Ddon.Socket.Session;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
 using Ddon.Socket.Utility;
@@ -25,7 +24,8 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
 
     public Task StringHandler(SocketCoreSession session, string text)
     {
-        throw new NotImplementedException();
+        Logger.LogError("现在还无法处理文本类型的数据");
+        return Task.CompletedTask;
     }
 
     public async Task ByteHandler(SocketCoreSession session, Memory<byte> bytes)
@@ -102,12 +102,14 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
 
     public Task DisconnectHandler(SocketCoreSession session)
     {
-        throw new NotImplementedException();
+        Logger.LogInformation($"连接断开:{session.SessionId}");
+        return Task.CompletedTask;
     }
 
     public Task ExceptionHandler(SocketCoreSession session, SocketException exception)
     {
-        throw new NotImplementedException();
+        Logger.LogError(exception, $"异常");
+        return Task.CompletedTask;
     }
 
     private static void ResponseHandle(DdonSocketPackageInfo<Memory<byte>> info)
@@ -152,7 +154,8 @@ public class SocketServerHandler : SocketSessionHandler, ISocketCoreServerHandle
     public Task ConnectHandler(SocketCoreSession session)
     {
         // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
-        SessionStorage.Instance.Add(session);
+        //SessionStorage.Instance.Add(session);
+        Logger.LogInformation($"连接接入:{session.SessionId}");
         return Task.CompletedTask;
     }
 }

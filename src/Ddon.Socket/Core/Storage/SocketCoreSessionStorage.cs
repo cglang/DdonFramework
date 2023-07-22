@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ddon.Socket.Core.Storage;
 
-public class SocketCoreSessionStorage : ISocketCoreSessionStorage
+internal class SocketCoreSessionStorage : ISocketCoreSessionStorage
 {
     private static readonly ConcurrentDictionary<Guid, SocketCoreSession> Pairs = new();
 
