@@ -3,10 +3,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Socket.Core;
+using Ddon.Socket.Session;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Utility;
 
-namespace Ddon.Socket.Session
+namespace Ddon.Socket
 {
     public static class SocketCoreSessionExtensions
     {

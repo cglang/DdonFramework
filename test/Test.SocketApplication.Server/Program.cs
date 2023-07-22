@@ -1,4 +1,5 @@
-﻿using Ddon.Socket;
+﻿using System.Net;
+using Ddon.Socket;
 using Test.WebApplication.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,10 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureServices((context, services) =>
 {
     services.LoadModule<SocketModule>(context.Configuration);
-    services.AddSocketServerService(opt =>
-    {
-        opt.Port = 6012;
-    });
+    services.AddSocketServerService(opt => opt.IPEndPoint = new(IPAddress.Loopback, 6012));
 });
 
 

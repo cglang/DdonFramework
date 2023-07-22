@@ -10,7 +10,7 @@ using Ddon.Socket.Session.Route;
 using Ddon.Socket.Utility;
 using Microsoft.Extensions.Logging;
 
-namespace Ddon.Socket.Handler;
+namespace Ddon.Socket.Session.Handler;
 
 public class SocketSessionHandler : ISocketCoreSessionHandler
 {

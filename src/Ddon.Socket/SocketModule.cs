@@ -1,5 +1,6 @@
 ﻿using Ddon.Core;
-using Ddon.Socket.Handler;
+using Ddon.Socket.Core.Storage;
+using Ddon.Socket.Session.Handler;
 using Ddon.Socket.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,8 @@ namespace Ddon.Socket
             services.AddSingleton<SocketServerHandler>();
 
             services.AddTransient<SocketClientFactory>();
+
+            services.AddSingleton<ISocketCoreSessionStorage, SocketCoreSessionStorage>();
         }
     }
 }

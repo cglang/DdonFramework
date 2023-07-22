@@ -1,17 +1,27 @@
 ﻿using System.Net;
 using Ddon.Socket.Core;
+using Ddon.Socket.Core.Storage;
 
 namespace Ddon.Socket;
 
 public static class DdonSocket
 {
-    public static SocketCoreServer CreateServer(string host, int port) => new(host, port);
-
-    public static SocketCoreServer CreateServer(int port) => new(IPAddress.Loopback, port);
-
-    public static SocketCoreServer CreateServer(IPAddress ipAddress, int port, ISocketCoreServerHandler handle)
+    public static SocketCoreServer CreateServer(IPAddress? ip = null, int port = 6000)
     {
-        var server = new SocketCoreServer(ipAddress, port);
+        return new(new(ip ?? IPAddress.Loopback, port), new SocketCoreSessionStorage());
+    }
+
+    public static SocketCoreServer CreateServer<TSocketHandler>(int port = 6000) where TSocketHandler : ISocketCoreServerHandler, new()
+    {
+        return CreateServer(new(IPAddress.Loopback, port), new TSocketHandler(), new SocketCoreSessionStorage());
+    }
+
+    internal static SocketCoreServer CreateServer(
+        IPEndPoint localEP,
+        ISocketCoreServerHandler handle,
+        ISocketCoreSessionStorage sessionStorage)
+    {
+        var server = new SocketCoreServer(localEP, sessionStorage);
 
         server.BindConnectHandler(handle.ConnectHandler)
             .BindStringHandler(handle.StringHandler)
@@ -21,20 +31,6 @@ public static class DdonSocket
 
         return server;
     }
-
-    public static SocketCoreServer CreateServer(string host, int port, ISocketCoreServerHandler handle)
-        => CreateServer(IPAddress.Parse(host), port, handle);
-
-    public static SocketCoreServer CreateServer(int port, ISocketCoreServerHandler handle)
-        => CreateServer(IPAddress.Loopback, port, handle);
-
-    public static SocketCoreServer CreateServer<TSocketHandler>(string host, int port)
-        where TSocketHandler : ISocketCoreServerHandler, new()
-        => CreateServer(host, port, new TSocketHandler());
-
-    public static SocketCoreServer CreateServer<TSocketHandler>(int port)
-        where TSocketHandler : ISocketCoreServerHandler, new()
-        => CreateServer(IPAddress.Loopback, port, new TSocketHandler());
 
 
     public static SocketCoreSession CreateSession(string serverhost, int port) => new(serverhost, port);

@@ -1,9 +1,19 @@
-﻿namespace Ddon.Socket.Options
+﻿using System.Net;
+
+namespace Ddon.Socket.Options
 {
     public class SocketServerOption
     {
-        public string Host { get; set; } = "0.0.0.0";
+        public IPEndPoint IPEndPoint { get; set; }
 
-        public int Port { get; set; }
+        public SocketServerOption(string host, int port)
+        {
+            IPEndPoint = new IPEndPoint(IPAddress.Parse(host), port);
+        }
+
+        public SocketServerOption(IPAddress host, int port)
+        {
+            IPEndPoint = new IPEndPoint(host, port);
+        }
     }
 }

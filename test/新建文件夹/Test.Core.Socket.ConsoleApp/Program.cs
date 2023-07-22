@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using Ddon.Socket;
 
 var result = string.Empty;
-var server = DdonSocket.CreateServer("127.0.0.1", 5356);
+var server = DdonSocket.CreateServer(IPAddress.Parse("127.0.0.1"), 5356);
 
 server.BindConnectHandler((session) =>
 {
