@@ -1,5 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.IO
@@ -18,6 +17,33 @@ namespace System.IO
 
             stream.CopyTo(memoryStream);
             return memoryStream.ToArray();
+        }
+
+        /// <summary>
+        /// 从流中读取指定长度bytes
+        /// </summary>
+        /// <param name="stream">要读取的流</param>
+        /// <param name="length">读取长度</param>
+        /// <returns></returns>
+        public static Memory<byte> ReadLength(this Stream stream, int length)
+        {
+            if (length <= 0) throw new ArgumentException("参数 length 必须大于 0");
+
+            var data = new byte[length];
+            var index = 0;
+            var buffsize = BUFFER_SIZE;
+
+            do
+            {
+                if (index + buffsize > length) buffsize = length - index;
+                int readLength = stream.Read(data, index, buffsize);
+                index += readLength;
+
+                if (readLength == 0) return data;
+            }
+            while (index < length);
+
+            return data;
         }
 
         /// <summary>

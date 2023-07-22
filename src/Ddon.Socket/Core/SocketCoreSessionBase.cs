@@ -38,7 +38,7 @@ namespace Ddon.Socket.Core
         }
     }
 
-    public abstract class SocketCoreSessionBase : DdonSocketSessionHandlerBase, ISocketCoreSession, IDdonSocketSessionBind, IDisposable
+    public abstract class SocketCoreSessionBase : DdonSocketSessionHandlerBase, IDdonSocketSessionBind, IDisposable
     {
         protected TcpClient _tcpClient;
 
@@ -49,13 +49,14 @@ namespace Ddon.Socket.Core
         public SocketCoreSessionBase(TcpClient tcpClient)
         {
             _tcpClient = tcpClient;
+            Start();
         }
 
-        public void Start() => Task<Task>.Factory.StartNew(Function, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        protected void Start() => Task<Task>.Factory.StartNew(Receive, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
-        public Task StartAsync() => Function();
+        public Task StartAsync() => Receive();
 
-        protected abstract Task Function();
+        protected abstract Task Receive();
 
         /// <summary>
         /// 发送Byte数组

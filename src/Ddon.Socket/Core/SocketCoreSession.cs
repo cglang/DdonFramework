@@ -3,17 +3,15 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Ddon.Socket.Utility;
 
 namespace Ddon.Socket.Core;
 
-public class SocketCoreSession : SocketCoreSessionBase
+public partial class SocketCoreSession : SocketCoreSessionBase
 {
     public SocketCoreSession(TcpClient tcpClient) : base(tcpClient)
     {
-        var data = new byte[16];
-        tcpClient.GetStream().Read(data);
-        SessionId = new Guid(data);
+        var data = Stream.ReadLength(16);
+        SessionId = new Guid(data.Span);
     }
 
     public SocketCoreSession(TcpClient tcpClient, Guid socketId) : base(tcpClient)
@@ -24,16 +22,20 @@ public class SocketCoreSession : SocketCoreSessionBase
 
     public SocketCoreSession(string host, int port) : this(new TcpClient(host, port)) { }
 
-    public SocketCoreSession(
-        TcpClient tcpClient,
-        Func<SocketCoreSession, Memory<byte>, Task>? byteHandler,
-        Func<SocketCoreSession, Exceptions.SocketException, Task>? exceptionHandler = null) : this(tcpClient)
+    protected void InitConnect(TcpClient tcpClient)
     {
-        ByteHandler += byteHandler;
-        ExceptionHandler += exceptionHandler;
+        _tcpClient = tcpClient;
+        SessionId = new Guid(Stream.ReadLength(16).Span);
     }
 
-    protected override async Task Function()
+    public void Reconnect(TcpClient tcpClient)
+    {
+        _tcpClient.Dispose();
+        InitConnect(tcpClient);
+        Start();
+    }
+
+    protected override async Task Receive()
     {
         try
         {
@@ -47,71 +49,25 @@ public class SocketCoreSession : SocketCoreSessionBase
                 var initial = await Stream.ReadLengthAsync(head.Length);
                 try
                 {
-                    await InitialHandle(initial, head.Type);
+                    if (head.Type is DataType.Text && StringHandler is not null)
+                        await StringHandler(this, Encoding.UTF8.GetString(initial.Span));
+                    if (head.Type is DataType.Byte && ByteHandler is not null)
+                        await ByteHandler(this, initial);
                 }
                 catch (Exception ex)
                 {
-                    if (ExceptionHandler != null)
+                    if (ExceptionHandler is not null)
                         await ExceptionHandler(this, new(ex, SessionId));
                 }
             }
         }
         catch (Exception ex)
         {
-            _tcpClient.Dispose();
+            if (ExceptionHandler is not null)
+                await ExceptionHandler(this, new(ex, SessionId));
 
-            if (ExceptionHandler != null)
-            {
-                var socketEx = new Exceptions.SocketException(ex, SessionId);
-                await ExceptionHandler(this, socketEx);
-            }
-
-            if (DisconnectHandler != null)
-            {
+            if (DisconnectHandler is not null)
                 await DisconnectHandler(this);
-            }
         }
     }
-
-    private Task InitialHandle(Memory<byte> data, DataType type)
-    {
-        if (ByteHandler != null && type == DataType.Byte)
-        {
-            return ByteHandler(this, data);
-        }
-        else if (StringHandler != null && type == DataType.Text)
-        {
-            return StringHandler(this, Encoding.UTF8.GetString(data.Span));
-        }
-        else
-        {
-            return Task.CompletedTask;
-        }
-    }
-
-    private readonly struct Head
-    {
-        public int Length { get; }
-        public DataType Type { get; }
-
-        public Head(Memory<byte> bytes)
-        {
-            Length = BitConverter.ToInt32(bytes.Span[..sizeof(int)]);
-            Type = (DataType)bytes.Span[sizeof(int)];
-        }
-
-        public byte[] GetBytes()
-        {
-            ByteArrayHelper.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
-            return bytes;
-        }
-
-        public const int HeadLength = sizeof(int) + sizeof(DataType);
-    }
-}
-
-public enum DataType : byte
-{
-    Text = 1,
-    Byte = 2
 }

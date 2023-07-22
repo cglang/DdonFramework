@@ -37,11 +37,11 @@ public static class DdonSocket
         => CreateServer(IPAddress.Loopback, port, new TSocketHandler());
 
 
-    public static SocketCoreSession CreateClient(string serverhost, int port) => new(serverhost, port);
+    public static SocketCoreSession CreateSession(string serverhost, int port) => new(serverhost, port);
 
-    public static SocketCoreSession CreateClient(string serverhost, int port, ISocketCoreSessionHandler handle)
+    public static SocketCoreSession CreateSession(string serverhost, int port, ISocketCoreSessionHandler handle)
     {
-        var client = CreateClient(serverhost, port);
+        var client = CreateSession(serverhost, port);
         client.BindStringHandler(handle.StringHandler)
             .BindByteHandler(handle.ByteHandler)
             .BindDisconnectHandler(handle.DisconnectHandler)
@@ -50,8 +50,8 @@ public static class DdonSocket
         return client;
     }
 
-    public static SocketCoreSession CreateClient<TSocketHandler>(string serverhost, int port)
+    public static SocketCoreSession CreateSession<TSocketHandler>(string serverhost, int port)
         where TSocketHandler : ISocketCoreSessionHandler, new()
-        => CreateClient(serverhost, port, new TSocketHandler());
+        => CreateSession(serverhost, port, new TSocketHandler());
 
 }

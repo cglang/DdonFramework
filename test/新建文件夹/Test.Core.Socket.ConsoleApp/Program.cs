@@ -1,8 +1,8 @@
 ﻿using System.Text;
-using Ddon.Core.Use.Socket;
+using Ddon.Socket;
 
 var result = string.Empty;
-SocketCoreServer server = DdonSocket.CreateServer("127.0.0.1", 5356);
+var server = DdonSocket.CreateServer("127.0.0.1", 5356);
 
 server.BindConnectHandler((session) =>
 {
@@ -29,8 +29,7 @@ server.BindConnectHandler((session) =>
 
 server.Start();
 
-using var session = DdonSocket.CreateClient<DdonSocketSessionHandler>("127.0.0.1", 5356);
-session.Start();
+using var session = DdonSocket.CreateSession<DdonSocketSessionHandler>("127.0.0.1", 5356);
 
 string text = "测试文本";
 await session.SendStringAsync(text);

@@ -19,7 +19,7 @@ public class SocketCoreServer : SocketCoreServerBase
         _listener = new TcpListener(ipAddress, port);
     }
 
-    protected override async Task Function()
+    protected override async Task StartAccept()
     {
         _listener.Start();
         while (true)
@@ -38,8 +38,6 @@ public class SocketCoreServer : SocketCoreServerBase
 
             if (ConnectHandler != null)
                 await ConnectHandler(session);
-
-            session.Start();
         }
     }
 

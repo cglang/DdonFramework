@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using Ddon.Core.Use.Socket;
-using Ddon.Core.Use.Socket.Exceptions;
+using Ddon.Socket.Core;
+using Ddon.Socket.Exceptions;
 
 class DdonSocketSessionHandler : ISocketCoreSessionHandler
 {

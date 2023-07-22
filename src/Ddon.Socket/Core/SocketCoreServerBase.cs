@@ -49,13 +49,16 @@ namespace Ddon.Socket.Core
         /// <summary>
         /// 在新线程中启动Socket服务
         /// </summary>
-        public void Start() => Task<Task>.Factory.StartNew(Function, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        public void Start() => Task<Task>.Factory.StartNew(StartAccept, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
         /// <summary>
         /// 异步方式启动Socket服务
         /// </summary>
-        public Task StartAsync() => Function();
+        public Task StartAsync() => StartAccept();
 
-        protected abstract Task Function();
+        /// <summary>
+        /// 开始接受连接接入
+        /// </summary>
+        protected abstract Task StartAccept();
     }
 }

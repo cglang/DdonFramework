@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using Ddon.Socket.Core;
 using Ddon.Socket.Handler;
@@ -26,18 +25,8 @@ namespace Ddon.Socket
 
             _option = option;
             _logger = logger;
-        }
 
-        public new Task StartAsync()
-        {
             DdonSocketResponsePool.Start();
-            return base.StartAsync();
-        }
-
-        public new void Start()
-        {
-            DdonSocketResponsePool.Start();
-            base.Start();
         }
 
         private Func<SocketCoreSession, Task> ReconnectionHandler => async session =>
@@ -46,7 +35,7 @@ namespace Ddon.Socket
             {
                 try
                 {
-                    _tcpClient = new TcpClient(_option.Host, _option.Port);
+                    Reconnect(new(_option.Host, _option.Port));
                     _logger.LogInformation("断线重连成功,重试次数:{number}", number);
                     break;
                 }

@@ -24,7 +24,6 @@ namespace Ddon.Socket
             DdonSocketRouteMap.Init();
 
             var client = new SocketClient(_options, _handler, _logger);
-            client.Start();
 
             return client;
         }
