@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Socket.Handler;
 using Ddon.Socket.Options;
@@ -21,7 +20,7 @@ namespace Ddon.Socket.Hosting
         {
             var socketBuilderContext = Configure();
 
-            DdonSocketRouteMap.Init<DeafultDdonSocketRouteMap>();
+            DdonSocketRouteMap.Init();
 
             var sersver = new SocketServer(socketBuilderContext, _handle);
 

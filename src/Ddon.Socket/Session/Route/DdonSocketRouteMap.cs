@@ -1,15 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
 namespace Ddon.Socket.Session.Route
 {
     internal static class DdonSocketRouteMap
     {
         private static readonly Dictionary<string, (string, string)> _routeMap = new();
 
-        internal static void Init<TDdonSocketRouteMapLoadBase>() where TDdonSocketRouteMapLoadBase : DdonSocketRouteMapLoadBase, new()
+        internal static void Init()
         {
-            var routeMap = new TDdonSocketRouteMapLoadBase();
+            var routes = new List<DdonSocketRoute>();
 
-            foreach (var route in routeMap.DdonSocketRoutes)
+            var baseType = typeof(SocketApiBase);
+
+            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(types => types.GetTypes())
+                .Where(type => type != baseType && baseType.IsAssignableFrom(type)).ToList();
+
+            foreach (var type in types)
+            {
+                var methods = type.GetMethods();
+                foreach (var method in methods)
+                {
+                    var socketApi = method.GetCustomAttribute<SocketApiAttribute>();
+                    if (socketApi == null) continue;
+
+                    var routeText = $"{type.Name}::{socketApi.Template ?? method.Name}";
+                    var route = new DdonSocketRoute(routeText, type.Name, method.Name);
+                    routes.Add(route);
+                }
+            }
+
+            foreach (var route in routes)
             {
                 Add(route.Route, route.ClassName, route.MethodName);
             }
