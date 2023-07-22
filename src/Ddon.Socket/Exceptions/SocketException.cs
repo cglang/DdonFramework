@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ddon.Core.Use.Socket.Exceptions;
+namespace Ddon.Socket.Exceptions;
 
 public class SocketException : Exception
 {

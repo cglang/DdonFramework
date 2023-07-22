@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Ddon.Core.Use.Reflection;
-using Ddon.Core.Use.Socket;
+using Ddon.Socket.Core;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Model;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Socket
 {
-    public class DdonSocketInvoke
+    public class SocketInvoke
     {
         private readonly IServiceProvider services;
 
-        public DdonSocketInvoke(IServiceProvider services)
+        public SocketInvoke(IServiceProvider services)
         {
             this.services = services;
         }
@@ -21,7 +21,7 @@ namespace Ddon.Socket
             string className,
             string methodName,
             string parameter,
-            Core.Use.Socket.SocketCoreSession connection,
+            SocketCoreSession connection,
             DdonSocketSessionHeadInfo head)
         {
             using var scope = services.CreateScope();
@@ -41,7 +41,7 @@ namespace Ddon.Socket
             string className,
             string methodName,
             T parameter,
-            Core.Use.Socket.SocketCoreSession connection,
+            SocketCoreSession connection,
             DdonSocketSessionHeadInfo head) where T : notnull
         {
             using var scope = services.CreateScope();

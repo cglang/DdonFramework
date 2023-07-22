@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ddon.Core.Use.Socket;
+using Ddon.Socket.Core;
 
 namespace Ddon.Socket.Session
 {

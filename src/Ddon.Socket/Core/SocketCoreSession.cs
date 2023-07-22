@@ -3,11 +3,12 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Ddon.Socket.Utility;
 
-namespace Ddon.Core.Use.Socket;
+namespace Ddon.Socket.Core;
 
 public class SocketCoreSession : SocketCoreSessionBase
-{    
+{
     public SocketCoreSession(TcpClient tcpClient) : base(tcpClient)
     {
         var data = new byte[16];

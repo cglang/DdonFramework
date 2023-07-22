@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Ddon.Socket.Serialize;
+using Ddon.Socket.Utility;
 
 namespace Ddon.Socket.Session.Model
 {

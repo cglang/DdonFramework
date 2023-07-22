@@ -1,10 +1,13 @@
-﻿namespace Ddon.Socket.Options
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Ddon.Socket.Options
 {
     public class SocketClientOption
     {
         /// <summary>
         /// 服务端地址
         /// </summary>
+        [AllowNull]
         public string Host { get; set; }
 
         /// <summary>

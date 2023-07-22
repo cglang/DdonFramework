@@ -1,6 +1,7 @@
 ﻿using System.Net;
+using Ddon.Socket.Core;
 
-namespace Ddon.Core.Use.Socket;
+namespace Ddon.Socket;
 
 public static class DdonSocket
 {

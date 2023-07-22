@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ddon.Core.Use.Socket;
+namespace Ddon.Socket.Utility;
 
 public static class ByteArrayHelper
 {

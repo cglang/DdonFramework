@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.Core.Use.Socket;
+using Ddon.Socket.Core;
 using Ddon.Socket.Handler;
 using Ddon.Socket.Options;
 using Ddon.Socket.Session;

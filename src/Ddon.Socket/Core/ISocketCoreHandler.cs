@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Ddon.Core.Use.Socket.Exceptions;
+using Ddon.Socket.Exceptions;
 
-namespace Ddon.Core.Use.Socket
+namespace Ddon.Socket.Core
 {
     public interface ISocketCoreSessionHandler
     {

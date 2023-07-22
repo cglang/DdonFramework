@@ -2,12 +2,12 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Ddon.Core.Use.Socket;
-using Ddon.Core.Use.Socket.Exceptions;
-using Ddon.Socket.Serialize;
+using Ddon.Socket.Core;
+using Ddon.Socket.Exceptions;
 using Ddon.Socket.Session;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
+using Ddon.Socket.Utility;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Socket.Handler;
@@ -15,9 +15,9 @@ namespace Ddon.Socket.Handler;
 public class SocketSessionHandler : ISocketCoreSessionHandler
 {
     protected ILogger<SocketServerHandler> Logger { get; }
-    protected DdonSocketInvoke SocketInvoke { get; }
+    protected SocketInvoke SocketInvoke { get; }
 
-    public SocketSessionHandler(ILogger<SocketServerHandler> logger, DdonSocketInvoke socketInvoke)
+    public SocketSessionHandler(ILogger<SocketServerHandler> logger, SocketInvoke socketInvoke)
     {
         Logger = logger;
         SocketInvoke = socketInvoke;
@@ -145,7 +145,7 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
 
 public class SocketServerHandler : SocketSessionHandler, ISocketCoreServerHandler
 {
-    public SocketServerHandler(ILogger<SocketServerHandler> logger, DdonSocketInvoke socketInvoke) : base(logger, socketInvoke)
+    public SocketServerHandler(ILogger<SocketServerHandler> logger, SocketInvoke socketInvoke) : base(logger, socketInvoke)
     {
     }
 

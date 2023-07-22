@@ -2,8 +2,9 @@
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Ddon.Socket.Utility;
 
-namespace Ddon.Core.Use.Socket
+namespace Ddon.Socket.Core
 {
     public abstract class DdonSocketSessionHandlerBase : IDdonSocketSessionBind
     {

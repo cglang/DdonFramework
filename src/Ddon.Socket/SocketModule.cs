@@ -11,7 +11,7 @@ namespace Ddon.Socket
         {
             Load<CoreModule>(services, configuration);
 
-            services.AddTransient<DdonSocketInvoke>();
+            services.AddTransient<SocketInvoke>();
 
             services.AddSingleton<SocketSessionHandler>();
             services.AddSingleton<SocketServerHandler>();

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Ddon.Core.Use.Socket
+namespace Ddon.Socket.Core
 {
     public interface ISocketCoreSession
     {

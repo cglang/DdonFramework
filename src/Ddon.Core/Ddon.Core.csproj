@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Use\Socket\" />
+  </ItemGroup>
+
 </Project>

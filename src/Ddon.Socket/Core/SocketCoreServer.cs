@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Ddon.Core.Use.Socket;
+namespace Ddon.Socket.Core;
 
 public class SocketCoreServer : SocketCoreServerBase
 {
