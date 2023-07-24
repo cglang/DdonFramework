@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ddon.Socket.Core;
 using Ddon.Socket.Exceptions;
+using Ddon.Socket.Serialize;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Route;
 using Ddon.Socket.Utility;
@@ -15,11 +16,13 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
 {
     protected ILogger<SocketServerHandler> Logger { get; }
     protected SocketInvoke SocketInvoke { get; }
+    protected ISocketSerialize SocketSerialize { get; }
 
-    public SocketSessionHandler(ILogger<SocketServerHandler> logger, SocketInvoke socketInvoke)
+    public SocketSessionHandler(ILogger<SocketServerHandler> logger, SocketInvoke socketInvoke, ISocketSerialize socketSerialize)
     {
         Logger = logger;
         SocketInvoke = socketInvoke;
+        SocketSerialize = socketSerialize;
     }
 
     public Task StringHandler(SocketCoreSession session, string text)
@@ -59,7 +62,7 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
             var headBytes = bytes.Slice(sizeof(int), bodySize);
             var dataBytes = bytes.Slice(sizeof(int) + bodySize, bytes.Length);
 
-            var headinfo = SerializeHelper.JsonDeserialize<DdonSocketSessionHeadInfo>(headBytes)
+            var headinfo = SocketSerialize.Deserialize<DdonSocketSessionHeadInfo>(headBytes)
                 ?? throw new Exception("消息中不包含消息头");
 
             return (headinfo, dataBytes);
@@ -109,10 +112,11 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
             var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, session, headinfo);
 
             var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
-            var methodReturnJsonBytes = SerializeHelper.JsonSerialize(responseData).GetBytes();
+            var methodReturnJsonBytes = SocketSerialize.SerializeOfByte(responseData);
+
             var responseHeadBytes = headinfo.Response().GetBytes();
 
-            ByteArrayHelper.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
+            ByteArrayHelper.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes.Span);
             await session.SendBytesAsync(sendBytes);
         }
 
@@ -125,17 +129,17 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
             if (responseHandle.IsCompleted)
                 return Task.CompletedTask;
 
-            var res = SerializeHelper.JsonDeserialize<DdonSocketResponse<object>>(data);
+            var res = SocketSerialize.Deserialize<DdonSocketResponse<object>>(data);
 
             if (res != null)
             {
                 switch (res.Code)
                 {
                     case DdonSocketResponseCode.OK:
-                        responseHandle.ActionThen(SerializeHelper.JsonSerialize(res.Data));
+                        responseHandle.ActionThen(SocketSerialize.SerializeOfString(res.Data));
                         break;
                     case DdonSocketResponseCode.Error:
-                        responseHandle.ExceptionThen(SerializeHelper.JsonSerialize(res.Data));
+                        responseHandle.ExceptionThen(SocketSerialize.SerializeOfString(res.Data));
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -163,7 +167,7 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
 
 public class SocketServerHandler : SocketSessionHandler, ISocketCoreServerHandler
 {
-    public SocketServerHandler(ILogger<SocketServerHandler> logger, SocketInvoke socketInvoke) : base(logger, socketInvoke)
+    public SocketServerHandler(ILogger<SocketServerHandler> logger, SocketInvoke socketInvoke, ISocketSerialize socketSerialize) : base(logger, socketInvoke, socketSerialize)
     {
     }
 

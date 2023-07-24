@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -81,6 +82,24 @@ namespace Ddon.Socket.Core
         public ValueTask SendStringAsync(string data)
         {
             return SendBytesAsync(data.GetBytes(), DataType.Text);
+        }
+
+        /// <summary>
+        /// 发送Byte数组
+        /// </summary>
+        /// <param name="data">数据</param>
+        /// <param name="type">发送类型</param>
+        /// <returns>发送的数据字节长度</returns>
+        public async ValueTask SendBytesAsync(params ReadOnlyMemory<byte>[] data)
+        {
+            var lengthByte = BitConverter.GetBytes(data.Sum(x => x.Length));
+            var typeByte = new[] { (byte)DataType.Byte };
+            ByteArrayHelper.MergeArrays(out var contentBytes, lengthByte, typeByte);
+            await Stream.WriteAsync(contentBytes);
+            foreach (var item in data)
+            {
+                await Stream.WriteAsync(item);
+            }
         }
 
 
