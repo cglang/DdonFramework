@@ -28,75 +28,123 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
         return Task.CompletedTask;
     }
 
-    public async Task ByteHandler(SocketCoreSession session, Memory<byte> bytes)
+    public Task ByteHandler(SocketCoreSession session, Memory<byte> bytes)
     {
         try
         {
-            var headLength = BitConverter.ToInt32(bytes.Span[..sizeof(int)]);
-            var headBytes = bytes.Slice(sizeof(int), headLength);
-            var dataBytes = bytes[(sizeof(int) + headLength)..];
+            var (headinfo, data) = GetBody(bytes);
 
-            var head = SerializeHelper.JsonDeserialize<DdonSocketSessionHeadInfo>(headBytes) ?? throw new Exception("消息中不包含消息头");
-            if (head.Mode == DdonSocketMode.Response)
+            return headinfo.Mode switch
             {
-                ResponseHandle(new DdonSocketPackageInfo<Memory<byte>>(session, head, dataBytes));
-                return;
-            }
-
-            (string className, string methodName)? route = DdonSocketRouteMap.Get(head.Route);
-            if (route is null) return;
-
-            switch (head.Mode)
-            {
-                case DdonSocketMode.String:
-                    {
-                        var data = Encoding.UTF8.GetString(dataBytes.Span);
-                        await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, session, head);
-                        break;
-                    }
-                case DdonSocketMode.Byte:
-                    {
-                        var data = Encoding.UTF8.GetString(dataBytes.Span);
-                        await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, data, session, head);
-                        break;
-                    }
-                case DdonSocketMode.File:
-                    {
-                        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File", DateTime.UtcNow.ToString("yyyy-MM-dd"));
-                        Directory.CreateDirectory(filePath);
-
-                        var fullName = Path.Combine(filePath, $"{session.SessionId}.{DateTime.UtcNow:mmssffff}.{head.FileName ?? string.Empty}");
-                        await using var fileStream = new FileStream(fullName, FileMode.CreateNew);
-                        fileStream.Write(dataBytes.Span);
-                        fileStream.Close();
-
-                        await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, fullName, session, head);
-
-
-                        break;
-                    }
-                case DdonSocketMode.Request:
-                    {
-                        var jsonData = Encoding.UTF8.GetString(dataBytes.Span);
-                        var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, session, head);
-
-                        var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
-                        var methodReturnJsonBytes = SerializeHelper.JsonSerialize(responseData).GetBytes();
-                        var responseHeadBytes = head.Response().GetBytes();
-
-                        ByteArrayHelper.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
-                        await session.SendBytesAsync(sendBytes);
-                        break;
-                    }
-                case DdonSocketMode.Response:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                DdonSocketMode.String => ModeOfStringAsync(headinfo, data),
+                DdonSocketMode.Byte => ModeOfByteAsync(headinfo, data),
+                DdonSocketMode.File => ModeOfFileAsync(headinfo, data),
+                DdonSocketMode.Request => ModeOfRequestAsync(headinfo, data),
+                DdonSocketMode.Response => ModeOfResponse(session, headinfo, data),
+                _ => Task.CompletedTask,
+            };
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "ByteHandler 错误");
+        }
+
+        return Task.CompletedTask;
+
+        (DdonSocketSessionHeadInfo headinfo, Memory<byte> data) GetBody(Memory<byte> bytes)
+        {
+            // head部分数据的大小       存放一些数据头部的数据       真正的数据
+            // [ headSize :: 4bytes ] [ head :: headSize bytes ] [ data ]
+            var bodySize = BitConverter.ToInt32(bytes.Slice(0, sizeof(int)).Span);
+            var headBytes = bytes.Slice(sizeof(int), bodySize);
+            var dataBytes = bytes.Slice(sizeof(int) + bodySize, bytes.Length);
+
+            var headinfo = SerializeHelper.JsonDeserialize<DdonSocketSessionHeadInfo>(headBytes)
+                ?? throw new Exception("消息中不包含消息头");
+
+            return (headinfo, dataBytes);
+        }
+
+        Task ModeOfStringAsync(DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
+        {
+            (string className, string methodName)? route = DdonSocketRouteMap.Get(headinfo.Route);
+            if (route is null) return Task.CompletedTask;
+
+            var textdata = Encoding.UTF8.GetString(data.Span);
+            return SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, textdata, session, headinfo);
+        }
+
+        Task ModeOfByteAsync(DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
+        {
+            (string className, string methodName)? route = DdonSocketRouteMap.Get(headinfo.Route);
+            if (route is null) return Task.CompletedTask;
+
+            var textdata = Encoding.UTF8.GetString(data.Span);
+            return SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, textdata, session, headinfo);
+        }
+
+        Task ModeOfFileAsync(DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
+        {
+            // TODO: File 需要有一个抽象层接口
+
+            (string className, string methodName)? route = DdonSocketRouteMap.Get(headinfo.Route);
+            if (route is null)
+                return Task.CompletedTask;
+            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File", DateTime.UtcNow.ToString("yyyy-MM-dd"));
+            Directory.CreateDirectory(filePath);
+
+            var fullName = Path.Combine(filePath, $"{session.SessionId}.{DateTime.UtcNow:mmssffff}.{headinfo.FileName ?? string.Empty}");
+            using var fileStream = new FileStream(fullName, FileMode.CreateNew);
+            fileStream.Write(data.Span);
+            fileStream.Close();
+
+            return SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, fullName, session, headinfo);
+        }
+
+        async Task ModeOfRequestAsync(DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
+        {
+            (string className, string methodName)? route = DdonSocketRouteMap.Get(headinfo.Route);
+            if (route is null) return;
+            var jsonData = Encoding.UTF8.GetString(data.Span);
+            var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, session, headinfo);
+
+            var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
+            var methodReturnJsonBytes = SerializeHelper.JsonSerialize(responseData).GetBytes();
+            var responseHeadBytes = headinfo.Response().GetBytes();
+
+            ByteArrayHelper.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
+            await session.SendBytesAsync(sendBytes);
+        }
+
+        Task ModeOfResponse(SocketCoreSession session, DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
+        {
+            if (!DdonSocketResponsePool.ContainsKey(headinfo.Id))
+                return Task.CompletedTask;
+
+            var responseHandle = DdonSocketResponsePool.Get(headinfo.Id);
+            if (responseHandle.IsCompleted)
+                return Task.CompletedTask;
+
+            var res = SerializeHelper.JsonDeserialize<DdonSocketResponse<object>>(data);
+
+            if (res != null)
+            {
+                switch (res.Code)
+                {
+                    case DdonSocketResponseCode.OK:
+                        responseHandle.ActionThen(SerializeHelper.JsonSerialize(res.Data));
+                        break;
+                    case DdonSocketResponseCode.Error:
+                        responseHandle.ExceptionThen(SerializeHelper.JsonSerialize(res.Data));
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            DdonSocketResponsePool.Remove(headinfo.Id);
+
+            return Task.CompletedTask;
         }
     }
 
@@ -111,38 +159,6 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
         Logger.LogError(exception, $"异常");
         return Task.CompletedTask;
     }
-
-    private static void ResponseHandle(DdonSocketPackageInfo<Memory<byte>> info)
-    {
-        var id = info.Head.Id;
-
-        if (!DdonSocketResponsePool.ContainsKey(id)) return;
-
-        var responseHandle = DdonSocketResponsePool.Get(id);
-        if (responseHandle.IsCompleted)
-        {
-            return;
-        }
-
-        var res = SerializeHelper.JsonDeserialize<DdonSocketResponse<object>>(info.Data);
-
-        if (res != null)
-        {
-            switch (res.Code)
-            {
-                case DdonSocketResponseCode.OK:
-                    responseHandle.ActionThen(SerializeHelper.JsonSerialize(res.Data));
-                    break;
-                case DdonSocketResponseCode.Error:
-                    responseHandle.ExceptionThen(SerializeHelper.JsonSerialize(res.Data));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        DdonSocketResponsePool.Remove(id);
-    }
 }
 
 public class SocketServerHandler : SocketSessionHandler, ISocketCoreServerHandler
@@ -154,7 +170,6 @@ public class SocketServerHandler : SocketSessionHandler, ISocketCoreServerHandle
     public Task ConnectHandler(SocketCoreSession session)
     {
         // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
-        //SessionStorage.Instance.Add(session);
         Logger.LogInformation($"连接接入:{session.SessionId}");
         return Task.CompletedTask;
     }
