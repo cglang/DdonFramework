@@ -60,36 +60,26 @@ namespace Ddon.Socket.Core
 
         protected abstract Task Receive();
 
-        private ValueTask SendBytesAsync(byte[] data, DataType type)
-        {
-            var lengthByte = BitConverter.GetBytes(data.Length);
-            var typeByte = new[] { (byte)type };
-
-            ByteArrayHelper.MergeArrays(out var contentBytes, lengthByte, typeByte, data);
-            return Stream.WriteAsync(contentBytes);
-        }
-
-        public async ValueTask SendStringAsync(string data)
-        {
-            var textByte = data.GetBytes();
-            var lengthByte = BitConverter.GetBytes(textByte.Length);
-            var typeByte = new[] { (byte)DataType.Text };
-
-            await Stream.WriteAsync(lengthByte);
-            await Stream.WriteAsync(typeByte);
-            await Stream.WriteAsync(textByte);
-        }
-
-        public async ValueTask SendBytesAsync(params ReadOnlyMemory<byte>[] data)
+        private async ValueTask SendAsync(DataType type, params ReadOnlyMemory<byte>[] data)
         {
             var lengthByte = BitConverter.GetBytes(data.Sum(x => x.Length));
-            var typeByte = new[] { (byte)DataType.Byte };
+            var typeByte = new[] { (byte)type };
             await Stream.WriteAsync(lengthByte);
             await Stream.WriteAsync(typeByte);
             foreach (var item in data)
             {
                 await Stream.WriteAsync(item);
             }
+        }
+
+        public ValueTask SendStringAsync(string data)
+        {
+            return SendAsync(DataType.Text, data.GetBytes());
+        }
+
+        public ValueTask SendBytesAsync(params ReadOnlyMemory<byte>[] data)
+        {
+            return SendAsync(DataType.Byte, data);
         }
 
 
