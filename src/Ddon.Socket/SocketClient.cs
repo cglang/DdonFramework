@@ -37,7 +37,7 @@ namespace Ddon.Socket
             _logger = logger;
             _socketSerialize = socketSerialize;
 
-            DdonSocketResponsePool.Start();
+            TimeoutRecordProcessor.Start();
         }
 
         private Func<SocketSession, Task> ReconnectionHandler => async session =>
@@ -82,9 +82,9 @@ namespace Ddon.Socket
         {
             var taskCompletion = new TaskCompletionSource<string>();
 
-            var response = new DdonSocketResponse(taskCompletion.SetResult, 
+            var response = new RequestEventListener(taskCompletion.SetResult, 
                 _ => taskCompletion.SetException(new DdonSocketRequestException("请求超时")));
-            DdonSocketResponsePool.Add(response);
+            TimeoutRecordProcessor.Add(response);
 
             var requetBytes = _socketSerialize.SerializeOfByte(new DdonSocketSessionHeadInfo(response.Id, DdonSocketMode.Request, route));
             var dataBytes = _socketSerialize.SerializeOfByte(data);

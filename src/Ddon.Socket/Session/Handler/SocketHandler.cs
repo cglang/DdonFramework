@@ -121,10 +121,10 @@ public class SocketSessionHandler : ISocketSessionHandler
 
         Task ModeOfResponse(SocketSession session, DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
         {
-            if (!DdonSocketResponsePool.ContainsKey(headinfo.Id))
+            if (!TimeoutRecordProcessor.ContainsKey(headinfo.Id))
                 return Task.CompletedTask;
 
-            var responseHandle = DdonSocketResponsePool.Get(headinfo.Id);
+            var responseHandle = TimeoutRecordProcessor.Get(headinfo.Id);
             if (responseHandle.IsCompleted)
                 return Task.CompletedTask;
 
@@ -145,7 +145,7 @@ public class SocketSessionHandler : ISocketSessionHandler
                 }
             }
 
-            DdonSocketResponsePool.Remove(headinfo.Id);
+            TimeoutRecordProcessor.Remove(headinfo.Id);
 
             return Task.CompletedTask;
         }
