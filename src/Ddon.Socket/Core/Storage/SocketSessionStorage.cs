@@ -5,26 +5,26 @@ using System.Linq;
 
 namespace Ddon.Socket.Core.Storage;
 
-internal class SocketCoreSessionStorage : ISocketCoreSessionStorage
+internal class SocketSessionStorage : ISocketSessionStorage
 {
-    private static readonly ConcurrentDictionary<Guid, SocketCoreSession> Pairs = new();
+    private static readonly ConcurrentDictionary<Guid, SocketSession> Pairs = new();
 
-    public SocketCoreSession? Get(Guid socketId)
+    public SocketSession? Get(Guid socketId)
     {
         return Pairs.ContainsKey(socketId) ? Pairs[socketId] : null;
     }
 
-    public IEnumerable<SocketCoreSession> Get(IEnumerable<Guid> socketIds)
+    public IEnumerable<SocketSession> Get(IEnumerable<Guid> socketIds)
     {
         return Pairs.Values.Where(x => socketIds.Contains(x.SessionId));
     }
 
-    public IEnumerable<SocketCoreSession> GetAll()
+    public IEnumerable<SocketSession> GetAll()
     {
         return Pairs.Values;
     }
 
-    public bool Add(SocketCoreSession session)
+    public bool Add(SocketSession session)
     {
         return !Pairs.ContainsKey(session.SessionId) && Pairs.TryAdd(session.SessionId, session);
     }

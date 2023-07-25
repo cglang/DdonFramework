@@ -11,22 +11,22 @@ namespace Ddon.Socket.Session
 
         public static SessionStorage Instance = new Lazy<SessionStorage>(() => new SessionStorage()).Value;
 
-        private readonly Dictionary<Guid, SocketCoreSession> Pairs = new();
+        private readonly Dictionary<Guid, SocketSession> Pairs = new();
 
-        public IEnumerable<SocketCoreSession> Sessions => Pairs.Values;
+        public IEnumerable<SocketSession> Sessions => Pairs.Values;
 
 
-        public SocketCoreSession? GetClient(Guid sessionId)
+        public SocketSession? GetClient(Guid sessionId)
         {
             return Pairs.ContainsKey(sessionId) ? Pairs[sessionId] : null;
         }
 
-        public IEnumerable<SocketCoreSession>? GetClients(IEnumerable<Guid> sessionIds)
+        public IEnumerable<SocketSession>? GetClients(IEnumerable<Guid> sessionIds)
         {
             return Pairs.Values.Where(x => sessionIds.Contains(x.SessionId));
         }
 
-        public void Add(SocketCoreSession session)
+        public void Add(SocketSession session)
         {
             if (!Pairs.ContainsKey(session.SessionId))
                 Pairs.Add(session.SessionId, session);

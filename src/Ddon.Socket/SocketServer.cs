@@ -10,9 +10,9 @@ namespace Ddon.Socket
 {
     public class SocketServer
     {
-        private readonly SocketCoreServer _server;
+        private readonly SocketServerCore _server;
 
-        public SocketServer(SocketServerOption option, SocketServerHandler handle, ISocketCoreSessionStorage sessionStorage)
+        public SocketServer(SocketServerOption option, SocketServerHandler handle, ISocketSessionStorage sessionStorage)
         {
             _server = DdonSocket.CreateServer(option.IPEndPoint, handle, sessionStorage);
         }

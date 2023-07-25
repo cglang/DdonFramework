@@ -1,4 +1,5 @@
 ﻿using Ddon.Socket.Options;
+using Ddon.Socket.Serialize;
 using Ddon.Socket.Session.Handler;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.Logging;
@@ -10,12 +11,18 @@ namespace Ddon.Socket
     {
         private readonly SocketSessionHandler _handler;
         private readonly ILogger<SocketClient> _logger;
+        private readonly ISocketSerialize _socketSerialize;
         private readonly SocketClientOption _options;
 
-        public SocketClientFactory(SocketSessionHandler handler, IOptions<SocketClientOption> options, ILogger<SocketClient> logger)
+        public SocketClientFactory(
+            SocketSessionHandler handler,
+            IOptions<SocketClientOption> options,
+            ILogger<SocketClient> logger,
+            ISocketSerialize socketSerialize)
         {
             _handler = handler;
             _logger = logger;
+            _socketSerialize = socketSerialize;
             _options = options.Value;
         }
 
@@ -23,9 +30,7 @@ namespace Ddon.Socket
         {
             DdonSocketRouteMap.Init();
 
-            var client = new SocketClient(_options, _handler, _logger);
-
-            return client;
+            return new(_options, _handler, _logger, _socketSerialize);
         }
     }
 }

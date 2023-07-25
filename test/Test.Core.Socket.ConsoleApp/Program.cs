@@ -34,9 +34,7 @@ using var session = DdonSocket.CreateSession<DdonSocketSessionHandler>("127.0.0.
 
 string text = "测试文本";
 await session.SendStringAsync(text);
-
-var textByte = Encoding.UTF8.GetBytes(text);
-await session.SendBytesAsync(textByte);
+await session.SendBytesAsync(text.GetBytes());
 
 await Task.Delay(1000);
 

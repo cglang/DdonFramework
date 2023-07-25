@@ -5,46 +5,46 @@ using Ddon.Socket.Exceptions;
 
 namespace Ddon.Socket.Core
 {
-    public abstract class DdonSocketServerHandlerBase : IDdonSocketServerBind
+    public abstract class DdonSocketServerHandlerBase : ISocketServerBind
     {
-        protected Func<SocketCoreSession, Memory<byte>, Task>? ByteHandler;
-        protected Func<SocketCoreSession, string, Task>? StringHandler;
-        protected Func<SocketCoreSession, SocketException, Task>? ExceptionHandler;
-        protected Func<SocketCoreSession, Task>? DisconnectHandler;
-        protected Func<SocketCoreSession, Task>? ConnectHandler;
+        protected Func<SocketSession, Memory<byte>, Task>? ByteHandler;
+        protected Func<SocketSession, string, Task>? StringHandler;
+        protected Func<SocketSession, SocketException, Task>? ExceptionHandler;
+        protected Func<SocketSession, Task>? DisconnectHandler;
+        protected Func<SocketSession, Task>? ConnectHandler;
 
-        public IDdonSocketServerBind BindByteHandler(Func<SocketCoreSession, Memory<byte>, Task>? byteHandler)
+        public ISocketServerBind BindByteHandler(Func<SocketSession, Memory<byte>, Task>? byteHandler)
         {
             ByteHandler += byteHandler;
             return this;
         }
 
-        public IDdonSocketServerBind BindStringHandler(Func<SocketCoreSession, string, Task>? stringHandler)
+        public ISocketServerBind BindStringHandler(Func<SocketSession, string, Task>? stringHandler)
         {
             StringHandler += stringHandler;
             return this;
         }
 
-        public IDdonSocketServerBind BindExceptionHandler(Func<SocketCoreSession, SocketException, Task>? exceptionHandler)
+        public ISocketServerBind BindExceptionHandler(Func<SocketSession, SocketException, Task>? exceptionHandler)
         {
             ExceptionHandler += exceptionHandler;
             return this;
         }
 
-        public IDdonSocketServerBind BindDisconnectHandler(Func<SocketCoreSession, Task>? disconnectHandler)
+        public ISocketServerBind BindDisconnectHandler(Func<SocketSession, Task>? disconnectHandler)
         {
             DisconnectHandler += disconnectHandler;
             return this;
         }
 
-        public IDdonSocketServerBind BindConnectHandler(Func<SocketCoreSession, Task>? connectHandler)
+        public ISocketServerBind BindConnectHandler(Func<SocketSession, Task>? connectHandler)
         {
             ConnectHandler += connectHandler;
             return this;
         }
     }
 
-    public abstract class SocketCoreServerBase : DdonSocketServerHandlerBase, IDdonSocketServerBind
+    public abstract class SocketServerCoreBase : DdonSocketServerHandlerBase, ISocketServerBind
     {
         /// <summary>
         /// 在新线程中启动Socket服务

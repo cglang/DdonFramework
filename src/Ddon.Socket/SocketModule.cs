@@ -1,5 +1,6 @@
 ﻿using Ddon.Core;
 using Ddon.Socket.Core.Storage;
+using Ddon.Socket.Serialize;
 using Ddon.Socket.Session.Handler;
 using Ddon.Socket.Utility;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +21,8 @@ namespace Ddon.Socket
 
             services.AddTransient<SocketClientFactory>();
 
-            services.AddSingleton<ISocketCoreSessionStorage, SocketCoreSessionStorage>();
+            services.AddSingleton<ISocketSerialize, JsonSocketSerialize>();
+            services.AddSingleton<ISocketSessionStorage, SocketSessionStorage>();
         }
     }
 }

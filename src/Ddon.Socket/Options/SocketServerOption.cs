@@ -5,7 +5,7 @@ namespace Ddon.Socket.Options
 {
     public class SocketServerOption
     {
-        [AllowNull]
-        public IPEndPoint? IPEndPoint { get; set; }
+        [AllowNull, NotNull]
+        public IPEndPoint IPEndPoint { get; set; }
     }
 }

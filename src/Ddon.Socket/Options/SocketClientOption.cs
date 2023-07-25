@@ -7,7 +7,7 @@ namespace Ddon.Socket.Options
         /// <summary>
         /// 服务端地址
         /// </summary>
-        [AllowNull]
+        [AllowNull, NotNull]
         public string Host { get; set; }
 
         /// <summary>

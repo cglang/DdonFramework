@@ -3,7 +3,7 @@ using Ddon.Socket.Utility;
 
 namespace Ddon.Socket.Core;
 
-public partial class SocketCoreSession
+public partial class SocketSession
 {
     private readonly struct Head
     {

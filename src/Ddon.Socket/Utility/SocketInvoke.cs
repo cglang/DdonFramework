@@ -23,7 +23,7 @@ namespace Ddon.Socket.Utility
             string className,
             string methodName,
             string parameter,
-            SocketCoreSession connection,
+            SocketSession connection,
             DdonSocketSessionHeadInfo head)
         {
             using var scope = _services.CreateScope();

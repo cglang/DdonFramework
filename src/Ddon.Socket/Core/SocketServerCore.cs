@@ -7,12 +7,12 @@ using Ddon.Socket.Core.Storage;
 
 namespace Ddon.Socket.Core;
 
-public class SocketCoreServer : SocketCoreServerBase
+public class SocketServerCore : SocketServerCoreBase
 {
     private readonly TcpListener _listener;
-    private readonly ISocketCoreSessionStorage _sessionStorage;
+    private readonly ISocketSessionStorage _sessionStorage;
 
-    public SocketCoreServer(IPEndPoint localEP, ISocketCoreSessionStorage sessionStorage)
+    public SocketServerCore(IPEndPoint localEP, ISocketSessionStorage sessionStorage)
     {
         _listener = new TcpListener(localEP);
         _sessionStorage = sessionStorage;
@@ -25,7 +25,7 @@ public class SocketCoreServer : SocketCoreServerBase
         {
             var client = await _listener.AcceptTcpClientAsync(cancellationToken);
 
-            var session = new SocketCoreSession(client, Guid.NewGuid());
+            var session = new SocketSession(client, Guid.NewGuid());
 
             session.BindByteHandler(ByteHandler)
                 .BindStringHandler(StringHandler)
@@ -40,7 +40,7 @@ public class SocketCoreServer : SocketCoreServerBase
         }
     }
 
-    private Task DefaultExceptionHandler(SocketCoreSession _, Exceptions.SocketException ex)
+    private Task DefaultExceptionHandler(SocketSession _, Exceptions.SocketException ex)
     {
         _sessionStorage.Remove(ex.SocketId);
         return Task.CompletedTask;

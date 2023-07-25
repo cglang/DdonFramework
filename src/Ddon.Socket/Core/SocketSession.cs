@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace Ddon.Socket.Core;
 
-public partial class SocketCoreSession : SocketCoreSessionBase
+public partial class SocketSession : SocketSessionBase
 {
-    public SocketCoreSession(TcpClient tcpClient) : base(tcpClient)
+    public SocketSession(TcpClient tcpClient) : base(tcpClient)
     {
         var data = Stream.ReadLength(16);
         SessionId = new Guid(data.Span);
     }
 
-    public SocketCoreSession(TcpClient tcpClient, Guid socketId) : base(tcpClient)
+    public SocketSession(TcpClient tcpClient, Guid socketId) : base(tcpClient)
     {
         SessionId = socketId;
         tcpClient.GetStream().Write(SessionId.ToByteArray());
     }
 
-    public SocketCoreSession(string host, int port) : this(new TcpClient(host, port)) { }
+    public SocketSession(string host, int port) : this(new TcpClient(host, port)) { }
 
     protected void InitConnect(TcpClient tcpClient)
     {

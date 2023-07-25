@@ -1,45 +1,46 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Socket.Utility;
 
 namespace Ddon.Socket.Core
 {
-    public abstract class DdonSocketSessionHandlerBase : IDdonSocketSessionBind
+    public abstract class SocketSessionHandlerBase : ISocketSessionBind
     {
-        protected Func<SocketCoreSession, Memory<byte>, Task>? ByteHandler;
-        protected Func<SocketCoreSession, string, Task>? StringHandler;
-        protected Func<SocketCoreSession, Exceptions.SocketException, Task>? ExceptionHandler;
-        protected Func<SocketCoreSession, Task>? DisconnectHandler;
+        protected Func<SocketSession, Memory<byte>, Task>? ByteHandler;
+        protected Func<SocketSession, string, Task>? StringHandler;
+        protected Func<SocketSession, Exceptions.SocketException, Task>? ExceptionHandler;
+        protected Func<SocketSession, Task>? DisconnectHandler;
 
-        public IDdonSocketSessionBind BindByteHandler(Func<SocketCoreSession, Memory<byte>, Task>? byteHandler)
+        public ISocketSessionBind BindByteHandler(Func<SocketSession, Memory<byte>, Task>? byteHandler)
         {
             ByteHandler += byteHandler;
             return this;
         }
 
-        public IDdonSocketSessionBind BindStringHandler(Func<SocketCoreSession, string, Task>? stringHandler)
+        public ISocketSessionBind BindStringHandler(Func<SocketSession, string, Task>? stringHandler)
         {
             StringHandler += stringHandler;
             return this;
         }
 
-        public IDdonSocketSessionBind BindExceptionHandler(Func<SocketCoreSession, Exceptions.SocketException, Task>? exceptionHandler)
+        public ISocketSessionBind BindExceptionHandler(Func<SocketSession, Exceptions.SocketException, Task>? exceptionHandler)
         {
             ExceptionHandler += exceptionHandler;
             return this;
         }
 
-        public IDdonSocketSessionBind BindDisconnectHandler(Func<SocketCoreSession, Task>? disconnectHandler)
+        public ISocketSessionBind BindDisconnectHandler(Func<SocketSession, Task>? disconnectHandler)
         {
             DisconnectHandler += disconnectHandler;
             return this;
         }
     }
 
-    public abstract class SocketCoreSessionBase : DdonSocketSessionHandlerBase, IDdonSocketSessionBind, IDisposable
+    public abstract class SocketSessionBase : SocketSessionHandlerBase, ISocketSessionBind, IDisposable
     {
         protected TcpClient _tcpClient;
 
@@ -47,7 +48,7 @@ namespace Ddon.Socket.Core
 
         public Guid SessionId { get; protected set; }
 
-        public SocketCoreSessionBase(TcpClient tcpClient)
+        public SocketSessionBase(TcpClient tcpClient)
         {
             _tcpClient = tcpClient;
             Start();
@@ -59,13 +60,7 @@ namespace Ddon.Socket.Core
 
         protected abstract Task Receive();
 
-        /// <summary>
-        /// 发送Byte数组
-        /// </summary>
-        /// <param name="data">数据</param>
-        /// <param name="type">发送类型</param>
-        /// <returns>发送的数据字节长度</returns>
-        public ValueTask SendBytesAsync(byte[] data, DataType type = DataType.Byte)
+        private ValueTask SendBytesAsync(byte[] data, DataType type)
         {
             var lengthByte = BitConverter.GetBytes(data.Length);
             var typeByte = new[] { (byte)type };
@@ -74,28 +69,23 @@ namespace Ddon.Socket.Core
             return Stream.WriteAsync(contentBytes);
         }
 
-        /// <summary>
-        /// 发送字符串
-        /// </summary>
-        /// <param name="data">数据</param>
-        /// <returns>发送的数据字节长度</returns>
-        public ValueTask SendStringAsync(string data)
+        public async ValueTask SendStringAsync(string data)
         {
-            return SendBytesAsync(data.GetBytes(), DataType.Text);
+            var textByte = data.GetBytes();
+            var lengthByte = BitConverter.GetBytes(textByte.Length);
+            var typeByte = new[] { (byte)DataType.Text };
+
+            await Stream.WriteAsync(lengthByte);
+            await Stream.WriteAsync(typeByte);
+            await Stream.WriteAsync(textByte);
         }
 
-        /// <summary>
-        /// 发送Byte数组
-        /// </summary>
-        /// <param name="data">数据</param>
-        /// <param name="type">发送类型</param>
-        /// <returns>发送的数据字节长度</returns>
         public async ValueTask SendBytesAsync(params ReadOnlyMemory<byte>[] data)
         {
             var lengthByte = BitConverter.GetBytes(data.Sum(x => x.Length));
             var typeByte = new[] { (byte)DataType.Byte };
-            ByteArrayHelper.MergeArrays(out var contentBytes, lengthByte, typeByte);
-            await Stream.WriteAsync(contentBytes);
+            await Stream.WriteAsync(lengthByte);
+            await Stream.WriteAsync(typeByte);
             foreach (var item in data)
             {
                 await Stream.WriteAsync(item);

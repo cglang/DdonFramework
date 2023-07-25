@@ -12,10 +12,10 @@ namespace Ddon.Socket.Hosting
     public class SocketBackgroundService : BackgroundService
     {
         private readonly SocketServerHandler _handle;
-        private readonly ISocketCoreSessionStorage _sessionStorage;
+        private readonly ISocketSessionStorage _sessionStorage;
         private readonly SocketServerOption _option;
 
-        public SocketBackgroundService(SocketServerHandler handle, IOptions<SocketServerOption> option, ISocketCoreSessionStorage sessionStorage)
+        public SocketBackgroundService(SocketServerHandler handle, IOptions<SocketServerOption> option, ISocketSessionStorage sessionStorage)
         {
             _handle = handle;
             _option = option.Value;

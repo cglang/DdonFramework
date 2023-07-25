@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Ddon.Socket.Session.Handler;
 
-public class SocketSessionHandler : ISocketCoreSessionHandler
+public class SocketSessionHandler : ISocketSessionHandler
 {
     protected ILogger<SocketServerHandler> Logger { get; }
     protected SocketInvoke SocketInvoke { get; }
@@ -25,13 +25,13 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
         SocketSerialize = socketSerialize;
     }
 
-    public Task StringHandler(SocketCoreSession session, string text)
+    public Task StringHandler(SocketSession session, string text)
     {
         Logger.LogError("现在还无法处理文本类型的数据");
         return Task.CompletedTask;
     }
 
-    public Task ByteHandler(SocketCoreSession session, Memory<byte> bytes)
+    public Task ByteHandler(SocketSession session, Memory<byte> bytes)
     {
         try
         {
@@ -114,13 +114,12 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
             var responseData = new DdonSocketResponse<object>(DdonSocketResponseCode.OK, methodReturn);
             var methodReturnJsonBytes = SocketSerialize.SerializeOfByte(responseData);
 
-            var responseHeadBytes = headinfo.Response().GetBytes();
+            var responseHeadBytes = SocketSerialize.SerializeOfByte(headinfo.Response());
 
-            ByteArrayHelper.MergeArrays(out var sendBytes, BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes.Span);
-            await session.SendBytesAsync(sendBytes);
+            await session.SendBytesAsync(BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
         }
 
-        Task ModeOfResponse(SocketCoreSession session, DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
+        Task ModeOfResponse(SocketSession session, DdonSocketSessionHeadInfo headinfo, Memory<byte> data)
         {
             if (!DdonSocketResponsePool.ContainsKey(headinfo.Id))
                 return Task.CompletedTask;
@@ -152,26 +151,26 @@ public class SocketSessionHandler : ISocketCoreSessionHandler
         }
     }
 
-    public Task DisconnectHandler(SocketCoreSession session)
+    public Task DisconnectHandler(SocketSession session)
     {
         Logger.LogInformation($"连接断开:{session.SessionId}");
         return Task.CompletedTask;
     }
 
-    public Task ExceptionHandler(SocketCoreSession session, SocketException exception)
+    public Task ExceptionHandler(SocketSession session, SocketException exception)
     {
         Logger.LogError(exception, $"异常");
         return Task.CompletedTask;
     }
 }
 
-public class SocketServerHandler : SocketSessionHandler, ISocketCoreServerHandler
+public class SocketServerHandler : SocketSessionHandler, ISocketServerCoreHandler
 {
     public SocketServerHandler(ILogger<SocketServerHandler> logger, SocketInvoke socketInvoke, ISocketSerialize socketSerialize) : base(logger, socketInvoke, socketSerialize)
     {
     }
 
-    public Task ConnectHandler(SocketCoreSession session)
+    public Task ConnectHandler(SocketSession session)
     {
         // TODO:优化这个存储类 考虑支持多线程读写的 和 改为静态类
         Logger.LogInformation($"连接接入:{session.SessionId}");

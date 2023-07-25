@@ -6,22 +6,22 @@ namespace Ddon.Socket;
 
 public static class DdonSocket
 {
-    public static SocketCoreServer CreateServer(IPAddress? ip = null, int port = 6000)
+    public static SocketServerCore CreateServer(IPAddress? ip = null, int port = 6000)
     {
-        return new(new(ip ?? IPAddress.Loopback, port), new SocketCoreSessionStorage());
+        return new(new(ip ?? IPAddress.Loopback, port), new SocketSessionStorage());
     }
 
-    public static SocketCoreServer CreateServer<TSocketHandler>(int port = 6000) where TSocketHandler : ISocketCoreServerHandler, new()
+    public static SocketServerCore CreateServer<TSocketHandler>(int port = 6000) where TSocketHandler : ISocketServerCoreHandler, new()
     {
-        return CreateServer(new(IPAddress.Loopback, port), new TSocketHandler(), new SocketCoreSessionStorage());
+        return CreateServer(new(IPAddress.Loopback, port), new TSocketHandler(), new SocketSessionStorage());
     }
 
-    internal static SocketCoreServer CreateServer(
+    internal static SocketServerCore CreateServer(
         IPEndPoint localEP,
-        ISocketCoreServerHandler handle,
-        ISocketCoreSessionStorage sessionStorage)
+        ISocketServerCoreHandler handle,
+        ISocketSessionStorage sessionStorage)
     {
-        var server = new SocketCoreServer(localEP, sessionStorage);
+        var server = new SocketServerCore(localEP, sessionStorage);
 
         server.BindConnectHandler(handle.ConnectHandler)
             .BindStringHandler(handle.StringHandler)
@@ -33,9 +33,9 @@ public static class DdonSocket
     }
 
 
-    public static SocketCoreSession CreateSession(string serverhost, int port) => new(serverhost, port);
+    public static SocketSession CreateSession(string serverhost, int port) => new(serverhost, port);
 
-    public static SocketCoreSession CreateSession(string serverhost, int port, ISocketCoreSessionHandler handle)
+    public static SocketSession CreateSession(string serverhost, int port, ISocketSessionHandler handle)
     {
         var client = CreateSession(serverhost, port);
         client.BindStringHandler(handle.StringHandler)
@@ -46,8 +46,8 @@ public static class DdonSocket
         return client;
     }
 
-    public static SocketCoreSession CreateSession<TSocketHandler>(string serverhost, int port)
-        where TSocketHandler : ISocketCoreSessionHandler, new()
+    public static SocketSession CreateSession<TSocketHandler>(string serverhost, int port)
+        where TSocketHandler : ISocketSessionHandler, new()
         => CreateSession(serverhost, port, new TSocketHandler());
 
 }
