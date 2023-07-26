@@ -3,6 +3,7 @@ using Ddon.Core.Services.IdWorker;
 using Ddon.Core.Services.IdWorker.Guids;
 using Ddon.Core.Services.IdWorker.Snowflake;
 using Ddon.Core.Services.LazyService;
+using Ddon.Core.Use.Pipeline;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,5 +30,9 @@ public class CoreModule : Module
         services.AddTransient<IIdGenerator, IdGenerator>();
 
         services.AddSingleton<IOSPlatformProvider, OSPlatformProvider>();
+
+        services.AddTransient(typeof(IMiddlewareInstanceProvider<>), typeof(ContainerMiddlewareInstanceProvider<>));
+        services.AddTransient(typeof(IMiddlewarePipelineRegistrar<>), typeof(MiddlewarePipelineRegistrar<>));
+        services.AddTransient(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
     }
 }
