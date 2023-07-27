@@ -39,124 +39,114 @@ public class SocketSessionHandler : ISocketSessionHandler
         return Task.CompletedTask;
     }
 
-    public Task ByteHandler(SocketSession session, Memory<byte> bytes)
+    public async Task ByteHandler(SocketSession session, Memory<byte> bytes)
     {
         try
         {
-            var (headinfo, data) = GetBody(bytes);
+            // head部分数据的大小       存放一些数据头部的数据       真正的数据
+            // [ headSize :: 4bytes ] [ head :: headSize bytes ] [ data ]
+            var headlength = BitConverter.ToInt32(bytes[..sizeof(int)].Span);
+            var head = bytes[sizeof(int)..headlength];
+            var data = bytes[(sizeof(int) + headlength)..];
 
-            return headinfo.Mode switch
+            var headinfo = SocketSerialize.Deserialize<SocketSessionHeadInfo>(head)
+                ?? throw new Exception("消息中不包含消息头");
+
+            var context = new SocketContext(session, headinfo, data);
+
+            await Pipeline.ExecuteAsync(context);
+            await (headinfo.Mode switch
             {
-                SocketMode.String => ModeOfStringAsync(session, headinfo, data),
-                SocketMode.Byte => ModeOfByteAsync(session, headinfo, data),
-                SocketMode.File => ModeOfFileAsync(headinfo, data),
-                SocketMode.Request => ModeOfRequestAsync(headinfo, data),
-                SocketMode.Response => ModeOfResponse(session, headinfo, data),
+                SocketMode.String => ModeOfStringAsync(context),
+                SocketMode.Byte => ModeOfByteAsync(context),
+                SocketMode.File => ModeOfFileAsync(context),
+                SocketMode.Request => ModeOfRequestAsync(context),
+                SocketMode.Response => ModeOfResponse(context),
                 _ => Task.CompletedTask,
-            };
+            });
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "ByteHandler 错误");
         }
 
-        return Task.CompletedTask;
-
-        (SocketSessionHeadInfo headinfo, Memory<byte> data) GetBody(Memory<byte> bytes)
+        async Task ModeOfStringAsync(SocketContext context)
         {
-            // head部分数据的大小       存放一些数据头部的数据       真正的数据
-            // [ headSize :: 4bytes ] [ head :: headSize bytes ] [ data ]
-            var bodySize = BitConverter.ToInt32(bytes.Slice(0, sizeof(int)).Span);
-            var headBytes = bytes.Slice(sizeof(int), bodySize);
-            var dataBytes = bytes[(sizeof(int) + bodySize)..];
-
-            var headinfo = SocketSerialize.Deserialize<SocketSessionHeadInfo>(headBytes)
-                ?? throw new Exception("消息中不包含消息头");
-
-            return (headinfo, dataBytes);
-        }
-
-        async Task ModeOfStringAsync(SocketSession session, SocketSessionHeadInfo headinfo, Memory<byte> data)
-        {
-            (string className, string methodName)? route = SocketRouteMap.Get(headinfo.Route);
+            (string className, string methodName)? route = SocketRouteMap.Get(context.Head.Route);
             if (route is null) return;
 
-            var textdata = Encoding.UTF8.GetString(data.Span);
-            await Pipeline.ExecuteAsync(new(session, headinfo));
-            await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, textdata, session, headinfo);
+            var textdata = Encoding.UTF8.GetString(context.SourceData.Span);
+            await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, textdata, session, context.Head);
         }
 
-        async Task ModeOfByteAsync(SocketSession session, SocketSessionHeadInfo headinfo, Memory<byte> data)
+        async Task ModeOfByteAsync(SocketContext context)
         {
-            (string className, string methodName)? route = SocketRouteMap.Get(headinfo.Route);
+            (string className, string methodName)? route = SocketRouteMap.Get(context.Head.Route);
             if (route is null) return;
 
-            var textdata = Encoding.UTF8.GetString(data.Span);
-            await Pipeline.ExecuteAsync(new(session, headinfo));
-            await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, textdata, session, headinfo);
+            var textdata = Encoding.UTF8.GetString(context.SourceData.Span);
+            await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, textdata, session, context.Head);
         }
 
-        Task ModeOfFileAsync(SocketSessionHeadInfo headinfo, Memory<byte> data)
+        Task ModeOfFileAsync(SocketContext context)
         {
             // TODO: File 需要有一个抽象层接口
 
-            (string className, string methodName)? route = SocketRouteMap.Get(headinfo.Route);
+            (string className, string methodName)? route = SocketRouteMap.Get(context.Head.Route);
             if (route is null)
                 return Task.CompletedTask;
             var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Socket", "File", DateTime.UtcNow.ToString("yyyy-MM-dd"));
             Directory.CreateDirectory(filePath);
 
-            var fullName = Path.Combine(filePath, $"{session.SessionId}.{DateTime.UtcNow:mmssffff}.{headinfo.FileName ?? string.Empty}");
+            var fullName = Path.Combine(filePath, $"{session.SessionId}.{DateTime.UtcNow:mmssffff}.{context.Head.FileName ?? string.Empty}");
             using var fileStream = new FileStream(fullName, FileMode.CreateNew);
-            fileStream.Write(data.Span);
+            fileStream.Write(context.SourceData.Span);
             fileStream.Close();
 
-            return SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, fullName, session, headinfo);
+            return SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, fullName, session, context.Head);
         }
 
-        async Task ModeOfRequestAsync(SocketSessionHeadInfo headinfo, Memory<byte> data)
+        async Task ModeOfRequestAsync(SocketContext context)
         {
-            (string className, string methodName)? route = SocketRouteMap.Get(headinfo.Route);
+            (string className, string methodName)? route = SocketRouteMap.Get(context.Head.Route);
             if (route is null) return;
-            var jsonData = Encoding.UTF8.GetString(data.Span);
-            var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, session, headinfo);
+            var jsonData = Encoding.UTF8.GetString(context.SourceData.Span);
+            var methodReturn = await SocketInvoke.IvnvokeAsync(route.Value.className, route.Value.methodName, jsonData, session, context.Head);
 
             var responseData = new SocketResponse<object>(SocketResponseCode.OK, methodReturn);
             var methodReturnJsonBytes = SocketSerialize.SerializeOfByte(responseData);
 
-            var responseHeadBytes = SocketSerialize.SerializeOfByte(headinfo.Response());
+            var responseHeadBytes = SocketSerialize.SerializeOfByte(context.Head.Response());
 
             await session.SendBytesAsync(BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
         }
 
-        Task ModeOfResponse(SocketSession session, SocketSessionHeadInfo headinfo, Memory<byte> data)
+        Task ModeOfResponse(SocketContext context)
         {
-            if (!TimeoutRecordProcessor.ContainsKey(headinfo.Id))
+            if (!TimeoutRecordProcessor.ContainsKey(context.Head.Id))
                 return Task.CompletedTask;
 
-            var responseHandle = TimeoutRecordProcessor.Get(headinfo.Id);
-            if (responseHandle.IsCompleted)
+            var request = TimeoutRecordProcessor.Get(context.Head.Id);
+            if (request.IsCompleted)
                 return Task.CompletedTask;
 
-            var res = SocketSerialize.Deserialize<SocketResponse<object>>(data);
+            var res = SocketSerialize.Deserialize<SocketResponse<object>>(context.SourceData);
 
             if (res != null)
             {
                 switch (res.Code)
                 {
                     case SocketResponseCode.OK:
-                        responseHandle.ActionThen(SocketSerialize.SerializeOfString(res.Data));
+                        request.ActionHandler(SocketSerialize.SerializeOfString(res.Data));
                         break;
                     case SocketResponseCode.Error:
                         var ex = new DdonSocketRequestException(SocketSerialize.SerializeOfString(res.Data));
-                        responseHandle.ExceptionThen(ex);
+                        request.ExceptionHandler(ex);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
-
-            TimeoutRecordProcessor.Remove(headinfo.Id);
 
             return Task.CompletedTask;
         }

@@ -24,13 +24,13 @@ public partial class SocketSession : SocketSessionBase
 
     protected void InitConnect(TcpClient tcpClient)
     {
-        _tcpClient = tcpClient;
+        base.tcpClient = tcpClient;
         SessionId = new Guid(Stream.ReadLength(16).Span);
     }
 
     public void Reconnect(TcpClient tcpClient)
     {
-        _tcpClient.Dispose();
+        base.tcpClient.Dispose();
         InitConnect(tcpClient);
         Start();
     }

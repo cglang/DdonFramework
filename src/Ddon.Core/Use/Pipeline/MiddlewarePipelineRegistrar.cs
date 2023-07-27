@@ -23,7 +23,7 @@ namespace Ddon.Core.Use.Pipeline
 
         object? IEnumerator.Current => Current;
 
-        public void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralMiddleware<T>, new()
+        public void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralMiddleware<T>
         {
             _middlewares.Add(typeof(TMiddleware));
             curIndex = _middlewares.Count;

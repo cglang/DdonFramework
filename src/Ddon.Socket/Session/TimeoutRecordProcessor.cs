@@ -61,7 +61,7 @@ namespace Ddon.Socket.Session
                         var item = await Instance.DelayQueue.TakeAsync();
                         if (item != default && Pairs.TryGetValue(item, out var value) && !value.IsCompleted)
                         {
-                            Pairs[item].ExceptionThen.Invoke(new DdonSocketRequestException("请求超时"));
+                            Pairs[item].ExceptionHandler(new DdonSocketRequestException("请求超时"));
                         }
                     }
                     catch (Exception ex)

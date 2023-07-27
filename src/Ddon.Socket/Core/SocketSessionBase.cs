@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.Socket.Utility;
 
 namespace Ddon.Socket.Core
 {
@@ -42,30 +41,34 @@ namespace Ddon.Socket.Core
 
     public abstract class SocketSessionBase : SocketSessionHandlerBase, ISocketSessionBind, IDisposable
     {
-        protected TcpClient _tcpClient;
+        protected TcpClient tcpClient;
 
-        protected NetworkStream Stream => _tcpClient.GetStream();
+        protected NetworkStream Stream => tcpClient.GetStream();
 
         public Guid SessionId { get; protected set; }
 
         public SocketSessionBase(TcpClient tcpClient)
         {
-            _tcpClient = tcpClient;
+            this.tcpClient = tcpClient;
             Start();
         }
 
-        protected void Start() => Task<Task>.Factory.StartNew(Receive, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        protected void Start()
+        {
+            Task<Task>.Factory.StartNew(Receive, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }
 
-        public Task StartAsync() => Receive();
+        public Task StartAsync()
+        {
+            return Receive();
+        }
 
         protected abstract Task Receive();
 
         private async ValueTask SendAsync(DataType type, params ReadOnlyMemory<byte>[] data)
         {
-            var lengthByte = BitConverter.GetBytes(data.Sum(x => x.Length));
-            var typeByte = new[] { (byte)type };
-            await Stream.WriteAsync(lengthByte);
-            await Stream.WriteAsync(typeByte);
+            await Stream.WriteAsync(BitConverter.GetBytes(data.Sum(x => x.Length)));
+            await Stream.WriteAsync(new byte[] { (byte)type });
             foreach (var item in data)
             {
                 await Stream.WriteAsync(item);
@@ -104,8 +107,8 @@ namespace Ddon.Socket.Core
             {
                 // 清理托管资源
                 Stream.Dispose();
-                _tcpClient.Close();
-                _tcpClient.Dispose();
+                tcpClient.Close();
+                tcpClient.Dispose();
             }
 
             // 清理非托管资源

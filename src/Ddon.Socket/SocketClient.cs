@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Socket.Core;
@@ -13,8 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Ddon.Socket
 {
-    public class SocketClient : SocketSession
+    public class SocketClient : IDisposable
     {
+        private readonly SocketSession _session;
+
         private readonly SocketClientOption _option;
         private readonly ILogger<SocketClient> _logger;
         private readonly ISocketSerialize _socketSerialize;
@@ -24,15 +24,16 @@ namespace Ddon.Socket
             SocketSessionHandler handle,
             ILogger<SocketClient> logger,
             ISocketSerialize socketSerialize)
-            : base(option.Host, option.Port)
         {
-            BindStringHandler(handle.StringHandler);
-            BindByteHandler(handle.ByteHandler);
-            BindDisconnectHandler(handle.DisconnectHandler);
-            BindExceptionHandler(handle.ExceptionHandler);
+            _session = new(option.Host, option.Port);
+
+            _session.BindStringHandler(handle.StringHandler)
+                .BindByteHandler(handle.ByteHandler)
+                .BindDisconnectHandler(handle.DisconnectHandler)
+                .BindExceptionHandler(handle.ExceptionHandler);
 
             if (option.IsReconnection)
-                BindDisconnectHandler(ReconnectionHandler);
+                _session.BindDisconnectHandler(ReconnectionHandler);
 
             _option = option;
             _logger = logger;
@@ -47,7 +48,7 @@ namespace Ddon.Socket
             {
                 try
                 {
-                    Reconnect(new(_option.Host, _option.Port));
+                    _session.Reconnect(new(_option.Host, _option.Port));
                     _logger.LogInformation("断线重连成功,重试次数:{number}", number);
                     break;
                 }
@@ -65,35 +66,11 @@ namespace Ddon.Socket
         /// <param name="route">路由</param>
         /// <param name="data">数据</param>
         /// <returns></returns>
-        public async Task SendAsync(string route, object data)
+        public ValueTask SendAsync(string route, object data)
         {
             var requetBytes = _socketSerialize.SerializeOfByte(new SocketSessionHeadInfo(default, SocketMode.String, route));
             var dataBytes = _socketSerialize.SerializeOfByte(data);
-            await SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
-        }
-
-        /// <summary>
-        /// 异步请求等待结果
-        /// </summary>
-        /// <param name="route">路由</param>
-        /// <param name="data">数据</param>
-        /// <returns></returns>
-        /// <exception cref="DdonSocketRequestException">请求超时异样</exception>
-        private async Task<string> RequestAsync(string route, object data)
-        {
-            var taskCompletion = new TaskCompletionSource<string>();
-
-            var request = new RequestEventListener(
-                taskCompletion.SetResult,
-                taskCompletion.SetException);
-
-            TimeoutRecordProcessor.Add(request);
-
-            var requetBytes = _socketSerialize.SerializeOfByte(new SocketSessionHeadInfo(request.Id, SocketMode.Request, route));
-            var dataBytes = _socketSerialize.SerializeOfByte(data);
-            await SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
-
-            return await taskCompletion.Task;
+            return _session.SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
         }
 
         /// <summary>
@@ -104,8 +81,14 @@ namespace Ddon.Socket
         /// <returns></returns>
         /// <exception cref="DdonSocketRequestException">进行Socket请求是发生异常</exception>
         public async Task<T?> RequestAsync<T>(string route, object data)
-        {
-            var resData = await RequestAsync(route, data);
+        {            
+            var request = new RequestEventListener();
+
+            var requetBytes = _socketSerialize.SerializeOfByte(new SocketSessionHeadInfo(request.Id, SocketMode.Request, route));
+            var dataBytes = _socketSerialize.SerializeOfByte(data);
+            await _session.SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
+
+            var resData = await request.ResultAsync();
             try
             {
                 return _socketSerialize.Deserialize<T>(resData);
@@ -115,5 +98,30 @@ namespace Ddon.Socket
                 throw new DdonSocketRequestException(resData, "响应结果反序列化失败", ex);
             }
         }
+
+
+        #region Dispose
+
+        private bool _disposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _session.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        #endregion
     }
 }

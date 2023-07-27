@@ -1,5 +1,4 @@
 ﻿using Ddon.Core;
-using Ddon.Core.Use.Pipeline;
 using Ddon.Socket.Core.Storage;
 using Ddon.Socket.Serialize;
 using Ddon.Socket.Session.Handler;
@@ -27,7 +26,6 @@ namespace Ddon.Socket
             services.AddSingleton<ISocketSerialize, JsonSocketSerialize>();
             services.AddSingleton<ISocketSessionStorage, SocketSessionStorage>();
 
-            services.AddSingleton<IMiddlewareInstanceProvider<SocketContext>, ContainerMiddlewareInstanceProvider<SocketContext>>();
             services.AddSingleton<ISocketMiddlewarePipelineRegistrar, SocketMiddlewarePipelineRegistrar>();
             services.AddSingleton<ISocketByteCustomPipeline, SocketByteCustomPipeline>();
 

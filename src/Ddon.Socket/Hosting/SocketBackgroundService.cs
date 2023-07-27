@@ -15,14 +15,12 @@ namespace Ddon.Socket.Hosting
 {
     public class SocketBackgroundService : BackgroundService
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly SocketServerHandler _handle;
         private readonly SocketServerOption _option;
         private readonly ISocketSessionStorage _sessionStorage;
         private readonly ISocketMiddlewarePipelineRegistrar _pipelineRegistrar;
 
         public SocketBackgroundService(
-            IServiceProvider serviceProvider,
             SocketServerHandler handle,
             IOptions<SocketServerOption> option,
             ISocketSessionStorage sessionStorage,
@@ -40,11 +38,7 @@ namespace Ddon.Socket.Hosting
 
             var sersver = new SocketServer(_option, _handle, _sessionStorage);
 
-            // 添加几个默认的玩意
             _pipelineRegistrar.AddMiddleware<TestMiddleware>();
-            //_pipelineRegistrar.AddMiddleware();
-            //_pipelineRegistrar.AddMiddleware();
-            //_pipelineRegistrar.AddMiddleware();
 
             _option.PipelineRegistrar?.Invoke(_pipelineRegistrar);
 
