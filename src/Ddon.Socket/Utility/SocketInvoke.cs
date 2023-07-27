@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Ddon.Core.Use.Reflection;
 using Ddon.Socket.Core;
@@ -24,7 +23,7 @@ namespace Ddon.Socket.Utility
             string methodName,
             string parameter,
             SocketSession connection,
-            DdonSocketSessionHeadInfo head)
+            SocketSessionHeadInfo head)
         {
             using var scope = _services.CreateScope();
             var classType = DdonType.GetTypeByName(className);

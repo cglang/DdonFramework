@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Ddon.ConvenientSocket.Exceptions;
@@ -66,7 +67,7 @@ namespace Ddon.Socket
         /// <returns></returns>
         public async Task SendAsync(string route, object data)
         {
-            var requetBytes = _socketSerialize.SerializeOfByte(new DdonSocketSessionHeadInfo(default, DdonSocketMode.String, route));
+            var requetBytes = _socketSerialize.SerializeOfByte(new SocketSessionHeadInfo(default, SocketMode.String, route));
             var dataBytes = _socketSerialize.SerializeOfByte(data);
             await SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
         }
@@ -82,11 +83,13 @@ namespace Ddon.Socket
         {
             var taskCompletion = new TaskCompletionSource<string>();
 
-            var response = new RequestEventListener(taskCompletion.SetResult, 
-                _ => taskCompletion.SetException(new DdonSocketRequestException("请求超时")));
-            TimeoutRecordProcessor.Add(response);
+            var request = new RequestEventListener(
+                taskCompletion.SetResult,
+                taskCompletion.SetException);
 
-            var requetBytes = _socketSerialize.SerializeOfByte(new DdonSocketSessionHeadInfo(response.Id, DdonSocketMode.Request, route));
+            TimeoutRecordProcessor.Add(request);
+
+            var requetBytes = _socketSerialize.SerializeOfByte(new SocketSessionHeadInfo(request.Id, SocketMode.Request, route));
             var dataBytes = _socketSerialize.SerializeOfByte(data);
             await SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
 

@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Text;
 
 namespace Ddon.Socket.Session.Model
 {
-    public class DdonSocketSessionHeadInfo
+    public class SocketSessionHeadInfo
     {
         public Guid Id { get; set; }
 
-        public DdonSocketMode Mode { get; set; }
+        public SocketMode Mode { get; set; }
 
-        public DdonSocketResponseCode Code { get; set; }
+        public SocketResponseCode Code { get; set; }
 
         public string Route { get; set; }
 
@@ -17,16 +16,16 @@ namespace Ddon.Socket.Session.Model
 
         public string? FileName { get; set; }
 
-        public DdonSocketSessionHeadInfo(Guid id, DdonSocketMode mode, string route)
+        public SocketSessionHeadInfo(Guid id, SocketMode mode, string route)
         {
             Id = id;
             Mode = mode;
             Route = route;
         }
 
-        public DdonSocketSessionHeadInfo Response(DdonSocketResponseCode code = DdonSocketResponseCode.OK)
+        public SocketSessionHeadInfo Response(SocketResponseCode code = SocketResponseCode.OK)
         {
-            Mode = DdonSocketMode.Response;
+            Mode = SocketMode.Response;
             Route = string.Empty;
             Code = code;
 

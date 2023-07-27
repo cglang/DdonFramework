@@ -1,7 +1,10 @@
 ﻿using Ddon.Core;
+using Ddon.Core.Use.Pipeline;
 using Ddon.Socket.Core.Storage;
 using Ddon.Socket.Serialize;
 using Ddon.Socket.Session.Handler;
+using Ddon.Socket.Session.Middleware;
+using Ddon.Socket.Session.Pipeline;
 using Ddon.Socket.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,13 +19,19 @@ namespace Ddon.Socket
 
             services.AddTransient<SocketInvoke>();
 
-            services.AddSingleton<SocketSessionHandler>();
-            services.AddSingleton<SocketServerHandler>();
+            services.AddTransient<SocketSessionHandler>();
+            services.AddTransient<SocketServerHandler>();
 
             services.AddTransient<SocketClientFactory>();
 
             services.AddSingleton<ISocketSerialize, JsonSocketSerialize>();
             services.AddSingleton<ISocketSessionStorage, SocketSessionStorage>();
+
+            services.AddSingleton<IMiddlewareInstanceProvider<SocketContext>, ContainerMiddlewareInstanceProvider<SocketContext>>();
+            services.AddSingleton<ISocketMiddlewarePipelineRegistrar, SocketMiddlewarePipelineRegistrar>();
+            services.AddSingleton<ISocketByteCustomPipeline, SocketByteCustomPipeline>();
+
+            services.AddTransient<TestMiddleware>();
         }
     }
 }

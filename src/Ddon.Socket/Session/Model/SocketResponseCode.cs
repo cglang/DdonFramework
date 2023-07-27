@@ -3,7 +3,7 @@
     /// <summary>
     /// 响应码
     /// </summary>
-    public enum DdonSocketResponseCode
+    public enum SocketResponseCode
     {
         OK = 200,
         Error = 500

@@ -9,9 +9,9 @@ namespace Ddon.Socket.Session
         public bool IsCompleted { get; private set; }
 
         public Action<string> ActionThen;
-        public Action<string> ExceptionThen;
+        public Action<Exception> ExceptionThen;
 
-        public RequestEventListener(Action<string> action, Action<string> exception)
+        public RequestEventListener(Action<string> action, Action<Exception> exception)
         {
             Id = Guid.NewGuid();
 

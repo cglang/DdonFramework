@@ -1,8 +1,8 @@
 ﻿namespace Ddon.Socket.Session.Route
 {
-    public class DdonSocketRoute
+    public class SocketRoute
     {
-        public DdonSocketRoute(string route, string className, string methodName)
+        public SocketRoute(string route, string className, string methodName)
         {
             Route = route;
             ClassName = className;

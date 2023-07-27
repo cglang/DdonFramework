@@ -3,7 +3,7 @@
     /// <summary>
     /// 数据传输模式
     /// </summary>
-    public enum DdonSocketMode
+    public enum SocketMode
     {
         /// <summary>
         /// 文本模式

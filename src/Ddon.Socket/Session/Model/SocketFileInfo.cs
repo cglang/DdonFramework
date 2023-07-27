@@ -1,6 +1,6 @@
 ﻿namespace Ddon.Socket.Session.Model
 {
-    public class DdonSocketFileInfo
+    public class SocketFileInfo
     {
         public string FileName { get; set; } = string.Empty;
 

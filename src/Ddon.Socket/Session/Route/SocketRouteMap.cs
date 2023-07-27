@@ -5,13 +5,13 @@ using System.Reflection;
 
 namespace Ddon.Socket.Session.Route
 {
-    internal static class DdonSocketRouteMap
+    internal static class SocketRouteMap
     {
         private static readonly Dictionary<string, (string, string)> _routeMap = new();
 
         internal static void Init()
         {
-            var routes = new List<DdonSocketRoute>();
+            var routes = new List<SocketRoute>();
 
             var baseType = typeof(SocketApiBase);
 
@@ -27,7 +27,7 @@ namespace Ddon.Socket.Session.Route
                     if (socketApi == null) continue;
 
                     var routeText = $"{type.Name}::{socketApi.Template ?? method.Name}";
-                    var route = new DdonSocketRoute(routeText, type.Name, method.Name);
+                    var route = new SocketRoute(routeText, type.Name, method.Name);
                     routes.Add(route);
                 }
             }

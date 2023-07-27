@@ -10,6 +10,6 @@ namespace Ddon.Socket.Session
         public SocketSession Session { get; set; }
 
         [AllowNull]
-        public DdonSocketSessionHeadInfo Head { get; set; }
+        public SocketSessionHeadInfo Head { get; set; }
     }
 }

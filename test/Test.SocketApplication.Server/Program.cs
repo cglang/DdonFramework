@@ -7,7 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureServices((context, services) =>
 {
     services.LoadModule<SocketModule>(context.Configuration);
-    services.AddSocketServerService(opt => opt.IPEndPoint = new(IPAddress.Loopback, 6012));
+    services.AddSocketServerService(opt =>
+    {
+        opt.IPEndPoint = new(IPAddress.Loopback, 6012);
+    });
 });
 
 

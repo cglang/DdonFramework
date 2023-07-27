@@ -2,7 +2,7 @@
 
 namespace Ddon.Core.Use.Pipeline
 {
-    internal class ContainerMiddlewareInstanceProvider<T> : IMiddlewareInstanceProvider<T>
+    public class ContainerMiddlewareInstanceProvider<T> : IMiddlewareInstanceProvider<T>
     {
         private readonly IServiceProvider _service;
 

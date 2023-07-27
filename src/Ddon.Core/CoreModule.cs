@@ -31,8 +31,8 @@ public class CoreModule : Module
 
         services.AddSingleton<IOSPlatformProvider, OSPlatformProvider>();
 
-        services.AddTransient(typeof(IMiddlewareInstanceProvider<>), typeof(ContainerMiddlewareInstanceProvider<>));
-        services.AddTransient(typeof(IMiddlewarePipelineRegistrar<>), typeof(MiddlewarePipelineRegistrar<>));
-        services.AddTransient(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
+        //services.AddTransient(typeof(IMiddlewareInstanceProvider<>), typeof(ContainerMiddlewareInstanceProvider<>));
+        //services.AddTransient(typeof(IMiddlewarePipelineRegistrar<>), typeof(MiddlewarePipelineRegistrar<>));
+        //services.AddTransient(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
     }
 }

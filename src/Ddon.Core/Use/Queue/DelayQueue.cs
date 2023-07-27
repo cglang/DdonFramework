@@ -7,14 +7,7 @@ namespace Ddon.Core.Use.Queue
 {
     public class DelayQueue<T> where T : IEquatable<T>
     {
-        private TaskCompletionSource _queueWaitIsEmpty;
-
         private readonly SortedQueue<DelayItem<T>> _values = new();
-
-        public DelayQueue()
-        {
-            _queueWaitIsEmpty = new TaskCompletionSource();
-        }
 
         public int Count => _values.Count;
 
@@ -24,11 +17,9 @@ namespace Ddon.Core.Use.Queue
         {
             while (!cancelToken.IsCancellationRequested)
             {
-                if (!_values.Any())
-                {
-                    _queueWaitIsEmpty = new TaskCompletionSource(cancelToken);
-                    //_queueWaitIsEmpty.SetCanceled(cancelToken);
-                    await _queueWaitIsEmpty.Task;
+                if (IsEmpty)
+                { 
+                    await Task.Delay(1, cancelToken);
                     continue;
                 }
 
@@ -40,7 +31,7 @@ namespace Ddon.Core.Use.Queue
                     return delayItem.Item;
                 }
 
-                await Task.Delay(100, cancelToken);
+                await Task.Delay(1, cancelToken);
             }
 
             return default;
@@ -51,7 +42,6 @@ namespace Ddon.Core.Use.Queue
             try
             {
                 _values.Add(new DelayItem<T>(time, item));
-                _queueWaitIsEmpty.SetResult();
             }
             catch
             {
