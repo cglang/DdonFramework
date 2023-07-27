@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Socket.Core.Storage;
 using Ddon.Socket.Options;
@@ -7,7 +6,6 @@ using Ddon.Socket.Session.Handler;
 using Ddon.Socket.Session.Middleware;
 using Ddon.Socket.Session.Pipeline;
 using Ddon.Socket.Session.Route;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -36,11 +34,12 @@ namespace Ddon.Socket.Hosting
         {
             SocketRouteMap.Init();
 
-            var sersver = new SocketServer(_option, _handle, _sessionStorage);
-
-            _pipelineRegistrar.AddMiddleware<TestMiddleware>();
-
+            // 管道配置初始化
+            _pipelineRegistrar.AddMiddleware<RouteMiddleware>();
+            _pipelineRegistrar.AddMiddleware<EndPointMiddleware>();
             _option.PipelineRegistrar?.Invoke(_pipelineRegistrar);
+
+            var sersver = new SocketServer(_option, _handle, _sessionStorage);
 
             return sersver.StartAsync(stoppingToken);
         }

@@ -2,7 +2,7 @@
 
 namespace Ddon.Socket.Session.Model
 {
-    public class SocketSessionHeadInfo
+    public class SocketHeadInfo
     {
         public Guid Id { get; set; }
 
@@ -16,14 +16,14 @@ namespace Ddon.Socket.Session.Model
 
         public string? FileName { get; set; }
 
-        public SocketSessionHeadInfo(Guid id, SocketMode mode, string route)
+        public SocketHeadInfo(Guid id, SocketMode mode, string route)
         {
             Id = id;
             Mode = mode;
             Route = route;
         }
 
-        public SocketSessionHeadInfo Response(SocketResponseCode code = SocketResponseCode.OK)
+        public SocketHeadInfo Response(SocketResponseCode code = SocketResponseCode.OK)
         {
             Mode = SocketMode.Response;
             Route = string.Empty;

@@ -29,7 +29,8 @@ namespace Ddon.Socket
             services.AddSingleton<ISocketMiddlewarePipelineRegistrar, SocketMiddlewarePipelineRegistrar>();
             services.AddSingleton<ISocketByteCustomPipeline, SocketByteCustomPipeline>();
 
-            services.AddTransient<TestMiddleware>();
+            services.AddTransient<RouteMiddleware>();
+            services.AddTransient<EndPointMiddleware>();
         }
     }
 }

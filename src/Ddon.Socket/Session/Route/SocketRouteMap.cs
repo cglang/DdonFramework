@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Ddon.Socket.Session.Model;
+using Ddon.Socket.Utility;
 
 namespace Ddon.Socket.Session.Route
 {
@@ -46,9 +48,14 @@ namespace Ddon.Socket.Session.Route
             }
         }
 
-        public static (string, string)? Get(string route)
+        //public static (string, string)? Get(string route)
+        //{
+        //    return _routeMap.ContainsKey(route) ? _routeMap[route] : null;
+        //}
+
+        public static SocketEndPoint? Get(string route)
         {
-            return _routeMap.ContainsKey(route) ? _routeMap[route] : null;
+            return _routeMap.ContainsKey(route) ? new(_routeMap[route].Item1, _routeMap[route].Item2) : null;
         }
     }
 }

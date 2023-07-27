@@ -1,15 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Ddon.Socket.Core;
-using Ddon.Socket.Session.Model;
-
-namespace Ddon.Socket.Session
+﻿namespace Ddon.Socket.Session
 {
     public abstract class SocketApiBase
     {
-        [AllowNull]
-        public SocketSession Session { get; set; }
-
-        [AllowNull]
-        public SocketSessionHeadInfo Head { get; set; }
+        public SocketContext? SocketContext { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Ddon.Socket.Options
 {
-    public class SocketClientOption
+    public class SocketClientOption : SocketOptionBase
     {
         /// <summary>
         /// 服务端地址

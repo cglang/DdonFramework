@@ -68,7 +68,7 @@ namespace Ddon.Socket
         /// <returns></returns>
         public ValueTask SendAsync(string route, object data)
         {
-            var requetBytes = _socketSerialize.SerializeOfByte(new SocketSessionHeadInfo(default, SocketMode.String, route));
+            var requetBytes = _socketSerialize.SerializeOfByte(new SocketHeadInfo(default, SocketMode.String, route));
             var dataBytes = _socketSerialize.SerializeOfByte(data);
             return _session.SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
         }
@@ -84,7 +84,7 @@ namespace Ddon.Socket
         {            
             var request = new RequestEventListener();
 
-            var requetBytes = _socketSerialize.SerializeOfByte(new SocketSessionHeadInfo(request.Id, SocketMode.Request, route));
+            var requetBytes = _socketSerialize.SerializeOfByte(new SocketHeadInfo(request.Id, SocketMode.Request, route));
             var dataBytes = _socketSerialize.SerializeOfByte(data);
             await _session.SendBytesAsync(BitConverter.GetBytes(requetBytes.Length), requetBytes, dataBytes);
 
