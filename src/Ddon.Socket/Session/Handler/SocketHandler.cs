@@ -60,7 +60,7 @@ public class SocketSessionHandler : ISocketSessionHandler
         var headinfo = SocketSerialize.Deserialize<SocketHeadInfo>(head)
             ?? throw new Exception("消息中不包含消息头");
 
-        return new SocketContext(session, headinfo, data);
+        return new(session, headinfo, data);
     }
 }
 

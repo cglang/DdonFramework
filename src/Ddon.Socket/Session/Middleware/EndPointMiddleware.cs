@@ -1,13 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
-using System;
 using System.Threading.Tasks;
 using Ddon.ConvenientSocket.Exceptions;
 using Ddon.Core.Use.Pipeline;
 using Ddon.Socket.Serialize;
 using Ddon.Socket.Session.Model;
 using Ddon.Socket.Session.Pipeline;
-using Ddon.Socket.Session.Route;
 using Ddon.Socket.Utility;
 
 namespace Ddon.Socket.Session.Middleware
@@ -31,7 +30,7 @@ namespace Ddon.Socket.Session.Middleware
                 SocketMode.Byte => ModeOfByteAsync(context),
                 SocketMode.File => ModeOfFileAsync(context),
                 SocketMode.Request => ModeOfRequestAsync(context),
-                SocketMode.Response => ModeOfResponse(context),
+                SocketMode.Response => ModeOfResponseAsync(context),
                 _ => Task.CompletedTask,
             });
 
@@ -78,7 +77,7 @@ namespace Ddon.Socket.Session.Middleware
                 await context.Session.SendBytesAsync(BitConverter.GetBytes(responseHeadBytes.Length), responseHeadBytes, methodReturnJsonBytes);
             }
 
-            Task ModeOfResponse(SocketContext context)
+            Task ModeOfResponseAsync(SocketContext context)
             {
                 if (!TimeoutRecordProcessor.ContainsKey(context.Head.Id))
                     return Task.CompletedTask;
