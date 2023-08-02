@@ -1,8 +1,7 @@
-﻿using Ddon.Core;
-using MediatR;
+﻿using System;
+using Ddon.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Ddon.EventBus
 {
@@ -11,7 +10,10 @@ namespace Ddon.EventBus
         public override void Load(IServiceCollection services, IConfiguration configuration)
         {
             Load<CoreModule>(services, configuration);
-            services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+            });
         }
     }
 }

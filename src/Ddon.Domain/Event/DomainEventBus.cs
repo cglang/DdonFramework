@@ -15,7 +15,7 @@ namespace Ddon.Domain.Event
 
         public async Task PublishAsync(IDomainEventData @event, CancellationToken cancellationToken)
         {
-            _ = await _mediator.Send(@event, cancellationToken);
+            await _mediator.Send(@event, cancellationToken);
         }
     }
 }
