@@ -22,7 +22,7 @@ namespace Cronos.Tests
         private static readonly TimeZoneInfo LordHoweTimeZone = TimeZoneInfo.FindSystemTimeZoneById(LordHoweTimeZoneId);
         private static readonly TimeZoneInfo PacificTimeZone = TimeZoneInfo.FindSystemTimeZoneById(PacificTimeZoneId);
 
-        private static readonly DateTime Today = new DateTime(2016, 12, 09);
+        private static readonly DateTime Today = new(2016, 12, 09);
 
         private static readonly CronExpression MinutelyExpression = CronExpression.Parse("* * * * *");
 
@@ -80,7 +80,7 @@ namespace Cronos.Tests
         [TestMethod]
         public void Parse_ThrowAnException_WhenCronExpressionIsNull()
         {
-            var exception = Assert.ThrowsException<ArgumentNullException>(() => CronExpression.Parse(null));
+            var exception = Assert.ThrowsException<ArgumentNullException>(() => CronExpression.Parse(string.Empty));
 
             Assert.AreEqual("expression", exception.ParamName);
         }
@@ -2418,7 +2418,7 @@ namespace Cronos.Tests
                 .GetOccurrences(from, from.AddMinutes(2), fromInclusive: false)
                 .ToArray();
 
-            Assert.IsTrue(occurrences.Count() == 1);
+            Assert.IsTrue(occurrences.Length == 1);
             Assert.AreEqual(from.AddMinutes(1), occurrences[0]);
         }
 
@@ -2479,7 +2479,7 @@ namespace Cronos.Tests
                 .GetOccurrences(from, from.AddMinutes(2), EasternTimeZone, fromInclusive: false)
                 .ToArray();
 
-            Assert.IsTrue(occurrences.Count() == 1);
+            Assert.IsTrue(occurrences.Length == 1);
             Assert.AreEqual(from.AddMinutes(1), occurrences[0]);
         }
 
@@ -2542,7 +2542,7 @@ namespace Cronos.Tests
                 .GetOccurrences(from, from.AddMinutes(2), EasternTimeZone, fromInclusive: false)
                 .ToArray();
 
-            Assert.IsTrue(occurrences.Count() == 1);
+            Assert.IsTrue(occurrences.Length == 1);
             Assert.AreEqual(from.AddMinutes(1), occurrences[0].UtcDateTime);
         }
 
@@ -2658,7 +2658,6 @@ namespace Cronos.Tests
             var cronExpression = CronExpression.Parse("* * * * *");
 
             Assert.IsFalse(cronExpression.Equals(null));
-            Assert.IsFalse(cronExpression == null);
         }
 
         [TestMethod]

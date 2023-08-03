@@ -318,23 +318,19 @@ public sealed class CronExpression : IEquatable<CronExpression>
     /// A hash code for this instance, suitable for use in hashing algorithms and data
     /// structures like a hash table. 
     /// </returns>
-    [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
     public override int GetHashCode()
     {
-        unchecked
-        {
-            var hashCode = _second.GetHashCode();
-            hashCode = hashCode * 397 ^ _minute.GetHashCode();
-            hashCode = hashCode * 397 ^ _hour;
-            hashCode = hashCode * 397 ^ _dayOfMonth;
-            hashCode = hashCode * 397 ^ _month.GetHashCode();
-            hashCode = hashCode * 397 ^ _dayOfWeek.GetHashCode();
-            hashCode = hashCode * 397 ^ _nthDayOfWeek.GetHashCode();
-            hashCode = hashCode * 397 ^ _lastMonthOffset.GetHashCode();
-            hashCode = hashCode * 397 ^ (int)_flags;
-
-            return hashCode;
-        }
+        var hash = new HashCode();
+        hash.Add(_second);
+        hash.Add(_minute);
+        hash.Add(_hour);
+        hash.Add(_dayOfMonth);
+        hash.Add(_month);
+        hash.Add(_dayOfWeek);
+        hash.Add(_nthDayOfWeek);
+        hash.Add(_lastMonthOffset);
+        hash.Add(_flags);
+        return hash.ToHashCode();
     }
 
     /// <summary>
