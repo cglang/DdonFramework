@@ -10,9 +10,9 @@ namespace Ddon.AspNetCore
 {
     public static class ApplicationInitializationContextExtensions
     {
-        public static IApplicationBuilder GetApplicationBuilder(this ApplicationInitializationContext _)
+        public static WebApplication GetApplicationBuilder(this ApplicationInitializationContext _)
         {
-            return ObjectAccessor.ApplicationBuilder ?? throw new Exception();
+            return ObjectAccessor.WebApplication ?? throw new Exception();
         }
 
         public static IWebHostEnvironment GetEnvironment(this ApplicationInitializationContext context)
