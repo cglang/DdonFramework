@@ -1,4 +1,4 @@
-using Ddon.Core;
+﻿using Ddon.Core;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -560,6 +560,20 @@ namespace System
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 字符串转为对应枚举
+        /// </summary>
+        public static T? AsEnum<T>(this string str) where T : struct
+        {
+            if (string.IsNullOrWhiteSpace(str))
+                return null;
+
+            if (Enum.TryParse(typeof(T), str, out var outEnum) && outEnum != null)
+                return (T)outEnum;
+
+            return default;
         }
     }
 }
