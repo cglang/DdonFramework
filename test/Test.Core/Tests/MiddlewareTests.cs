@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Ddon.Core.Use.Pipeline;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,12 +14,16 @@ namespace Test.Core.Tests
             {
                 s.AddMiddleware<SampleOneMiddleware>();
                 s.AddMiddleware<SampleTwoMiddleware>();
+                s.AddMiddleware(x => x.Context += "c");
+                s.AddMiddleware(x => x.Context += "d");
+                s.AddMiddleware(x => x.Context += "e", y => y.Context += "E");
+                s.AddMiddleware(x => x.Context += "f", y => y.Context += "F");
             }).Build();
 
             var dataContext = new DataContext();
             await pipeline.ExecuteAsync(dataContext);
 
-            Assert.AreEqual(dataContext.Context, "abBA");
+            Assert.AreEqual(dataContext.Context, "abcdFEBA");
         }
     }
 

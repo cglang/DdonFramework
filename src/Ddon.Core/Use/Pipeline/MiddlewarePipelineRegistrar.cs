@@ -6,7 +6,7 @@ namespace Ddon.Core.Use.Pipeline
 {
     public class MiddlewarePipelineRegistrar<T> : IMiddlewarePipelineRegistrar<T>
     {
-        private readonly List<Type> _middlewares;
+        private readonly List<IGeneralMiddleware<T>> _middlewareInstances;
         private readonly IMiddlewareInstanceProvider<T> _instanceProvider;
 
         private IGeneralMiddleware<T>? curBox;
@@ -15,7 +15,7 @@ namespace Ddon.Core.Use.Pipeline
         public MiddlewarePipelineRegistrar(IMiddlewareInstanceProvider<T> instanceProvider)
         {
             _instanceProvider = instanceProvider;
-            _middlewares = new();
+            _middlewareInstances = new();
             curIndex = -1;
         }
 
@@ -25,8 +25,25 @@ namespace Ddon.Core.Use.Pipeline
 
         public void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralMiddleware<T>
         {
-            _middlewares.Add(typeof(TMiddleware));
-            curIndex = _middlewares.Count;
+            AddMiddleware(_instanceProvider.GetInstance(typeof(TMiddleware)));
+        }
+
+        public void AddMiddleware(Action<T> actionExecuting)
+        {
+            var defaultGeneralMiddleware = new DefaultGeneralMiddleware<T>(actionExecuting);
+            AddMiddleware(defaultGeneralMiddleware);
+        }
+
+        public void AddMiddleware(Action<T> actionExecuting, Action<T> actionExecuted)
+        {
+            var defaultGeneralMiddleware = new DefaultGeneralMiddleware<T>(actionExecuting, actionExecuted);
+            AddMiddleware(defaultGeneralMiddleware);
+        }
+
+        private void AddMiddleware(IGeneralMiddleware<T> middleware)
+        {
+            _middlewareInstances.Add(middleware);
+            curIndex = _middlewareInstances.Count;
         }
 
         public bool MoveNext()
@@ -34,13 +51,13 @@ namespace Ddon.Core.Use.Pipeline
             if (--curIndex < 0)
                 return false;
             else
-                curBox = _instanceProvider.GetInstance(_middlewares[curIndex]);
+                curBox = _middlewareInstances[curIndex];
             return true;
         }
 
         public void Reset()
         {
-            curIndex = _middlewares.Count;
+            curIndex = _middlewareInstances.Count;
         }
 
         public void Dispose()
