@@ -31,8 +31,8 @@ public class CoreModule : Module
 
         services.AddSingleton<IOSPlatformProvider, OSPlatformProvider>();
 
-        services.AddSingleton(typeof(IMiddlewareInstanceProvider<>), typeof(ContainerMiddlewareInstanceProvider<>));
-        services.AddSingleton(typeof(IMiddlewarePipelineRegistrar<>), typeof(MiddlewarePipelineRegistrar<>));
+        services.AddSingleton(typeof(IPipelineInstanceProvider<>), typeof(ContainerPipelineInstanceProvider<>));
+        services.AddSingleton(typeof(IPipelineRegistrar<>), typeof(PipelineRegistrar<>));
         services.AddSingleton(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
     }
 }

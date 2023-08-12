@@ -5,9 +5,9 @@ namespace Ddon.Core.Use.Pipeline
 
     public class GeneralCustomPipeline<T> : IGeneralCustomPipeline<T>
     {
-        private readonly IMiddlewarePipelineRegistrar<T> _pipelineRegistrar;
+        private readonly IPipelineRegistrar<T> _pipelineRegistrar;
 
-        public GeneralCustomPipeline(IMiddlewarePipelineRegistrar<T> pipelineRegistrar)
+        public GeneralCustomPipeline(IPipelineRegistrar<T> pipelineRegistrar)
         {
             _pipelineRegistrar = pipelineRegistrar;
         }
@@ -16,7 +16,7 @@ namespace Ddon.Core.Use.Pipeline
         {
             static Task FinalMiddleware(T ctx) => Task.CompletedTask;
 
-            MiddlewareDelegate<T> pipeline = FinalMiddleware;
+            PipelineDelegate<T> pipeline = FinalMiddleware;
 
             _pipelineRegistrar.Reset();
             while (_pipelineRegistrar.MoveNext())

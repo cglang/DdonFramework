@@ -2,12 +2,12 @@
 
 namespace Ddon.Core.Use.Pipeline
 {
-    public class DefaultMiddlewareInstanceProvider<T> : IMiddlewareInstanceProvider<T>
+    public class DefaultPipelineInstanceProvider<T> : IPipelineInstanceProvider<T>
     {
-        public IGeneralMiddleware<T> GetInstance(Type type)
+        public IGeneralPipeline<T> GetInstance(Type type)
         {
             var instance = Activator.CreateInstance(type) ?? throw new Exception();
-            if (instance is IGeneralMiddleware<T> feneralMiddleware)
+            if (instance is IGeneralPipeline<T> feneralMiddleware)
                 return feneralMiddleware;
             throw new Exception();
         }

@@ -2,13 +2,13 @@
 
 namespace Ddon.Socket.Session.Pipeline
 {
-    public interface ISocketMiddlewarePipelineRegistrar : IMiddlewarePipelineRegistrar<SocketContext>
+    public interface ISocketMiddlewarePipelineRegistrar : IPipelineRegistrar<SocketContext>
     {
     }
 
-    public class SocketMiddlewarePipelineRegistrar : MiddlewarePipelineRegistrar<SocketContext>, ISocketMiddlewarePipelineRegistrar
+    public class SocketMiddlewarePipelineRegistrar : PipelineRegistrar<SocketContext>, ISocketMiddlewarePipelineRegistrar
     {
-        public SocketMiddlewarePipelineRegistrar(IMiddlewareInstanceProvider<SocketContext> instanceProvider) : base(instanceProvider)
+        public SocketMiddlewarePipelineRegistrar(IPipelineInstanceProvider<SocketContext> instanceProvider) : base(instanceProvider)
         {
         }
     }

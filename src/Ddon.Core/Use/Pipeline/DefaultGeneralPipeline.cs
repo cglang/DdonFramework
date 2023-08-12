@@ -3,24 +3,24 @@ using System.Threading.Tasks;
 
 namespace Ddon.Core.Use.Pipeline;
 
-public class DefaultGeneralMiddleware<T> : IGeneralMiddleware<T>
+public class DefaultGeneralPipeline<T> : IGeneralPipeline<T>
 {
     private readonly Action<T> _actionExecuting;
 
     private readonly Action<T>? _actionExecuted;
 
-    public DefaultGeneralMiddleware(Action<T> actionExecuting)
+    public DefaultGeneralPipeline(Action<T> actionExecuting)
     {
         _actionExecuting = actionExecuting;
     }
 
-    public DefaultGeneralMiddleware(Action<T> actionExecuting, Action<T> actionExecuted)
+    public DefaultGeneralPipeline(Action<T> actionExecuting, Action<T> actionExecuted)
     {
         _actionExecuting = actionExecuting;
         _actionExecuted = actionExecuted;
     }
 
-    public async Task InvokeAsync(T context, MiddlewareDelegate<T> next)
+    public async Task InvokeAsync(T context, PipelineDelegate<T> next)
     {
         _actionExecuting.Invoke(context);
 

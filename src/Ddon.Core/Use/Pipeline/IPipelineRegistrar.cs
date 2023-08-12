@@ -3,9 +3,9 @@ using System;
 
 namespace Ddon.Core.Use.Pipeline
 {
-    public interface IMiddlewarePipelineRegistrar<T> : IEnumerator<IGeneralMiddleware<T>>
+    public interface IPipelineRegistrar<T> : IEnumerator<IGeneralPipeline<T>>
     {
-        void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralMiddleware<T>;
+        void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralPipeline<T>;
 
         void AddMiddleware(Action<T> actionExecuting);
 

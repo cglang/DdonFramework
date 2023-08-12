@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Test.Core.Tests
 {
     [TestClass]
-    public class MiddlewareTests
+    public class PipelineTests
     {
         [TestMethod]
         public async Task MiddlewareBaseTest()
@@ -14,16 +14,12 @@ namespace Test.Core.Tests
             {
                 s.AddMiddleware<SampleOneMiddleware>();
                 s.AddMiddleware<SampleTwoMiddleware>();
-                s.AddMiddleware(x => x.Context += "c");
-                s.AddMiddleware(x => x.Context += "d");
-                s.AddMiddleware(x => x.Context += "e", y => y.Context += "E");
-                s.AddMiddleware(x => x.Context += "f", y => y.Context += "F");
             }).Build();
 
             var dataContext = new DataContext();
             await pipeline.ExecuteAsync(dataContext);
 
-            Assert.AreEqual(dataContext.Context, "abcdFEBA");
+            Assert.AreEqual(dataContext.Context, "abBA");
         }
     }
 
@@ -33,9 +29,9 @@ namespace Test.Core.Tests
         public string Context { get; set; } = string.Empty;
     }
 
-    public class SampleOneMiddleware : IGeneralMiddleware<DataContext>
+    public class SampleOneMiddleware : IGeneralPipeline<DataContext>
     {
-        public async Task InvokeAsync(DataContext context, MiddlewareDelegate<DataContext> next)
+        public async Task InvokeAsync(DataContext context, PipelineDelegate<DataContext> next)
         {
             context.Context += "a";
             await next(context);
@@ -43,9 +39,9 @@ namespace Test.Core.Tests
         }
     }
 
-    public class SampleTwoMiddleware : IGeneralMiddleware<DataContext>
+    public class SampleTwoMiddleware : IGeneralPipeline<DataContext>
     {
-        public async Task InvokeAsync(DataContext context, MiddlewareDelegate<DataContext> next)
+        public async Task InvokeAsync(DataContext context, PipelineDelegate<DataContext> next)
         {
             context.Context += "b";
             await next(context);

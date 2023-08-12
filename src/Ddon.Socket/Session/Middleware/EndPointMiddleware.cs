@@ -22,7 +22,7 @@ namespace Ddon.Socket.Session.Middleware
             _socketSerialize = socketSerialize;
         }
 
-        public async Task InvokeAsync(SocketContext context, MiddlewareDelegate<SocketContext> next)
+        public async Task InvokeAsync(SocketContext context, PipelineDelegate<SocketContext> next)
         {
             await (context.Head.Mode switch
             {

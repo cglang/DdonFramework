@@ -2,5 +2,5 @@
 
 namespace Ddon.Core.Use.Pipeline
 {
-    public delegate Task MiddlewareDelegate<T>(T context);
+    public delegate Task PipelineDelegate<T>(T context);
 }

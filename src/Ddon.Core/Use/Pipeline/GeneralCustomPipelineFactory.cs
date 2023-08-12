@@ -12,9 +12,9 @@ namespace Ddon.Core.Use.Pipeline
 
     public class GeneralCustomPipelineBuild<T>
     {
-        Action<MiddlewarePipelineRegistrar<T>>? _pipelineRegistrar;
+        Action<PipelineRegistrar<T>>? _pipelineRegistrar;
 
-        public GeneralCustomPipelineBuild<T> ConfigureMiddlewares(Action<MiddlewarePipelineRegistrar<T>> pipelineRegistrar)
+        public GeneralCustomPipelineBuild<T> ConfigureMiddlewares(Action<PipelineRegistrar<T>> pipelineRegistrar)
         {
             _pipelineRegistrar = pipelineRegistrar;
             return this;
@@ -22,8 +22,8 @@ namespace Ddon.Core.Use.Pipeline
 
         public GeneralCustomPipeline<T> Build()
         {
-            var instanceProvider = new DefaultMiddlewareInstanceProvider<T>();
-            var pipelineRegistrar = new MiddlewarePipelineRegistrar<T>(instanceProvider);
+            var instanceProvider = new DefaultPipelineInstanceProvider<T>();
+            var pipelineRegistrar = new PipelineRegistrar<T>(instanceProvider);
 
             _pipelineRegistrar?.Invoke(pipelineRegistrar);
 

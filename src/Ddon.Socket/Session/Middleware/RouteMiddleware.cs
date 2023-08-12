@@ -9,7 +9,7 @@ namespace Ddon.Socket.Session.Middleware
     {
         public RouteMiddleware() { }
 
-        public async Task InvokeAsync(SocketContext context, MiddlewareDelegate<SocketContext> next)
+        public async Task InvokeAsync(SocketContext context, PipelineDelegate<SocketContext> next)
         {
             context.SetEndPoint(SocketRouteMap.Get(context.Head.Route));
 

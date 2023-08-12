@@ -4,43 +4,43 @@ using System.Collections.Generic;
 
 namespace Ddon.Core.Use.Pipeline
 {
-    public class MiddlewarePipelineRegistrar<T> : IMiddlewarePipelineRegistrar<T>
+    public class PipelineRegistrar<T> : IPipelineRegistrar<T>
     {
-        private readonly List<IGeneralMiddleware<T>> _middlewareInstances;
-        private readonly IMiddlewareInstanceProvider<T> _instanceProvider;
+        private readonly List<IGeneralPipeline<T>> _middlewareInstances;
+        private readonly IPipelineInstanceProvider<T> _instanceProvider;
 
-        private IGeneralMiddleware<T>? curBox;
+        private IGeneralPipeline<T>? curBox;
         private int curIndex;
 
-        public MiddlewarePipelineRegistrar(IMiddlewareInstanceProvider<T> instanceProvider)
+        public PipelineRegistrar(IPipelineInstanceProvider<T> instanceProvider)
         {
             _instanceProvider = instanceProvider;
             _middlewareInstances = new();
             curIndex = -1;
         }
 
-        public IGeneralMiddleware<T> Current => curBox ?? throw new ArgumentNullException();
+        public IGeneralPipeline<T> Current => curBox ?? throw new ArgumentNullException();
 
         object? IEnumerator.Current => Current;
 
-        public void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralMiddleware<T>
+        public void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralPipeline<T>
         {
             AddMiddleware(_instanceProvider.GetInstance(typeof(TMiddleware)));
         }
 
         public void AddMiddleware(Action<T> actionExecuting)
         {
-            var defaultGeneralMiddleware = new DefaultGeneralMiddleware<T>(actionExecuting);
+            var defaultGeneralMiddleware = new DefaultGeneralPipeline<T>(actionExecuting);
             AddMiddleware(defaultGeneralMiddleware);
         }
 
         public void AddMiddleware(Action<T> actionExecuting, Action<T> actionExecuted)
         {
-            var defaultGeneralMiddleware = new DefaultGeneralMiddleware<T>(actionExecuting, actionExecuted);
+            var defaultGeneralMiddleware = new DefaultGeneralPipeline<T>(actionExecuting, actionExecuted);
             AddMiddleware(defaultGeneralMiddleware);
         }
 
-        private void AddMiddleware(IGeneralMiddleware<T> middleware)
+        private void AddMiddleware(IGeneralPipeline<T> middleware)
         {
             _middlewareInstances.Add(middleware);
             curIndex = _middlewareInstances.Count;
