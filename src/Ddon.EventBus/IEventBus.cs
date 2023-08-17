@@ -1,13 +1,16 @@
-﻿using MediatR;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ddon.EventBus.Abstractions
 {
     public interface IEventBus
     {
-        Task PublishAsync(INotification @event, CancellationToken cancellationToken = default);
+        Task PublishAsync(IEventData eventData, CancellationToken cancellationToken = default);
 
-        Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
+        Task PublishAsync(IDistributedEventData eventData, CancellationToken cancellationToken = default);
+
+        Task PublishAsync(IDomainEventData eventData, CancellationToken cancellationToken = default);
+
+        Task<TResponse> PublishAsync<TResponse>(IDomainEventData<TResponse> eventData, CancellationToken cancellationToken = default);
     }
 }

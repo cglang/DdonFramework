@@ -1,8 +1,8 @@
-﻿using MediatR;
+﻿using Ddon.EventBus;
 
 namespace Ddon.Scheduled.Event;
 
-internal class ScheduledInvokeEventData : INotification
+internal class ScheduledInvokeEventData : IEventData
 {
     public ScheduledInvokeEventData(string jobClassName, string jobMethodName)
     {

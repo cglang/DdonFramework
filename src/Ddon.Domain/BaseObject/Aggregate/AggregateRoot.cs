@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Ddon.Domain.Event;
+using Ddon.EventBus;
 
 namespace Ddon.Domain.BaseObject.Aggregate
 {

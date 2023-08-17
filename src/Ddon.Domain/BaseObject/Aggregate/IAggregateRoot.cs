@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Ddon.Domain.Event;
+using Ddon.EventBus;
 
 namespace Ddon.Domain.BaseObject.Aggregate
 {

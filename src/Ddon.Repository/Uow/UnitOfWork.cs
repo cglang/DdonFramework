@@ -1,9 +1,8 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.Core.Use.Di;
 using Ddon.Domain.BaseObject.Aggregate;
-using Ddon.Domain.Event;
+using Ddon.EventBus.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -12,14 +11,14 @@ namespace Ddon.Repository.Uow
     public class UnitOfWork<TDbContext> : IUnitOfWork<TDbContext> where TDbContext : DbContext
     {
         private readonly DbContext _dbContext;
-        private readonly IDomainEventBus _domainEventBus;
+        private readonly IEventBus _eventBus;
 
         private IDbContextTransaction? _transaction;
 
-        public UnitOfWork(TDbContext dbContext, IDomainEventBus domainEventBus)
+        public UnitOfWork(TDbContext dbContext, IEventBus eventBus)
         {
             _dbContext = dbContext;
-            _domainEventBus = domainEventBus;
+            _eventBus = eventBus;
         }
 
         public void Begin()
@@ -38,7 +37,7 @@ namespace Ddon.Repository.Uow
 
                 foreach (var domainEvent in domainEvents.DomainEvents)
                 {
-                    await _domainEventBus.PublishAsync(domainEvent, cancellationToken);
+                    await _eventBus.PublishAsync(domainEvent, cancellationToken);
                 }
             }
 

@@ -1,7 +1,7 @@
-﻿using Ddon.EventBus.Abstractions;
-using MediatR;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Ddon.EventBus.Abstractions;
+using MediatR;
 
 namespace Ddon.EventBus
 {
@@ -14,14 +14,25 @@ namespace Ddon.EventBus
             _mediator = mediator;
         }
 
-        public Task PublishAsync(INotification notification, CancellationToken cancellationToken = default)
+        public Task PublishAsync(IDistributedEventData eventData, CancellationToken cancellationToken = default)
         {
-            return _mediator.Publish(notification, cancellationToken);
+            return _mediator.Publish(eventData, cancellationToken);
         }
 
-        public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        public Task PublishAsync(IEventData eventData, CancellationToken cancellationToken = default)
         {
-            return _mediator.Send(request, cancellationToken);
+            return _mediator.Publish(eventData, cancellationToken);
+        }
+
+        public Task PublishAsync(IDomainEventData eventData, CancellationToken cancellationToken = default)
+        {
+            return _mediator.Send(eventData, cancellationToken);
+        }
+
+
+        public Task<TResponse> PublishAsync<TResponse>(IDomainEventData<TResponse> eventData, CancellationToken cancellationToken = default)
+        {
+            return _mediator.Send(eventData, cancellationToken);
         }
     }
 }

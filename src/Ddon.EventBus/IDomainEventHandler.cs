@@ -1,7 +1,6 @@
-﻿using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 
-namespace Ddon.Domain.Event
+namespace Ddon.EventBus
 {
     public interface IDomainEventHandler<in TDomainEvent> : IRequestHandler<TDomainEvent>
         where TDomainEvent : IDomainEventData
