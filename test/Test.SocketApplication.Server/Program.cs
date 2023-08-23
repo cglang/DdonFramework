@@ -10,7 +10,10 @@ builder.Host.ConfigureServices((context, services) =>
     services.AddSocketServerService(opt =>
     {
         opt.IPEndPoint = new(IPAddress.Loopback, 6012);
-        opt.ConfigureMiddlewares(x => { });
+        opt.ConfigureMiddlewares(x =>
+        {
+            x.UseEndPoints();
+        });
     });
 });
 

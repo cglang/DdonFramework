@@ -27,8 +27,8 @@ public class SocketSessionHandler : ISocketSessionHandler
 
     public Task StringHandler(SocketSession session, string text)
     {
-        Logger.LogError("现在还无法处理文本类型的数据");
-        return Task.CompletedTask;
+        var context = new SocketContext(session, text);
+        return Pipeline.ExecuteAsync(context);
     }
 
     public Task ByteHandler(SocketSession session, Memory<byte> bytes)

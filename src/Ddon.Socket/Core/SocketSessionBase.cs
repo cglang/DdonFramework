@@ -58,11 +58,6 @@ namespace Ddon.Socket.Core
             Task<Task>.Factory.StartNew(Receive, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
-        public Task StartAsync()
-        {
-            return Receive();
-        }
-
         protected abstract Task Receive();
 
         private async ValueTask SendAsync(DataType type, params ReadOnlyMemory<byte>[] data)

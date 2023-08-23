@@ -16,7 +16,10 @@ builder.Services.AddOptions().Configure<SocketClientOption>(options =>
 {
     options.Host = "127.0.0.1";
     options.Port = 6012;
-    options.ConfigureMiddlewares(x => { });
+    options.ConfigureMiddlewares(x =>
+    {
+        x.UseEndPoints();
+    });
 });
 
 var app = builder.Build();

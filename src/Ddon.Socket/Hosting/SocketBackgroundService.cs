@@ -34,9 +34,6 @@ namespace Ddon.Socket.Hosting
         {
             SocketRouteMap.Init();
 
-            // 管道配置初始化
-            _pipelineRegistrar.AddMiddleware<RouteMiddleware>();
-            _pipelineRegistrar.AddMiddleware<EndPointMiddleware>();
             _option.PipelineRegistrar?.Invoke(_pipelineRegistrar);
 
             var sersver = new SocketServer(_option, _handle, _sessionStorage);

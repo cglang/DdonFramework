@@ -1,7 +1,6 @@
 ﻿using Ddon.Socket.Options;
 using Ddon.Socket.Serialize;
 using Ddon.Socket.Session.Handler;
-using Ddon.Socket.Session.Middleware;
 using Ddon.Socket.Session.Pipeline;
 using Ddon.Socket.Session.Route;
 using Microsoft.Extensions.Logging;
@@ -36,8 +35,6 @@ namespace Ddon.Socket
             SocketRouteMap.Init();
 
             // 管道配置初始化
-            _pipelineRegistrar.AddMiddleware<RouteMiddleware>();
-            _pipelineRegistrar.AddMiddleware<EndPointMiddleware>();
             _option.PipelineRegistrar?.Invoke(_pipelineRegistrar);
 
             return new(_option, _handler, _logger, _socketSerialize);
