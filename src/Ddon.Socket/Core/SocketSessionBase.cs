@@ -55,18 +55,38 @@ namespace Ddon.Socket.Core
 
         protected void Start()
         {
-            Task<Task>.Factory.StartNew(Receive, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            Task<ValueTask>.Factory.StartNew(Receive, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
-        protected abstract Task Receive();
+        protected abstract ValueTask Receive();
 
         private async ValueTask SendAsync(DataType type, params ReadOnlyMemory<byte>[] data)
         {
-            await Stream.WriteAsync(BitConverter.GetBytes(data.Sum(x => x.Length)));
-            await Stream.WriteAsync(new byte[] { (byte)type });
-            foreach (var item in data)
+            await Stream.WriteAsync(Combine(type, data));
+
+            static ReadOnlyMemory<byte> Combine(DataType type, params ReadOnlyMemory<byte>[] arrays)
             {
-                await Stream.WriteAsync(item);
+                var dataLength = arrays.Sum(item => item.Length);
+                byte[] dataLengthArray = BitConverter.GetBytes(dataLength);
+
+                var length = arrays.Sum(item => item.Length) + dataLengthArray.Length + 1;
+
+                byte[] bytes = new byte[length];
+                int offset = 0;
+
+                Buffer.BlockCopy(dataLengthArray, 0, bytes, offset, dataLengthArray.Length);
+                offset += dataLengthArray.Length;
+
+                Buffer.BlockCopy(new[] { (byte)type }, 0, bytes, offset, 1);
+                offset += 1;
+
+                foreach (var array in arrays)
+                {
+                    Buffer.BlockCopy(array.ToArray(), 0, bytes, offset, array.Length);
+                    offset += array.Length;
+                }
+
+                return bytes;
             }
         }
 
@@ -79,7 +99,6 @@ namespace Ddon.Socket.Core
         {
             return SendAsync(DataType.Byte, data);
         }
-
 
         #region Dispose
 

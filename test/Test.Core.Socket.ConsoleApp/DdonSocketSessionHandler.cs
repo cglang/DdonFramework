@@ -4,7 +4,7 @@ using Ddon.Socket.Exceptions;
 
 class DdonSocketSessionHandler : ISocketSessionHandler
 {
-    public Task ByteHandler(SocketSession session, Memory<byte> data)
+    public Task ByteHandler(SocketSession session, ReadOnlyMemory<byte> data)
     {
         return Task.Run(() => Console.WriteLine($"客户端：接收到Byte数据：{data.Length},{Encoding.UTF8.GetString(data.Span)}"));
     }

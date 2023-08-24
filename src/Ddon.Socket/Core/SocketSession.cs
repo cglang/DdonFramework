@@ -34,7 +34,7 @@ public partial class SocketSession : SocketSessionBase
         Start();
     }
 
-    protected override async Task Receive()
+    protected override async ValueTask Receive()
     {
         try
         {
@@ -49,24 +49,24 @@ public partial class SocketSession : SocketSessionBase
                 try
                 {
                     if (head.Type is DataType.Text && StringHandler is not null)
-                        await StringHandler(this, Encoding.UTF8.GetString(initial.Span));
+                        _ = StringHandler(this, Encoding.UTF8.GetString(initial.Span));
                     if (head.Type is DataType.Byte && ByteHandler is not null)
-                        await ByteHandler(this, initial);
+                        _ = ByteHandler(this, initial);
                 }
                 catch (Exception ex)
                 {
                     if (ExceptionHandler is not null)
-                        await ExceptionHandler(this, new(ex, SessionId));
+                        _ = ExceptionHandler(this, new(ex, SessionId));
                 }
             }
         }
         catch (Exception ex)
         {
             if (ExceptionHandler is not null)
-                await ExceptionHandler(this, new(ex, SessionId));
+                _ = ExceptionHandler(this, new(ex, SessionId));
 
             if (DisconnectHandler is not null)
-                await DisconnectHandler(this);
+                _ = DisconnectHandler(this);
         }
     }
 }

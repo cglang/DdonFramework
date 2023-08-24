@@ -16,12 +16,6 @@ public partial class SocketSession
             Type = (DataType)bytes.Span[sizeof(int)];
         }
 
-        public byte[] GetBytes()
-        {
-            ByteArrayHelper.MergeArrays(out var bytes, BitConverter.GetBytes(Length), new[] { (byte)Type });
-            return bytes;
-        }
-
         public const int HeadLength = sizeof(int) + sizeof(DataType);
     }
 }
