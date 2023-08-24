@@ -79,11 +79,9 @@ namespace Ddon.Socket.Session.Middleware
 
             Task ModeOfResponseAsync(SocketContext context)
             {
-                if (!TimeoutRecordProcessor.ContainsKey(context.Head.Id))
-                    return Task.CompletedTask;
+                var request = TimeoutRecordProcessor.GetDefault(context.Head.Id);
 
-                var request = TimeoutRecordProcessor.Get(context.Head.Id);
-                if (request.IsCompleted)
+                if (request is null || request.IsCompleted)
                     return Task.CompletedTask;
 
                 var res = _socketSerialize.Deserialize<SocketResponse<object>>(context.SourceData);

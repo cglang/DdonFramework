@@ -6,10 +6,10 @@ namespace Ddon.Socket.Serialize
     {
         string SerializeOfString<T>(T data);
 
-        Memory<byte> SerializeOfByte<T>(T data);
+        ReadOnlyMemory<byte> SerializeOfByte<T>(T data);
 
         T? Deserialize<T>(string data);
 
-        T? Deserialize<T>(Memory<byte> data);
+        T? Deserialize<T>(ReadOnlyMemory<byte> data);
     }
 }

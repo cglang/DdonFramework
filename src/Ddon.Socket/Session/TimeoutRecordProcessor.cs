@@ -9,68 +9,46 @@ namespace Ddon.Socket.Session
     /// <summary>
     /// 超时记录处理
     /// </summary>
-    internal class TimeoutRecordProcessor
+    internal static class TimeoutRecordProcessor
     {
+        private static Dictionary<Guid, RequestEventListener> _pairs = new();
+        private static DelayQueue<Guid> _delayQueue = new();
+
         internal static void Add(RequestEventListener ddonSocketResponseHandler)
         {
-            Datas.Instance.Pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
-            Datas.Instance.DelayQueue.Add(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(60));
+            _pairs.Add(ddonSocketResponseHandler.Id, ddonSocketResponseHandler);
+            _delayQueue.Add(ddonSocketResponseHandler.Id, TimeSpan.FromSeconds(60));
         }
-
-        internal static bool ContainsKey(Guid id) => Datas.Instance.Pairs.ContainsKey(id);
-
-        internal static RequestEventListener Get(Guid id) => Datas.Instance.Pairs[id];
 
         internal static void Remove(Guid id)
         {
-            Datas.Instance.Pairs.Remove(id);
-            Datas.Instance.DelayQueue.Remove(id);
+            _pairs.Remove(id);
+            _delayQueue.Remove(id);
         }
 
-        internal static void Start() => Datas.Instance.Start();
-
-        internal class Datas
+        internal static bool ContainsKey(Guid id)
         {
-            private Datas()
+            return _pairs.ContainsKey(id);
+        }
+
+        internal static RequestEventListener? GetDefault(Guid id)
+        {
+            return _pairs.ContainsKey(id) ? _pairs[id] : null;
+        }
+
+        internal static void Start()
+        {
+            Task.Run(PollTimeoutRequests);
+        }
+
+        private static async Task PollTimeoutRequests()
+        {
+            while (true)
             {
-                DelayQueue = new();
-                Pairs = new();
-            }
-
-            public static Datas Instance = new Lazy<Datas>(() => new Datas()).Value;
-
-            public readonly Dictionary<Guid, RequestEventListener> Pairs;
-            public readonly DelayQueue<Guid> DelayQueue;
-
-            private bool isStart = false;
-            internal void Start()
-            {
-                if (!isStart)
+                var item = await _delayQueue.TakeAsync();
+                if (item != default && _pairs.TryGetValue(item, out var listener) && !listener.IsCompleted)
                 {
-                    Task.Run(PollTimeoutRequests);
-                    isStart = true;
-                }
-            }
-
-            async Task PollTimeoutRequests()
-            {
-                while (true)
-                {
-                    try
-                    {
-                        var item = await Instance.DelayQueue.TakeAsync();
-                        if (item != default && Pairs.TryGetValue(item, out var value) && !value.IsCompleted)
-                        {
-                            Pairs[item].ExceptionHandler(new DdonSocketRequestException("请求超时"));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                        Console.WriteLine(ex.Message);
-                        Console.WriteLine(ex.Source);
-                        Console.WriteLine(ex.HelpLink);
-                    }
+                    _pairs[item].ExceptionHandler(new DdonSocketRequestException("请求超时"));
                 }
             }
         }

@@ -21,7 +21,7 @@ namespace Ddon.Socket.Serialize
             return JsonSerializer.Serialize(data, Options);
         }
 
-        public Memory<byte> SerializeOfByte<T>(T data)
+        public ReadOnlyMemory<byte> SerializeOfByte<T>(T data)
         {
             return SerializeOfString(data).GetBytes();
         }
@@ -31,7 +31,7 @@ namespace Ddon.Socket.Serialize
             return JsonSerializer.Deserialize<T>(data, Options);
         }
 
-        public T? Deserialize<T>(Memory<byte> data)
+        public T? Deserialize<T>(ReadOnlyMemory<byte> data)
         {
             return JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(data.Span), Options);
         }

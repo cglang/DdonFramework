@@ -6,7 +6,7 @@ namespace Ddon.Socket.Core
 {
     public interface ISocketSessionBind
     {
-        ISocketSessionBind BindByteHandler(Func<SocketSession, Memory<byte>, Task>? byteHandler);
+        ISocketSessionBind BindByteHandler(Func<SocketSession, ReadOnlyMemory<byte>, Task>? byteHandler);
 
         ISocketSessionBind BindStringHandler(Func<SocketSession, string, Task>? stringHandler);
 
@@ -17,7 +17,7 @@ namespace Ddon.Socket.Core
 
     public interface ISocketServerBind
     {
-        ISocketServerBind BindByteHandler(Func<SocketSession, Memory<byte>, Task>? byteHandler);
+        ISocketServerBind BindByteHandler(Func<SocketSession, ReadOnlyMemory<byte>, Task>? byteHandler);
 
         ISocketServerBind BindStringHandler(Func<SocketSession, string, Task>? stringHandler);
 

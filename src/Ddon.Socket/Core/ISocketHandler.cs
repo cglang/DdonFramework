@@ -10,7 +10,7 @@ namespace Ddon.Socket.Core
 
         Task StringHandler(SocketSession session, string text);
 
-        Task ByteHandler(SocketSession session, Memory<byte> data);
+        Task ByteHandler(SocketSession session, ReadOnlyMemory<byte> data);
 
         Task DisconnectHandler(SocketSession session);
     }

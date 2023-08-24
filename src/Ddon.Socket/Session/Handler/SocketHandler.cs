@@ -31,7 +31,7 @@ public class SocketSessionHandler : ISocketSessionHandler
         return Pipeline.ExecuteAsync(context);
     }
 
-    public Task ByteHandler(SocketSession session, Memory<byte> bytes)
+    public Task ByteHandler(SocketSession session, ReadOnlyMemory<byte> bytes)
     {
         var context = GetSocketContext(session, bytes);
         return Pipeline.ExecuteAsync(context);
@@ -49,7 +49,7 @@ public class SocketSessionHandler : ISocketSessionHandler
         return Task.CompletedTask;
     }
 
-    protected SocketContext GetSocketContext(SocketSession session, Memory<byte> bytes)
+    protected SocketContext GetSocketContext(SocketSession session, ReadOnlyMemory<byte> bytes)
     {
         // head部分数据的大小       存放一些数据头部的数据       真正的数据
         // [ headSize :: 4bytes ] [ head :: headSize bytes ] [ data ]

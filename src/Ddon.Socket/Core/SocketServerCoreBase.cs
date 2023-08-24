@@ -7,13 +7,13 @@ namespace Ddon.Socket.Core
 {
     public abstract class DdonSocketServerHandlerBase : ISocketServerBind
     {
-        protected Func<SocketSession, Memory<byte>, Task>? ByteHandler;
+        protected Func<SocketSession, ReadOnlyMemory<byte>, Task>? ByteHandler;
         protected Func<SocketSession, string, Task>? StringHandler;
         protected Func<SocketSession, SocketException, Task>? ExceptionHandler;
         protected Func<SocketSession, Task>? DisconnectHandler;
         protected Func<SocketSession, Task>? ConnectHandler;
 
-        public ISocketServerBind BindByteHandler(Func<SocketSession, Memory<byte>, Task>? byteHandler)
+        public ISocketServerBind BindByteHandler(Func<SocketSession, ReadOnlyMemory<byte>, Task>? byteHandler)
         {
             ByteHandler += byteHandler;
             return this;

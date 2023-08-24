@@ -9,12 +9,12 @@ namespace Ddon.Socket.Core
 {
     public abstract class SocketSessionHandlerBase : ISocketSessionBind
     {
-        protected Func<SocketSession, Memory<byte>, Task>? ByteHandler;
+        protected Func<SocketSession, ReadOnlyMemory<byte>, Task>? ByteHandler;
         protected Func<SocketSession, string, Task>? StringHandler;
         protected Func<SocketSession, Exceptions.SocketException, Task>? ExceptionHandler;
         protected Func<SocketSession, Task>? DisconnectHandler;
 
-        public ISocketSessionBind BindByteHandler(Func<SocketSession, Memory<byte>, Task>? byteHandler)
+        public ISocketSessionBind BindByteHandler(Func<SocketSession, ReadOnlyMemory<byte>, Task>? byteHandler)
         {
             ByteHandler += byteHandler;
             return this;
@@ -41,15 +41,15 @@ namespace Ddon.Socket.Core
 
     public abstract class SocketSessionBase : SocketSessionHandlerBase, ISocketSessionBind, IDisposable
     {
-        protected TcpClient tcpClient;
+        protected TcpClient TcpClient { get; set; }
 
-        protected NetworkStream Stream => tcpClient.GetStream();
+        protected NetworkStream Stream => TcpClient.GetStream();
 
         public Guid SessionId { get; protected set; }
 
         public SocketSessionBase(TcpClient tcpClient)
         {
-            this.tcpClient = tcpClient;
+            TcpClient = tcpClient;
             Start();
         }
 
@@ -102,8 +102,8 @@ namespace Ddon.Socket.Core
             {
                 // 清理托管资源
                 Stream.Dispose();
-                tcpClient.Close();
-                tcpClient.Dispose();
+                TcpClient.Close();
+                TcpClient.Dispose();
             }
 
             // 清理非托管资源

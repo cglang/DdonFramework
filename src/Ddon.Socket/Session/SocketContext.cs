@@ -14,7 +14,7 @@ namespace Ddon.Socket.Session
             SourceData = Encoding.UTF8.GetBytes(text);
         }
 
-        public SocketContext(SocketSession session, SocketHeadInfo head, Memory<byte> dataBytes)
+        public SocketContext(SocketSession session, SocketHeadInfo head, ReadOnlyMemory<byte> dataBytes)
         {
             Session = session;
             Head = head;
@@ -25,7 +25,7 @@ namespace Ddon.Socket.Session
 
         public SocketHeadInfo Head { get; }
 
-        public Memory<byte> SourceData { get; }
+        public ReadOnlyMemory<byte> SourceData { get; }
 
         public SocketEndPoint? EndPoint { get; private set; }
 

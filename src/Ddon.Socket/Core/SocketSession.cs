@@ -10,8 +10,7 @@ public partial class SocketSession : SocketSessionBase
 {
     public SocketSession(TcpClient tcpClient) : base(tcpClient)
     {
-        var data = Stream.ReadLength(16);
-        SessionId = new Guid(data.Span);
+        SessionId = new Guid(Stream.ReadLength(16).Span);
     }
 
     public SocketSession(TcpClient tcpClient, Guid socketId) : base(tcpClient)
@@ -24,13 +23,13 @@ public partial class SocketSession : SocketSessionBase
 
     protected void InitConnect(TcpClient tcpClient)
     {
-        base.tcpClient = tcpClient;
+        TcpClient = tcpClient;
         SessionId = new Guid(Stream.ReadLength(16).Span);
     }
 
     public void Reconnect(TcpClient tcpClient)
     {
-        base.tcpClient.Dispose();
+        TcpClient.Dispose();
         InitConnect(tcpClient);
         Start();
     }
