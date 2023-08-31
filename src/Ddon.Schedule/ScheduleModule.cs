@@ -23,6 +23,10 @@ public class ScheduleModule : Module
         }
 
         var scheduleOptions = configuration.GetSection(nameof(ScheduleOptions)).Get<ScheduleOptions>() ?? new();
-        services.AddOptions().Configure<ScheduleOptions>(options => options = scheduleOptions);
+        services.AddOptions().Configure<ScheduleOptions>(options =>
+        {
+            options.Enable = scheduleOptions.Enable;
+            options.SchedulePath = scheduleOptions.SchedulePath;
+        });
     }
 }
