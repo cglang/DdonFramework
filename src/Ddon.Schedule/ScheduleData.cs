@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using Ddon.Core.Use.Queue;
 
-namespace Ddon.Scheduled;
+namespace Ddon.Schedule;
 
-internal static class ScheduledData
+internal static class ScheduleData
 {
-    public static readonly Dictionary<Guid, ScheduledInvokeData> Jobs = new();
+    public static readonly Dictionary<Guid, ScheduleInvokeData> Jobs = new();
     public static readonly DelayQueue<Guid> DelayQueue = new();
 }

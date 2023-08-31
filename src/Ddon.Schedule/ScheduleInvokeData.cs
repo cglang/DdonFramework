@@ -1,11 +1,11 @@
 ﻿using System;
 using Ddon.Core.Use.Cronos;
 
-namespace Ddon.Scheduled;
+namespace Ddon.Schedule;
 
-internal class ScheduledInvokeData
+internal class ScheduleInvokeData
 {
-    public ScheduledInvokeData(CronExpression cron, TimeZoneInfo zone, bool inclusive, string jobClassName, string jobMethodName)
+    public ScheduleInvokeData(CronExpression cron, TimeZoneInfo zone, bool inclusive, string jobClassName, string jobMethodName)
     {
         Cron = cron;
         Zone = zone;

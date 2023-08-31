@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Ddon.Scheduled;
+using Ddon.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Test.Job;
 
 namespace Test.Scheduled;
 
-internal class TestJob : IScheduled
+internal class TestJob : ISchedule
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger _logger;

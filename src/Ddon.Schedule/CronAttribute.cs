@@ -1,7 +1,7 @@
 ﻿using System;
 using Ddon.Core.Use.Cronos;
 
-namespace Ddon.Scheduled;
+namespace Ddon.Schedule;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class CronAttribute : Attribute

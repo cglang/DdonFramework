@@ -4,29 +4,30 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Core.Use.Cronos;
+using Ddon.Schedule;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Ddon.Scheduled;
+namespace Ddon.Schedule;
 
 /// <summary>
 /// Job 服务启动
 /// </summary>
-internal class ScheduledHostService : BackgroundService
+internal class ScheduleHostService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Job 服务启动
     /// </summary>
-    public ScheduledHostService(IServiceProvider serviceProvider)
+    public ScheduleHostService(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var baseType = typeof(IScheduled);
+        var baseType = typeof(ISchedule);
 
         var implementTypes = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(types => types.GetTypes())
@@ -40,13 +41,13 @@ internal class ScheduledHostService : BackgroundService
             from attr in attrs
             where attr.Enable
             let cron = CronExpression.Parse(attr.CronExpression, attr.Format)
-            select new ScheduledInvokeData(cron, attr.Zone, attr.Inclusive, implementType.FullName!, method.Name);
+            select new ScheduleInvokeData(cron, attr.Zone, attr.Inclusive, implementType.FullName!, method.Name);
         foreach (var jobInvokeData in jobInvokeDatas)
         {
-            ScheduledData.Jobs.Add(Guid.NewGuid(), jobInvokeData);
+            ScheduleData.Jobs.Add(Guid.NewGuid(), jobInvokeData);
         }
 
         await using var scope = _serviceProvider.CreateAsyncScope();
-        await scope.ServiceProvider.GetRequiredService<ScheduledService>().StartAsync();
+        await scope.ServiceProvider.GetRequiredService<ScheduleService>().StartAsync();
     }
 }
