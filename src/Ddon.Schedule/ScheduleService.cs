@@ -33,7 +33,7 @@ internal class ScheduleService
                 var jobId = await ScheduleData.DelayQueue.TakeAsync();
                 var job = ScheduleData.Jobs[jobId];
 
-                var eventData = new ScheduleInvokeEventData(job.JobClassName, job.JobMethodName);
+                var eventData = new ScheduleInvokeEventData(job.ClassName, job.MethodName);
                 try
                 {
                     await _mediator.Publish(eventData);

@@ -16,18 +16,17 @@ public class CoreModule : Module
         services.AddAutoInject();
 
         services.AddTransient<ILazyServiceProvider, LazyServiceProvider>();
+        services.AddSingleton<IGuidGenerator, SequentialGuidGenerator>();
+        services.AddSingleton<ISnowflakeGenerator, SnowflakeGenerator>();
+        services.AddSingleton<IIdGenerator, IdGenerator>();
 
         var sequentialGuidGeneratorOptions = configuration.GetSection(nameof(SequentialGuidGeneratorOptions)).Get<SequentialGuidGeneratorOptions>() ?? new();
         services.AddOptions().Configure<SequentialGuidGeneratorOptions>(options =>
             options.DefaultSequentialGuidType = sequentialGuidGeneratorOptions.GetDefaultSequentialGuidType());
-        services.AddTransient<IGuidGenerator, SequentialGuidGenerator>();
 
         var snowflakeGeneratorOptions = configuration.GetSection(nameof(SnowflakeGeneratorOptions)).Get<SnowflakeGeneratorOptions>() ?? new();
         services.AddOptions().Configure<SnowflakeGeneratorOptions>(options =>
             options.WorkerId = snowflakeGeneratorOptions.GetDefaultWorkerId());
-        services.AddTransient<ISnowflakeGenerator, SnowflakeGenerator>();
-
-        services.AddTransient<IIdGenerator, IdGenerator>();
 
         services.AddSingleton<IOSPlatformProvider, OSPlatformProvider>();
 

@@ -7,9 +7,9 @@ namespace Ddon.Core.Services.IdWorker
     public class IdGenerator : IIdGenerator
     {
         private readonly ISnowflakeGenerator snowflakeGenerator;
-        private readonly Guids.IGuidGenerator guidGenerator;
+        private readonly IGuidGenerator guidGenerator;
 
-        public IdGenerator(Guids.IGuidGenerator guidGenerator, ISnowflakeGenerator snowflakeGenerator)
+        public IdGenerator(IGuidGenerator guidGenerator, ISnowflakeGenerator snowflakeGenerator)
         {
             this.snowflakeGenerator = snowflakeGenerator;
             this.guidGenerator = guidGenerator;
