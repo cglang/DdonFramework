@@ -1,8 +1,10 @@
 ﻿using System;
+using MemoryPack;
 
 namespace Ddon.Socket.Session.Model
 {
-    public class SocketHeadInfo
+    [MemoryPackable]
+    public partial class SocketHeadInfo
     {
         public Guid Id { get; set; }
 

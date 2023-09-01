@@ -10,6 +10,10 @@
 	<Import Project="../../common.props" />
 
 	<ItemGroup>
+	  <PackageReference Include="MemoryPack" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 	</ItemGroup>
 
