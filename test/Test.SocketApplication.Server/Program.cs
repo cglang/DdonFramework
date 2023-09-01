@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureServices((context, services) =>
 {
     services.LoadModule<SocketModule>(context.Configuration);
-    services.AddSocketServerService(opt =>
+    services.AddSocketServerService(context.Configuration, opt =>
     {
         opt.IPEndPoint = new(IPAddress.Loopback, 6012);
         opt.ConfigureMiddlewares(x =>
