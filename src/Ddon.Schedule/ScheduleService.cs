@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Ddon.Schedule;
 
 /// <summary>
-/// Job 服务启动
+/// 计划服务启动
 /// </summary>
 internal class ScheduleService
 {
@@ -19,7 +20,7 @@ internal class ScheduleService
         _logger = logger;
     }
 
-    public async Task StartAsync()
+    public async Task StartAsync(CancellationToken stoppingToken)
     {
         foreach (var job in ScheduleData.Jobs)
         {
@@ -30,7 +31,7 @@ internal class ScheduleService
         {
             while (true)
             {
-                var jobId = await ScheduleData.DelayQueue.TakeAsync();
+                var jobId = await ScheduleData.DelayQueue.TakeAsync(stoppingToken);
                 var job = ScheduleData.Jobs[jobId];
 
                 var eventData = new ScheduleInvokeEventData(job.ClassName, job.MethodName);
@@ -45,6 +46,10 @@ internal class ScheduleService
 
                 ScheduleData.DelayQueue.Add(jobId, job.NextSpan);
             }
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.LogWarning("计划服务延时队列已停止");
         }
         catch (Exception e)
         {

@@ -29,6 +29,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
   </ItemGroup>
   <ItemGroup>

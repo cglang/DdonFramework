@@ -20,13 +20,8 @@ public class CoreModule : Module
         services.AddSingleton<ISnowflakeGenerator, SnowflakeGenerator>();
         services.AddSingleton<IIdGenerator, IdGenerator>();
 
-        var sequentialGuidGeneratorOptions = configuration.GetSection(nameof(SequentialGuidGeneratorOptions)).Get<SequentialGuidGeneratorOptions>() ?? new();
-        services.AddOptions().Configure<SequentialGuidGeneratorOptions>(options =>
-            options.DefaultSequentialGuidType = sequentialGuidGeneratorOptions.GetDefaultSequentialGuidType());
-
-        var snowflakeGeneratorOptions = configuration.GetSection(nameof(SnowflakeGeneratorOptions)).Get<SnowflakeGeneratorOptions>() ?? new();
-        services.AddOptions().Configure<SnowflakeGeneratorOptions>(options =>
-            options.WorkerId = snowflakeGeneratorOptions.GetDefaultWorkerId());
+        services.Configure<SequentialGuidGeneratorOptions>(configuration.GetSection(nameof(SequentialGuidGeneratorOptions)));
+        services.Configure<SnowflakeGeneratorOptions>(configuration.GetSection(nameof(SnowflakeGeneratorOptions)));
 
         services.AddSingleton<IOSPlatformProvider, OSPlatformProvider>();
 

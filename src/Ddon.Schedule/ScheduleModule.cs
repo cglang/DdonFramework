@@ -21,12 +21,7 @@ public class ScheduleModule : Module
         {
             services.AddScoped(implementType);
         }
-
-        var scheduleOptions = configuration.GetSection(nameof(ScheduleOptions)).Get<ScheduleOptions>() ?? new();
-        services.AddOptions().Configure<ScheduleOptions>(options =>
-        {
-            options.Enable = scheduleOptions.Enable;
-            options.SchedulePath = scheduleOptions.SchedulePath;
-        });
+        
+        services.Configure<ScheduleOptions>(configuration.GetSection("Schedule"));
     }
 }

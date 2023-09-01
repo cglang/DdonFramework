@@ -2,6 +2,11 @@
 {
     public class SnowflakeGeneratorOptions
     {
+        public SnowflakeGeneratorOptions()
+        {
+            WorkerId = WorkerId == default ? DefaultWorkerId : WorkerId;
+        }
+
         public uint WorkerId { get; set; }
 
         public uint GetDefaultWorkerId()

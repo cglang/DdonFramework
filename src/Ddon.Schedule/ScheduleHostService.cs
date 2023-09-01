@@ -56,7 +56,7 @@ internal class ScheduleHostService : BackgroundService
         }
 
         await using var scope = _serviceProvider.CreateAsyncScope();
-        await scope.ServiceProvider.GetRequiredService<ScheduleService>().StartAsync();
+        await scope.ServiceProvider.GetRequiredService<ScheduleService>().StartAsync(stoppingToken);
     }
 
     private static IEnumerable<ScheduleInvokeData> GetPathSchedule(string? path)

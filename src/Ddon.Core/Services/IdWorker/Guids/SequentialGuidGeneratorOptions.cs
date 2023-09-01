@@ -2,6 +2,11 @@
 {
     public class SequentialGuidGeneratorOptions
     {
+        public SequentialGuidGeneratorOptions()
+        {
+            DefaultSequentialGuidType = SequentialGuidType.SequentialAtEnd;
+        }
+
         /// <summary>
         /// Default value: null (unspecified).
         /// Use <see cref="GetDefaultSequentialGuidType"/> method
