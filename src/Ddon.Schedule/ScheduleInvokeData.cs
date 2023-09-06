@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Ddon.Core.Use.Cronos;
 
 namespace Ddon.Schedule;
@@ -110,6 +112,37 @@ internal class ScheduleInvokeData
         var scriptValue = new ScriptValue(type, path);
 
         return new ScheduleInvokeData(CronExpression.Parse(cron, CronFormat.IncludeSeconds), TimeZoneInfo.Local, true, scriptValue);
+    }
+
+    public static IEnumerable<ScheduleInvokeData> GetPathSchedule(string? path)
+    {
+#if DEBUG
+        path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "schedules");
+#endif
+
+        var result = new List<ScheduleInvokeData>();
+
+        if (path is null) return result;
+
+        Directory.CreateDirectory(path);
+
+        string[] textFiles = Directory.GetFiles(path, "*.task");
+        foreach (string filePath in textFiles)
+        {
+            try
+            {
+                string content = File.ReadAllText(filePath);
+                var item = Parse(content);
+                if (item is not null)
+                    result.Add(item);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading file {Path.GetFileName(filePath)}: {ex.Message}");
+            }
+        }
+
+        return result;
     }
 }
 

@@ -19,33 +19,43 @@ internal class ScheduleInvokeHandler : INotificationHandler<ScheduleInvokeEventD
         _python = python;
     }
 
-    public async Task Handle(ScheduleInvokeEventData data, CancellationToken cancellationToken)
+    public Task Handle(ScheduleInvokeEventData data, CancellationToken cancellationToken)
     {
         var schedule = ScheduleData.Schedules[data.ScheduleId];
 
-        if (schedule.ScheduleType is ScheduleType.Plain)
+        return schedule.ScheduleType switch
         {
-            var type = schedule.GetScheduleType();
-            var instance = _serviceProvider.GetService(type) as ISchedule
-                ?? throw new Exception($"从[ServiceProvider]中找不到[{type.FullName}]类型的对象");
+            ScheduleType.Plain => Plain(schedule.GetScheduleType(), cancellationToken),
+            ScheduleType.Script => Script(schedule.GetScriptValue(), cancellationToken),
+            ScheduleType.Method => Method(schedule.GetMethodValue(), cancellationToken),
+            _ => Task.CompletedTask,
+        };
+    }
 
-            await instance.InvokeAsync(cancellationToken);
-        }
-        else if (schedule.ScheduleType is ScheduleType.Method)
-        {
-            var value = schedule.GetMethodValue();
-            var classType = DdonType.GetTypeByName<ISchedule>(value.ClassName);
-            var instance = _serviceProvider.GetRequiredService(classType) ??
-                throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
+    private async Task Plain(Type type, CancellationToken cancellationToken)
+    {
+        var instance = _serviceProvider.GetService(type) as ISchedule
+            ?? throw new Exception($"从[ServiceProvider]中找不到[{type.FullName}]类型的对象");
 
-            var method = DdonType.GetMothodByName(classType, value.MethodName);
-            await DdonInvoke.InvokeAsync(instance, method);
-        }
-        else if (schedule.ScheduleType is ScheduleType.Script)
-        {
-            var value = schedule.GetScriptValue();
+        await instance.InvokeAsync(cancellationToken);
+    }
+
+    private async Task Method(MethodValue value, CancellationToken cancellationToken)
+    {
+        var classType = DdonType.GetTypeByName<ISchedule>(value.ClassName);
+        var instance = _serviceProvider.GetRequiredService(classType) ??
+            throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
+
+        var method = DdonType.GetMothodByName(classType, value.MethodName);
+        await DdonInvoke.InvokeAsync(instance, method);
+    }
+
+    private Task Script(ScriptValue value, CancellationToken cancellationToken)
+    {
+        if (value.ScriptType is ScriptType.Python)
             _python.Run(value.ScriptPath);
-        }
+
+        return Task.FromResult(cancellationToken);
     }
 }
 
@@ -55,8 +65,6 @@ internal class ScheduleInvokeEventData : INotification
     {
         ScheduleId = scheduleId;
     }
-
-    //public Type ScheduleType { get; set; }
 
     public Guid ScheduleId { get; set; }
 }

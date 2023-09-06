@@ -14,17 +14,24 @@ namespace Ddon.Core.Scripts
                 ?? throw new Exception("没有设置python环境信息");
         }
 
-        public void Run(string pyPath)
+        public int Run(string script)
         {
-            Process p = new Process();
-            p.StartInfo.FileName = PythonPath;
-            p.StartInfo.Arguments = pyPath;
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardInput = true;
-            p.StartInfo.RedirectStandardError = true;
-            p.StartInfo.CreateNoWindow = true;
-            p.Start();
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = PythonPath,
+                Arguments = script,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var process = Process.Start(startInfo);
+
+            while (process?.HasExited is false)
+            { }
+
+            return process?.ExitCode ?? -1;
         }
     }
 }
