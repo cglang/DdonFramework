@@ -74,9 +74,15 @@ internal class ScheduleHostService : BackgroundService
 
     private static IEnumerable<ScheduleInvokeData> GetPathSchedule(string? path)
     {
+#if DEBUG
+        path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "schedules");
+#endif
+
         var result = new List<ScheduleInvokeData>();
 
         if (path is null) return result;
+
+        Directory.CreateDirectory(path);
 
         string[] textFiles = Directory.GetFiles(path, "*.task");
         foreach (string filePath in textFiles)
