@@ -38,18 +38,10 @@ internal class ScheduleService
             while (true)
             {
                 var jobId = await ScheduleData.DelayQueue.TakeAsync(stoppingToken);
-                var schedule = ScheduleData.Schedules[jobId];
-                var eventData = new ScheduleInvokeEventData(schedule.Type);
-                try
-                {
-                    await _mediator.Publish(eventData, stoppingToken);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Schedule 错误");
-                }
 
-                ScheduleData.DelayQueue.Add(jobId, schedule.NextSpan);
+                await _mediator.Publish(new ScheduleInvokeEventData(jobId), stoppingToken);
+
+                ScheduleData.DelayQueue.Add(jobId, ScheduleData.Schedules[jobId].NextSpan);
             }
         }
         catch (TaskCanceledException)

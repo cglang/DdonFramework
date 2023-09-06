@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime;
+using Ddon.Core.Scripts;
 using Ddon.Core.Services.IdWorker;
 using Ddon.Core.Services.IdWorker.Guids;
 using Ddon.Core.Services.IdWorker.Snowflake;
@@ -31,5 +32,8 @@ public class CoreModule : Module
         services.AddSingleton(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
 
         services.AddMediatR(config => config.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
+
+        services.AddSingleton<Python>();
+        services.Configure<ScriptsOptions>(configuration.GetSection("Scripts"));
     }
 }
