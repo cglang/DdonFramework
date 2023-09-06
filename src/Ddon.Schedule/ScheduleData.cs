@@ -6,6 +6,6 @@ namespace Ddon.Schedule;
 
 internal static class ScheduleData
 {
-    public static readonly Dictionary<Guid, ScheduleInvokeData> Jobs = new();
+    public static readonly Dictionary<Guid, ScheduleInvokeData> Schedules = new();
     public static readonly DelayQueue<Guid> DelayQueue = new();
 }

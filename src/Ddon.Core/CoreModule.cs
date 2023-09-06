@@ -1,4 +1,5 @@
-﻿using System.Runtime;
+﻿using System;
+using System.Runtime;
 using Ddon.Core.Services.IdWorker;
 using Ddon.Core.Services.IdWorker.Guids;
 using Ddon.Core.Services.IdWorker.Snowflake;
@@ -28,5 +29,7 @@ public class CoreModule : Module
         services.AddSingleton(typeof(IPipelineInstanceProvider<>), typeof(ContainerPipelineInstanceProvider<>));
         services.AddSingleton(typeof(IPipelineRegistrar<>), typeof(PipelineRegistrar<>));
         services.AddSingleton(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
+
+        services.AddMediatR(config => config.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
     }
 }

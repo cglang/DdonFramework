@@ -10,10 +10,6 @@
 	<Import Project="../../common.props" />
 
 	<ItemGroup>
-		<PackageReference Include="MediatR" />		
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
 	</ItemGroup>
 </Project>

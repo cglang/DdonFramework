@@ -77,7 +77,7 @@ namespace Ddon.Core
         protected static void Load<TModule, TOption>(
             IServiceCollection services,
             IConfiguration configuration,
-            Action<TOption> optionBuilder)
+            Action<TOption>? optionBuilder = default)
             where TModule : Module<TOption>, new()
         {
             var module = new TModule();
@@ -102,13 +102,17 @@ namespace Ddon.Core
 
     public abstract class Module : ModuleCore
     {
-        public abstract void Load(IServiceCollection services, IConfiguration configuration);
+        public abstract void Load(
+            IServiceCollection services,
+            IConfiguration configuration);
     }
 
     public abstract class Module<TOption> : ModuleCore
     {
-        public abstract void Load(IServiceCollection services, IConfiguration configuration,
-            Action<TOption> optionBuilder);
+        public abstract void Load(
+            IServiceCollection services,
+            IConfiguration configuration,
+            Action<TOption>? optionAction);
     }
 
     public class ApplicationInitializationContext

@@ -1,12 +1,13 @@
-﻿using Ddon.Schedule;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Test.Job;
+﻿using Microsoft.Extensions.Hosting;
+using Test.Scheduled;
 
-await Host.CreateDefaultBuilder(args)
-    .ConfigureServices((context, service) =>
-    {
-        service.LoadModule<ScheduleModule>(context.Configuration);
-        service.AddLogging();
-        service.AddTransient<JobService>();
-    }).RunConsoleAsync();
+var builder = Host.CreateDefaultBuilder(args);
+
+builder.ConfigureServices((context, service) =>
+{
+    service.LoadModule<TestModule>(context.Configuration);
+});
+
+var app = builder.Build();
+
+await app.RunAsync();

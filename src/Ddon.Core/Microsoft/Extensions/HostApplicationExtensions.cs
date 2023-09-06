@@ -22,6 +22,21 @@ public static class HostApplicationExtensions
         return services;
     }
 
+    public static IServiceCollection LoadModule<TMoudle, TOption>(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<TOption>? optionAction)
+        where TMoudle : Module<TOption>, new()
+    {
+        var module = new TMoudle();
+        if (ModuleCore.CacheModule(module))
+        {
+            module.Load(services, configuration, optionAction);
+        }
+
+        return services;
+    }
+
     public static IHostBuilder CreateApplication<TMoudle>(
         this IHostBuilder hostBuilder,
         Action<IServiceCollection> configureDelegate)

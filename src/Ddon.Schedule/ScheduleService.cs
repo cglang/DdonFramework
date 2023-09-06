@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Schedule;
@@ -11,18 +12,23 @@ namespace Ddon.Schedule;
 /// </summary>
 internal class ScheduleService
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly IMediator _mediator;
     private readonly ILogger<ScheduleService> _logger;
 
-    public ScheduleService(IMediator mediator, ILogger<ScheduleService> logger)
+    public ScheduleService(
+        IServiceProvider serviceProvider,
+        IMediator mediator,
+        ILogger<ScheduleService> logger)
     {
+        _serviceProvider = serviceProvider;
         _mediator = mediator;
         _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken stoppingToken)
     {
-        foreach (var job in ScheduleData.Jobs)
+        foreach (var job in ScheduleData.Schedules)
         {
             ScheduleData.DelayQueue.Add(job.Key, job.Value.NextSpan);
         }
@@ -32,19 +38,18 @@ internal class ScheduleService
             while (true)
             {
                 var jobId = await ScheduleData.DelayQueue.TakeAsync(stoppingToken);
-                var job = ScheduleData.Jobs[jobId];
-
-                var eventData = new ScheduleInvokeEventData(job.ClassName, job.MethodName);
+                var schedule = ScheduleData.Schedules[jobId];
+                var eventData = new ScheduleInvokeEventData(schedule.Type);
                 try
                 {
-                    await _mediator.Publish(eventData);
+                    await _mediator.Publish(eventData, stoppingToken);
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Schedule 错误");
                 }
 
-                ScheduleData.DelayQueue.Add(jobId, job.NextSpan);
+                ScheduleData.DelayQueue.Add(jobId, schedule.NextSpan);
             }
         }
         catch (TaskCanceledException)

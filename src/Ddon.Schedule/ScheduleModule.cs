@@ -1,27 +1,24 @@
 ﻿using System;
 using Ddon.Core;
-using Ddon.Core.Use.Reflection;
-using Ddon.EventBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Schedule;
 
-public class ScheduleModule : Module
+public class ScheduleModule : Module<ScheduleServiceConfiguration>
 {
-    public override void Load(IServiceCollection services, IConfiguration configuration)
+    public override void Load(
+        IServiceCollection services,
+        IConfiguration configuration,
+        Action<ScheduleServiceConfiguration>? optionAction)
     {
-        Load<EventBusModule>(services, configuration);
+        Load<CoreModule>(services, configuration);
         services.AddHostedService<ScheduleHostService>();
         services.AddScoped<ScheduleService>();
 
-        var implementTypes = AssemblyHelper.FindImplementType(typeof(ISchedule), AppDomain.CurrentDomain.GetAssemblies());
-
-        foreach (var implementType in implementTypes)
-        {
-            services.AddScoped(implementType);
-        }
-        
         services.Configure<ScheduleOptions>(configuration.GetSection("Schedule"));
+
+        var scheduleServiceConfiguration = new ScheduleServiceConfiguration(services);
+        optionAction?.Invoke(scheduleServiceConfiguration);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Schedule;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,8 +21,7 @@ internal class TestJob : ISchedule
         _jobService = jobService;
     }
 
-    [Cron("0-59 * * * * ?", enable: true)]
-    public async Task TestTask1()
+    public async Task InvokeAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(500);
         Console.WriteLine(_jobService.GetHashCode());
