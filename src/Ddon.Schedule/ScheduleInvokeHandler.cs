@@ -5,6 +5,7 @@ using Ddon.Core.Scripts;
 using Ddon.Core.Use.Reflection;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Ddon.Schedule;
 
@@ -12,24 +13,30 @@ internal class ScheduleInvokeHandler : INotificationHandler<ScheduleInvokeEventD
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly Python _python;
+    private readonly ILogger<ScheduleInvokeHandler> _logger;
 
-    public ScheduleInvokeHandler(IServiceProvider serviceProvider, Python python)
+    public ScheduleInvokeHandler(
+        IServiceProvider serviceProvider,
+        Python python,
+        ILogger<ScheduleInvokeHandler> logger)
     {
         _serviceProvider = serviceProvider;
         _python = python;
+        _logger = logger;
     }
 
-    public Task Handle(ScheduleInvokeEventData data, CancellationToken cancellationToken)
+    public async Task Handle(ScheduleInvokeEventData data, CancellationToken cancellationToken)
     {
         var schedule = ScheduleData.Schedules[data.ScheduleId];
-
-        return schedule.ScheduleType switch
+        await (schedule.ScheduleType switch
         {
             ScheduleType.Plain => Plain(schedule.GetScheduleType(), cancellationToken),
             ScheduleType.Script => Script(schedule.GetScriptValue(), cancellationToken),
             ScheduleType.Method => Method(schedule.GetMethodValue(), cancellationToken),
             _ => Task.CompletedTask,
-        };
+        });
+
+        _logger.LogInformation("计划任务[{Description}] CRON:[{Cron}] 执行完成 ", schedule.Description, schedule.Cron.ToString());
     }
 
     private async Task Plain(Type type, CancellationToken cancellationToken)
@@ -40,7 +47,7 @@ internal class ScheduleInvokeHandler : INotificationHandler<ScheduleInvokeEventD
         await instance.InvokeAsync(cancellationToken);
     }
 
-    private async Task Method(MethodValue value, CancellationToken cancellationToken)
+    private async Task Method(MethodValue value, CancellationToken _)
     {
         var classType = DdonType.GetTypeByName<ISchedule>(value.ClassName);
         var instance = _serviceProvider.GetRequiredService(classType) ??

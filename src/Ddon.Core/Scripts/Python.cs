@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.Extensions.Options;
 
 namespace Ddon.Core.Scripts
@@ -18,6 +19,7 @@ namespace Ddon.Core.Scripts
         {
             var startInfo = new ProcessStartInfo
             {
+                WorkingDirectory = Path.GetDirectoryName(script),
                 FileName = PythonPath,
                 Arguments = script,
                 RedirectStandardInput = true,

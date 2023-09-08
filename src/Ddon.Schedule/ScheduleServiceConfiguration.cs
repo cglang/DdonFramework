@@ -17,13 +17,17 @@ public class ScheduleServiceConfiguration
         string cronExpression,
         CronFormat format = CronFormat.IncludeSeconds,
         bool inclusive = false,
-        bool enable = true)
+        bool enable = true,
+        string? description = null)
         where TSchedule : class, ISchedule
     {
         if (enable)
         {
             var cron = CronExpression.Parse(cronExpression, format);
-            var data = new ScheduleInvokeData(cron, TimeZoneInfo.Local, inclusive, typeof(TSchedule));
+            var data = new ScheduleInvokeData(cron, TimeZoneInfo.Local, inclusive, typeof(TSchedule))
+            {
+                Description = description
+            };
             ScheduleData.Schedules.Add(Guid.NewGuid(), data);
             _services.AddScoped<TSchedule>();
         }

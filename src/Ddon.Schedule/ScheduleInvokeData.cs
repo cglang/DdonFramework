@@ -57,6 +57,8 @@ internal class ScheduleInvokeData
 
     public object Value { get; set; }
 
+    public string? Description { get; set; }
+
     public Type GetScheduleType()
     {
         return Value.As<Type>();
@@ -78,6 +80,7 @@ internal class ScheduleInvokeData
 
         string cron = string.Empty;
         string path = string.Empty;
+        string description = string.Empty;
         ScriptType type = 0;
         foreach (var item in lines)
         {
@@ -106,12 +109,21 @@ internal class ScheduleInvokeData
                     if (kv[1] == "js")
                         type = ScriptType.Node;
                     break;
+                case "Description":
+                    description = kv[1];
+                    break;
             }
         }
 
-        var scriptValue = new ScriptValue(type, path);
-
-        return new ScheduleInvokeData(CronExpression.Parse(cron, CronFormat.IncludeSeconds), TimeZoneInfo.Local, true, scriptValue);
+        var result = new ScheduleInvokeData(
+            CronExpression.Parse(cron, CronFormat.IncludeSeconds),
+            TimeZoneInfo.Local,
+            true,
+            new ScriptValue(type, path))
+        {
+            Description = description
+        };
+        return result;
     }
 
     public static IEnumerable<ScheduleInvokeData> GetPathSchedule(string? path)
