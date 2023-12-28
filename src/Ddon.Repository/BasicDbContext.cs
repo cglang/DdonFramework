@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Repositiry
 {
-
     public class BasicDbContext
     {
         private readonly ChangeTracker _changeTracker;

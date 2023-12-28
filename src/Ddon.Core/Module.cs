@@ -19,7 +19,7 @@ namespace Ddon.Core
 
         public static readonly ModuleInfo Instance = new Lazy<ModuleInfo>(() => new ModuleInfo()).Value;
 
-        public void ClearCache()
+        public static void ClearCache()
         {
             Instance.LoadedModuleCache.Clear();
         }

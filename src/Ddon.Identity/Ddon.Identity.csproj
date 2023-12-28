@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
     <ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
   </ItemGroup>
 

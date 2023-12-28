@@ -25,7 +25,7 @@ namespace Ddon.Test
 
         public void Dispose()
         {
-            ModuleInfo.Instance.ClearCache();
+            ModuleInfo.ClearCache();
         }
     }
 }

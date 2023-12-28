@@ -16,6 +16,8 @@ public class ScheduleModule : Module<ScheduleServiceConfiguration>
         services.AddHostedService<ScheduleHostService>();
         services.AddScoped<ScheduleService>();
 
+        services.AddScoped<IScheduleManager, ScheduleManager>();
+
         services.Configure<ScheduleOptions>(configuration.GetSection("Schedule"));
 
         var scheduleServiceConfiguration = new ScheduleServiceConfiguration(services);

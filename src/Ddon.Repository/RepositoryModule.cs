@@ -1,5 +1,4 @@
-﻿using Ddon.Cache;
-using Ddon.Core;
+﻿using Ddon.Core;
 using Ddon.Repository.Uow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +13,6 @@ namespace Ddon.Repository
         public override void Load(IServiceCollection services, IConfiguration configuration, Action<DbContextOptionsBuilder>? optionBuilder)
         {
             Load<CoreModule>(services, configuration);
-            Load<CacheModule>(services, configuration);
 
             services.AddScoped<IUnitOfWork<TDbContext>, UnitOfWork<TDbContext>>();
             services.AddDbContext<TDbContext>(optionBuilder);

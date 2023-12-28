@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Schedule;
@@ -12,16 +11,13 @@ namespace Ddon.Schedule;
 /// </summary>
 internal class ScheduleService
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly IMediator _mediator;
     private readonly ILogger<ScheduleService> _logger;
 
     public ScheduleService(
-        IServiceProvider serviceProvider,
         IMediator mediator,
         ILogger<ScheduleService> logger)
     {
-        _serviceProvider = serviceProvider;
         _mediator = mediator;
         _logger = logger;
     }

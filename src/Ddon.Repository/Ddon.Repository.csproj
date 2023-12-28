@@ -14,8 +14,7 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
+	<ItemGroup>		
 		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
 	</ItemGroup>
 

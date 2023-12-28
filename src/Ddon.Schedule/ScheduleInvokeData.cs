@@ -5,7 +5,7 @@ using Ddon.Core.Use.Cronos;
 
 namespace Ddon.Schedule;
 
-internal class ScheduleInvokeData
+public class ScheduleInvokeData
 {
     public ScheduleInvokeData(CronExpression cron, TimeZoneInfo zone, bool inclusive, Type type)
     {

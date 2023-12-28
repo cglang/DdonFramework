@@ -29,7 +29,6 @@ namespace Ddon.EventBus
             return _mediator.Send(eventData, cancellationToken);
         }
 
-
         public Task<TResponse> PublishAsync<TResponse>(IDomainEventData<TResponse> eventData, CancellationToken cancellationToken = default)
         {
             return _mediator.Send(eventData, cancellationToken);

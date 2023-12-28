@@ -81,7 +81,7 @@ namespace Ddon.Identity.Manager
                 .FirstOrDefaultAsync(x => x.GrantKey.Equals(userId) && x.Name.Equals(permissionName))
                 ?? throw new ApplicationServiceException("没有未此角色赋予此权限");
 
-            await _permissionGrantRepository.PermissionGrant.DeleteAsync(permission.Id);
+            await _permissionGrantRepository.PermissionGrant.RemoveAsync(permission.Id);
 
             await _dbContext.SaveChangesAsync();
         }
@@ -115,7 +115,7 @@ namespace Ddon.Identity.Manager
                 .FirstOrDefaultAsync(x => x.GrantKey.Equals(roleId) && x.Name.Equals(permissionName))
                 ?? throw new ApplicationServiceException("没有未改角色赋予此权限");
 
-            await _permissionGrantRepository.PermissionGrant.DeleteAsync(permission.Id);
+            await _permissionGrantRepository.PermissionGrant.RemoveAsync(permission.Id);
 
             await _dbContext.SaveChangesAsync();
         }
@@ -125,11 +125,11 @@ namespace Ddon.Identity.Manager
             var entity = await _roleRepository.Role.FirstOrDefaultAsync(x => x.Id.Equals(id))
                 ?? throw new ApplicationServiceException("没有此Id的记录");
 
-            await _roleRepository.Role.DeleteAsync(entity.Id);
+            await _roleRepository.Role.RemoveAsync(entity.Id);
 
             // 移除赋予用户的角色 移除该角色的权限
-            await _userRoleRepository.UserRoles.DeleteAsync<UserRole<TKey>, TKey>(x => x.RoleId.Equals(id));
-            await _permissionGrantRepository.PermissionGrant.DeleteAsync<PermissionGrant<TKey>, TKey>(
+            await _userRoleRepository.UserRoles.RemoveRangeAsync<UserRole<TKey>, TKey>(x => x.RoleId.Equals(id));
+            await _permissionGrantRepository.PermissionGrant.RemoveRangeAsync<PermissionGrant<TKey>, TKey>(
                 x => x.GrantKey.Equals(id) && x.Type.Equals(PermissionGrantType.Role));
 
             await _dbContext.SaveChangesAsync();
