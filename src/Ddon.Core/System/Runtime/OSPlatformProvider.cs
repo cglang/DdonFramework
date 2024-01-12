@@ -7,14 +7,13 @@ namespace System.Runtime
         public virtual OSPlatform GetCurrentOSPlatform()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
                 return OSPlatform.OSX; //MAC
-            }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 return OSPlatform.Windows;
-            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                return OSPlatform.FreeBSD;
 
             return OSPlatform.Linux;
         }

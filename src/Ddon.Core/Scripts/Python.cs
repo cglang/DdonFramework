@@ -9,7 +9,7 @@ namespace Ddon.Core.Scripts
     {
         private readonly string PythonPath;
 
-        public Python(IOptions<ScriptsOptions> options)
+        public Python(IOptions<ScriptsBinPathOptions> options)
         {
             PythonPath = options.Value.Python
                 ?? throw new Exception("没有设置python环境信息");
