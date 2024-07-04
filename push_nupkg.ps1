@@ -20,6 +20,7 @@ $projects = (
 "Ddon.Localizer",
 "Ddon.Mail",
 "Ddon.Repository",
+"Ddon.Repository.EntityFrameworkCore",
 "Ddon.Schedule",
 "Ddon.Socket"
 )

@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Ddon.Repositiry.Specifications
+namespace Ddon.Repository.EntityFrameworkCore.Specifications
 {
     internal class ParameterReplacerVisitor : ExpressionVisitor
     {

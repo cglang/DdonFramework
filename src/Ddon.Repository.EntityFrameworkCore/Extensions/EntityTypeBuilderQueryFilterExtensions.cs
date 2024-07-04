@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Ddon.Repositiry.Extensions
+namespace Ddon.Repository.EntityFrameworkCore.Extensions
 {
     public static class EntityTypeBuilderQueryFilterExtensions
     {

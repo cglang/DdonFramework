@@ -4,7 +4,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Ddon.Repositiry.Extensions
+namespace Ddon.Repository.EntityFrameworkCore.Extensions
 {
     public static class SoftDeleteQueryExtension
     {

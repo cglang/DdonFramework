@@ -2,12 +2,11 @@
 using Ddon.Core.Services.IdWorker;
 using Ddon.Domain.BaseObject;
 using Ddon.Domain.Entities;
-using Ddon.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ddon.Repositiry
+namespace Ddon.Repository.EntityFrameworkCore
 {
     public class BasicDbContext
     {
@@ -116,12 +115,6 @@ namespace Ddon.Repositiry
             base.OnModelCreating(modelBuilder);
 
             OnModleSoftDelete(modelBuilder);
-
-            //var multiTenantTypes = modelBuilder.Model.GetEntityTypes().Where(x => typeof(IMultTenant<TKey>).IsAssignableFrom(x.ClrType));
-            //Parallel.ForEach(multiTenantTypes, x =>
-            //{
-            //    modelBuilder.Entity(x.ClrType).AddQueryFilter<IMultTenant<TKey>>(e => e.TenantId.Equals(Tenant.Id));
-            //});
         }
 
         public void OnModleSoftDelete(ModelBuilder modelBuilder)

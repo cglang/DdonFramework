@@ -1,8 +1,7 @@
 ﻿using System;
 using Ddon.Core.Services.IdWorker;
 using Ddon.Identity.Entities;
-using Ddon.Repositiry;
-using Ddon.Repository;
+using Ddon.Repository.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

@@ -6,7 +6,7 @@ using Ddon.EventBus.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Ddon.Repository.Uow
+namespace Ddon.Repository.EntityFrameworkCore.Uow
 {
     public class UnitOfWork<TDbContext> : IUnitOfWork<TDbContext> where TDbContext : DbContext
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 
-namespace Ddon.Repository
+namespace Ddon.Repository.EntityFrameworkCore
 {
     public class RepositoryModuleOptions
     {

@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Identity.Entities;
 using Microsoft.EntityFrameworkCore;
-using Ddon.Repository.Extensions;
 
 namespace Ddon.Identity.Repositories
 {
@@ -24,23 +23,22 @@ namespace Ddon.Identity.Repositories
             User = dbContext.Users;
         }
 
-
         public async Task<User<TKey>?> GetUserAsync(TKey id, CancellationToken cancellationToken = default)
         {
             var user = await User.FirstOrDefaultAsync(id, cancellationToken);
             if (user is null) return user;
 
             var query = from tUserRoles in _dbContext.UserRoles
-                join tRoles in _dbContext.Roles on tUserRoles.RoleId equals tRoles.Id
-                where tUserRoles.RoleId.Equals(user.Id)
-                select tRoles;
+                        join tRoles in _dbContext.Roles on tUserRoles.RoleId equals tRoles.Id
+                        where tUserRoles.RoleId.Equals(user.Id)
+                        select tRoles;
 
             var roles = await query.AsNoTracking().ToListAsync(cancellationToken);
             user.UserRoles = await _roleRepository.BindRolesPermissionAsync(roles, cancellationToken);
 
             var userPermissionsQuery = from tPermissions in _dbContext.PermissionGrant
-                where tPermissions.Type == PermissionGrantType.User && tPermissions.GrantKey.Equals(user.Id)
-                select tPermissions;
+                                       where tPermissions.Type == PermissionGrantType.User && tPermissions.GrantKey.Equals(user.Id)
+                                       select tPermissions;
             var userPermissions = await userPermissionsQuery.ToListAsync(cancellationToken);
 
             user.UserPermissions = user.UserRoles

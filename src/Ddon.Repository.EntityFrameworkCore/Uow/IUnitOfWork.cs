@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Repository.Uow
+namespace Ddon.Repository.EntityFrameworkCore.Uow
 {
     public interface IUnitOfWork<TDbContext> where TDbContext : DbContext
     {

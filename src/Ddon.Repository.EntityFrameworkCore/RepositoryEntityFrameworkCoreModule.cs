@@ -1,13 +1,13 @@
-﻿using Ddon.Core;
-using Ddon.Repository.Uow;
+﻿using System;
+using Ddon.Core;
+using Ddon.Repository.EntityFrameworkCore.Uow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
-namespace Ddon.Repository
+namespace Ddon.Repository.EntityFrameworkCore
 {
-    public class RepositoryModule<TDbContext> : Module<DbContextOptionsBuilder>
+    public class RepositoryEntityFrameworkCoreModule<TDbContext> : Module<DbContextOptionsBuilder>
         where TDbContext : DbContext
     {
         public override void Load(IServiceCollection services, IConfiguration configuration, Action<DbContextOptionsBuilder>? optionBuilder)

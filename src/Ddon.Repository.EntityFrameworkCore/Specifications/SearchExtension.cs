@@ -1,16 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Repositiry.Specifications
+namespace Ddon.Repository.EntityFrameworkCore.Specifications
 {
     public static class SearchExtension
     {
         public static IQueryable<T> Search<T>(this IQueryable<T> source, IEnumerable<(Expression<Func<T, string>> selector, string searchTerm)> criterias)
         {
-            ParameterExpression parameter = Expression.Parameter(typeof(T), "x");
+            var parameter = Expression.Parameter(typeof(T), "x");
 
             Expression? expr = null;
 

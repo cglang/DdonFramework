@@ -1,11 +1,10 @@
-﻿using Ddon.Core;
+﻿using System;
+using System.Threading.Tasks;
+using Ddon.Core;
 using Ddon.Domain.Exceptions;
 using Ddon.Identity.Entities;
 using Ddon.Identity.Permission;
-using System;
-using System.Threading.Tasks;
 using Ddon.Identity.Repositories;
-using Ddon.Repository.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.Identity.Manager

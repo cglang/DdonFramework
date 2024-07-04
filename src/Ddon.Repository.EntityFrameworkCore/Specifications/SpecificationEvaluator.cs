@@ -1,11 +1,11 @@
-﻿using Ddon.Domain.Entities;
+﻿using System;
+using System.Linq;
+using Ddon.Domain.Entities;
 using Ddon.Domain.Specifications;
 using Ddon.Domain.Specifications.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
-namespace Ddon.Repositiry.Specifications
+namespace Ddon.Repository.EntityFrameworkCore.Specifications
 {
     public class SpecificationEvaluator<TEntity> : ISpecificationEvaluator<TEntity> where TEntity : class, IEntity
     {

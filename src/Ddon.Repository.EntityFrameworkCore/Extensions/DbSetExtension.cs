@@ -5,9 +5,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Repository.Extensions;
+namespace Microsoft.EntityFrameworkCore;
 
 public static class DbSetExtension
 {

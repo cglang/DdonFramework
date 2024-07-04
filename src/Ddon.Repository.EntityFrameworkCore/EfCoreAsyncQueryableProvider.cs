@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Repositiry.EntityFrameworkCore
+namespace Ddon.Repository.EntityFrameworkCore
 {
     public class EfCoreAsyncQueryableProvider : IAsyncQueryableProvider
     {

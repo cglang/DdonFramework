@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Ddon.Domain.BaseObject;
-using Ddon.Repositiry.Extensions;
+using Ddon.Repository.EntityFrameworkCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ddon.Repository
+namespace Ddon.Repository.EntityFrameworkCore
 {
     public interface IDbContextSoftDelete
     {

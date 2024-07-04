@@ -1,13 +1,12 @@
-﻿using Ddon.Domain.Specifications;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Ddon.Domain.Extensions.ValueObject;
+using Ddon.Domain.Specifications;
+using Microsoft.EntityFrameworkCore;
 
-// ReSharper disable once CheckNamespace
 namespace System.Linq
 {
     /// <summary>
@@ -25,7 +24,7 @@ namespace System.Linq
         /// <returns></returns>
         public static async Task<PageResult<TEntity>> QueryPageOrderByAsync<TEntity>(
             this IQueryable<TEntity> query,
-            Page page, 
+            Page page,
             CancellationToken cancellationToken = default)
         {
             var total = await query.CountAsync(cancellationToken);
@@ -46,7 +45,7 @@ namespace System.Linq
         public static async Task<PageResult<TEntity>> QueryPageOrderByAsync<TEntity>(
             this IQueryable<TEntity> query,
             Page page,
-            Expression<Func<TEntity, object>> predicate, 
+            Expression<Func<TEntity, object>> predicate,
             CancellationToken cancellationToken = default)
         {
             var total = await query.CountAsync(cancellationToken);
@@ -68,8 +67,8 @@ namespace System.Linq
         /// <returns></returns>
         public static async Task<PageResult<TEntity>> QueryPageOrderByAsync<TEntity, TKey>(
             this IQueryable<TEntity> query, Page page,
-            Expression<Func<TEntity, TKey>> predicate, 
-            OrderTypeEnum orderType = OrderTypeEnum.OrderBy, 
+            Expression<Func<TEntity, TKey>> predicate,
+            OrderTypeEnum orderType = OrderTypeEnum.OrderBy,
             CancellationToken cancellationToken = default)
         {
             long total;
@@ -102,7 +101,7 @@ namespace System.Linq
         /// <param name="orderExpressions"></param>
         /// <returns></returns>
         public static IQueryable<TEntity> QueryPageOrderBy<TEntity, TKey>(
-            this IQueryable<TEntity> query, 
+            this IQueryable<TEntity> query,
             Page page,
             IEnumerable<(Expression<Func<TEntity, TKey>> KeySelector, OrderTypeEnum OrderType)> orderExpressions)
         {

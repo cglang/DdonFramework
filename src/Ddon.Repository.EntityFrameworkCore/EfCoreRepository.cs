@@ -8,8 +8,7 @@ using Ddon.Domain.Entities;
 using Ddon.Domain.Extensions.ValueObject;
 using Ddon.Domain.Repositories;
 using Ddon.Domain.Specifications;
-using Ddon.Repositiry.EntityFrameworkCore;
-using Ddon.Repositiry.Specifications;
+using Ddon.Repository.EntityFrameworkCore.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.Repository.EntityFrameworkCore;
