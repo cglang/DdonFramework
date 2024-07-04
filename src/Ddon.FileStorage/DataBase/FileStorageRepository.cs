@@ -1,5 +1,4 @@
-﻿using Ddon.Repositiry.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.FileStorage.DataBase
 {

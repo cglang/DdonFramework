@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Ddon.Repositiry;
+using Ddon.Repository.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ddon.FileStorage.DataBase
