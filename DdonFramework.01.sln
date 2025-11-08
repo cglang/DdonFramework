@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.DependencyInjection", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Pipeline", "src\Ddon.Pipeline\Ddon.Pipeline.csproj", "{AD183329-FB72-490F-99C1-31625CFD2F8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.ConsoleApp", "test\Test.ConsoleApp\Test.ConsoleApp.csproj", "{891631F0-A087-4E2E-BFA5-7CB7F4B57CE3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{AD183329-FB72-490F-99C1-31625CFD2F8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD183329-FB72-490F-99C1-31625CFD2F8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD183329-FB72-490F-99C1-31625CFD2F8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{891631F0-A087-4E2E-BFA5-7CB7F4B57CE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{891631F0-A087-4E2E-BFA5-7CB7F4B57CE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{891631F0-A087-4E2E-BFA5-7CB7F4B57CE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{891631F0-A087-4E2E-BFA5-7CB7F4B57CE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,6 +46,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{EE8E1BFB-9EF8-4090-9D30-10ACA0B5ACFC} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{AD183329-FB72-490F-99C1-31625CFD2F8B} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
+		{891631F0-A087-4E2E-BFA5-7CB7F4B57CE3} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}

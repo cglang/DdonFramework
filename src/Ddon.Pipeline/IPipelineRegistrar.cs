@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Threading.Tasks;
 
 namespace Ddon.Pipeline
 {
@@ -11,8 +12,8 @@ namespace Ddon.Pipeline
     {
         void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralPipelineMiddleware<T>;
 
-        void AddMiddleware(Action<T> actionExecuting);
+        void AddMiddleware(Func<T, Task> actionExecuting);
 
-        void AddMiddleware(Action<T> actionExecuting, Action<T> actionExecuted);
+        void AddMiddleware(Func<T, Task> actionExecuting, Func<T, Task> actionExecuted);
     }
 }

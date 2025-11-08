@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Ddon.Pipeline.StatePipe
 {
@@ -11,13 +12,13 @@ namespace Ddon.Pipeline.StatePipe
             {
                 foreach (var middleware in middlewares)
                 {
-                    builder.AddMiddleware(context =>
+                    builder.AddMiddleware(async context =>
                     {
-                        if (middleware?.DecideFunc(context) ?? false)
+                        if (middleware != null && await middleware.DecideFunc(context))
                         {
-                            middleware?.LogicBeforeFunc(context);
-                            middleware?.LogicFunc(context);
-                            middleware?.LogicAfterFunc(context);
+                            await middleware?.LogicBeforeFunc(context);
+                            await middleware?.LogicFunc(context);
+                            await middleware?.LogicAfterFunc(context);
                         }
                     });
                 }
@@ -28,10 +29,10 @@ namespace Ddon.Pipeline.StatePipe
     public class StatePipeMiddleware<TContext>
     {
         public StatePipeMiddleware(
-            Func<TContext, bool> decideFunc,
-            Action<TContext> logicFunc,
-            Action<TContext> logicBeforeFunc = null,
-            Action<TContext> logicAfterFunc = null)
+            Func<TContext, Task<bool>> decideFunc,
+            Func<TContext, Task> logicFunc,
+            Func<TContext, Task> logicBeforeFunc = null,
+            Func<TContext, Task> logicAfterFunc = null)
         {
             DecideFunc = decideFunc;
             LogicFunc = logicFunc;
@@ -39,12 +40,12 @@ namespace Ddon.Pipeline.StatePipe
             LogicAfterFunc = logicAfterFunc;
         }
 
-        public Func<TContext, bool> DecideFunc { get; set; }
+        public Func<TContext, Task<bool>> DecideFunc { get; set; }
 
-        public Action<TContext> LogicFunc { get; set; }
+        public Func<TContext, Task> LogicFunc { get; set; }
 
-        public Action<TContext> LogicBeforeFunc { get; set; }
+        public Func<TContext, Task> LogicBeforeFunc { get; set; }
 
-        public Action<TContext> LogicAfterFunc { get; set; }
+        public Func<TContext, Task> LogicAfterFunc { get; set; }
     }
 }

@@ -13,6 +13,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Ddon.Core\Ddon.Core.csproj" />
+		<ProjectReference Include="..\..\src\Ddon.Pipeline\Ddon.Pipeline.csproj" />
 	</ItemGroup>
 
 </Project>

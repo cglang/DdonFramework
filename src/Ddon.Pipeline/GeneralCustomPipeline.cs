@@ -17,9 +17,8 @@ namespace Ddon.Pipeline
 
         static Task FinalMiddleware(TContext ctx) => Task.CompletedTask;
 
-        public async Task ExecuteAsync(TContext context)
+        public Task ExecuteAsync(TContext context)
         {
-
             PipelineDelegate<TContext> pipeline = FinalMiddleware;
 
             _pipelineRegistrar.Reset();
@@ -30,7 +29,7 @@ namespace Ddon.Pipeline
                 pipeline = (ctx) => currentMiddleware.InvokeAsync(ctx, nextMiddleware);
             }
 
-            await pipeline(context);
+            return pipeline(context);
         }
     }
 }

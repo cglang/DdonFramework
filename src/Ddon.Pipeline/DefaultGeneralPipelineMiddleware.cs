@@ -9,16 +9,16 @@ namespace Ddon.Pipeline
     /// <typeparam name="TContext">管道上下文数据</typeparam>
     public class DefaultGeneralPipelineMiddleware<TContext> : IGeneralPipelineMiddleware<TContext>
     {
-        private readonly Action<TContext> _actionExecuting;
+        private readonly Func<TContext, Task> _actionExecuting;
 
-        private readonly Action<TContext> _actionExecuted;
+        private readonly Func<TContext, Task> _actionExecuted;
 
-        public DefaultGeneralPipelineMiddleware(Action<TContext> actionExecuting)
+        public DefaultGeneralPipelineMiddleware(Func<TContext, Task> actionExecuting)
         {
             _actionExecuting = actionExecuting;
         }
 
-        public DefaultGeneralPipelineMiddleware(Action<TContext> actionExecuting, Action<TContext> actionExecuted)
+        public DefaultGeneralPipelineMiddleware(Func<TContext, Task> actionExecuting, Func<TContext, Task> actionExecuted)
         {
             _actionExecuting = actionExecuting;
             _actionExecuted = actionExecuted;
@@ -26,11 +26,12 @@ namespace Ddon.Pipeline
 
         public async Task InvokeAsync(TContext context, PipelineDelegate<TContext> next)
         {
-            _actionExecuting.Invoke(context);
+            await _actionExecuting.Invoke(context);
 
             await next(context);
 
-            _actionExecuted?.Invoke(context);
+            if (_actionExecuted != null)
+                await _actionExecuted.Invoke(context);
         }
     }
 }

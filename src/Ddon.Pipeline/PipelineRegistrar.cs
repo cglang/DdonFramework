@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ddon.Pipeline
 {
@@ -38,7 +39,7 @@ namespace Ddon.Pipeline
         /// <summary>
         /// 添加管道中间件
         /// </summary>
-        public void AddMiddleware(Action<T> actionExecuting)
+        public void AddMiddleware(Func<T, Task> actionExecuting)
         {
             var defaultGeneralMiddleware = new DefaultGeneralPipelineMiddleware<T>(actionExecuting);
             AddMiddleware(defaultGeneralMiddleware);
@@ -47,7 +48,7 @@ namespace Ddon.Pipeline
         /// <summary>
         /// 添加管道中间件
         /// </summary>
-        public void AddMiddleware(Action<T> actionExecuting, Action<T> actionExecuted)
+        public void AddMiddleware(Func<T, Task> actionExecuting, Func<T, Task> actionExecuted)
         {
             var defaultGeneralMiddleware = new DefaultGeneralPipelineMiddleware<T>(actionExecuting, actionExecuted);
             AddMiddleware(defaultGeneralMiddleware);
