@@ -1,5 +1,5 @@
-﻿using Ddon.Core.Use.Di;
-using System;
+﻿using System;
+using Ddon.DependencyInjection;
 
 namespace Ddon.Core.Services.LazyService
 {

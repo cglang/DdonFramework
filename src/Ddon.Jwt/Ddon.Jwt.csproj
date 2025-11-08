@@ -10,10 +10,6 @@
   <Import Project="../../common.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />

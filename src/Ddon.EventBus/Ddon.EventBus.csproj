@@ -8,8 +8,4 @@
 	</PropertyGroup>
 
 	<Import Project="../../common.props" />
-
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
-	</ItemGroup>
 </Project>

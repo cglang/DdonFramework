@@ -14,8 +14,4 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
-	</ItemGroup>
-
 </Project>

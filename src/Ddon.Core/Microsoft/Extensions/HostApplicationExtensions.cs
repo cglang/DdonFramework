@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Ddon.Core;
+using Ddon.SimpleModule;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -15,11 +15,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Application\Ddon.Application.csproj" />
-		<ProjectReference Include="..\Ddon.Repository\Ddon.Repository.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Folder Include="Migrations\" />
 	</ItemGroup>
 

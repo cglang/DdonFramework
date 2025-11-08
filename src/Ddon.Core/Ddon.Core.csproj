@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -8,13 +12,17 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <Import Project="../../common.props" />
-
   <ItemGroup>
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ddon.DependencyInjection\Ddon.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Ddon.Module\Ddon.SimpleModule.csproj" />
+    <ProjectReference Include="..\Ddon.Pipeline\Ddon.Pipeline.csproj" />
   </ItemGroup>
 
 </Project>

@@ -13,8 +13,4 @@
 		<PackageReference Include="Dapper" />
 	</ItemGroup>
 
-	<ItemGroup>		
-		<ProjectReference Include="..\Ddon.Domain\Ddon.Domain.csproj" />
-	</ItemGroup>
-
 </Project>

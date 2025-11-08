@@ -13,8 +13,4 @@
 	  <PackageReference Include="MemoryPack" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
-	</ItemGroup>
-
 </Project>

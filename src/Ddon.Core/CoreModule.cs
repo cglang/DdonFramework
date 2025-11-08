@@ -2,7 +2,7 @@
 using System.Runtime;
 using Ddon.Core.Scripts;
 using Ddon.Core.Services.LazyService;
-using Ddon.Core.Use.Pipeline;
+using Ddon.SimpleModule;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,9 +18,7 @@ public class CoreModule : Module
 
         services.AddSingleton<IOSPlatformProvider, OSPlatformProvider>();
 
-        services.AddSingleton(typeof(IPipelineInstanceProvider<>), typeof(ContainerPipelineInstanceProvider<>));
-        services.AddSingleton(typeof(IPipelineRegistrar<>), typeof(PipelineRegistrar<>));
-        services.AddSingleton(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
+        services.AddBasePipeline();
 
         services.AddMediatR(config => config.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
 

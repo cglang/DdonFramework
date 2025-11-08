@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
     <ProjectReference Include="..\Ddon.Repository.EntityFrameworkCore\Ddon.Repository.EntityFrameworkCore.csproj" />
   </ItemGroup>
 

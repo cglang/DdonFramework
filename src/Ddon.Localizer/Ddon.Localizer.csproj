@@ -13,8 +13,4 @@
 		<PackageReference Include="Microsoft.Extensions.Localization.Abstractions" />		
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
-	</ItemGroup>
-
 </Project>

@@ -13,8 +13,4 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Ddon.Cache\Ddon.Cache.csproj" />
-  </ItemGroup>
-
 </Project>

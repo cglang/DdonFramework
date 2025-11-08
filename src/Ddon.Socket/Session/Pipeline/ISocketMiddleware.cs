@@ -2,7 +2,7 @@
 
 namespace Ddon.Socket.Session.Pipeline
 {
-    public interface ISocketMiddleware : IGeneralPipeline<SocketContext>
+    public interface ISocketMiddleware : IGeneralPipelineMiddleware<SocketContext>
     {
     }
 }

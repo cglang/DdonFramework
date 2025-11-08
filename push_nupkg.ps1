@@ -5,27 +5,10 @@ $rootFolder = (Get-Item -Path "./" -Verbose).FullName
 
 # List of projects
 $projects = (
-"Ddon.Application",
-"Ddon.AspNetCore",
-"Ddon.Cache",
-"Ddon.Cache.Memory",
-"Ddon.Core",
-"Ddon.Domain",
-"Ddon.EventBus",
-"Ddon.EventBus.Memory",
-"Ddon.FileStorage",
-"Ddon.Identity",
-"Ddon.Jwt",
-"Ddon.KeyValueStorage",
-"Ddon.Localizer",
-"Ddon.Mail",
-"Ddon.Repository",
-"Ddon.Repository.EntityFrameworkCore",
-"Ddon.Schedule",
-"Ddon.Socket"
+"Ddon.DependencyInjection"
 )
 
-[xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "common.props")
+[xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "version.props")
 $version = $commonPropsXml.Project.PropertyGroup.Version
 
 foreach($project in $projects) {

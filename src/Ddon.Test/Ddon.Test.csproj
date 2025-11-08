@@ -15,8 +15,4 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Ddon.Core\Ddon.Core.csproj" />
-	</ItemGroup>
-
 </Project>

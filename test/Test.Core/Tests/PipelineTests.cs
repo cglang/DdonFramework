@@ -10,10 +10,26 @@ namespace Test.Core.Tests
         [TestMethod]
         public async Task MiddlewareBaseTest()
         {
-            var pipeline = GeneralCustomPipelineFactory<DataContext>.CreatePipelineBuild().ConfigureMiddlewares(s =>
+            var pipeline = GeneralCustomPipelineFactory<DataContext>.CreatePipelineBuild().ConfigureMiddlewares(p =>
             {
-                s.AddMiddleware<SampleOneMiddleware>();
-                s.AddMiddleware<SampleTwoMiddleware>();
+                p.AddMiddleware<SampleOneMiddleware>();
+                p.AddMiddleware<SampleTwoMiddleware>();
+                p.AddMiddleware(
+                    x =>
+                    {
+                        // 更多操作
+                    }
+                );
+                p.AddMiddleware(
+                    x =>
+                    {
+                        // 更多操作
+                    },
+                    x =>
+                    {
+                        // 更多操作
+                    }
+                );
             }).Build();
 
             var dataContext = new DataContext();
@@ -29,7 +45,7 @@ namespace Test.Core.Tests
         public string Context { get; set; } = string.Empty;
     }
 
-    public class SampleOneMiddleware : IGeneralPipeline<DataContext>
+    public class SampleOneMiddleware : IGeneralPipelineMiddleware<DataContext>
     {
         public async Task InvokeAsync(DataContext context, PipelineDelegate<DataContext> next)
         {
@@ -39,7 +55,7 @@ namespace Test.Core.Tests
         }
     }
 
-    public class SampleTwoMiddleware : IGeneralPipeline<DataContext>
+    public class SampleTwoMiddleware : IGeneralPipelineMiddleware<DataContext>
     {
         public async Task InvokeAsync(DataContext context, PipelineDelegate<DataContext> next)
         {
