@@ -20,9 +20,11 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Physical" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.10" Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0'"/>
     <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="7.0.9" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0'"/>
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9" />
@@ -30,7 +32,8 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.9" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.9" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" Condition="'$(TargetFramework)' == 'netstandard2.0'"/>
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.10" Condition="'$(TargetFramework)' == 'net8.0' Or '$(TargetFramework)' == 'net9.0'"/>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />

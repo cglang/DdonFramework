@@ -31,8 +31,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.EventBus.Memory", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Mail", "src\Ddon.Mail\Ddon.Mail.csproj", "{8E967A9D-E8C7-4A7B-86B3-A3C23B9DED2B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Job", "src\Ddon.Job\Ddon.Job.csproj", "{049B93EE-4832-4779-9334-043D853E7F67}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Domain", "src\Ddon.Domain\Ddon.Domain.csproj", "{E449CE94-CDD3-4201-8A75-BC314F914194}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Repository", "test\Test.Repository\Test.Repository.csproj", "{94C83760-DF47-48FF-B330-4223EE3001BE}"
@@ -65,6 +63,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{2631A837
 	ProjectSection(SolutionItems) = preProject
 		common.props = common.props
 		Directory.Packages.props = Directory.Packages.props
+		version.props = version.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.DependencyInjection", "src\Ddon.DependencyInjection\Ddon.DependencyInjection.csproj", "{EE8E1BFB-9EF8-4090-9D30-10ACA0B5ACFC}"
