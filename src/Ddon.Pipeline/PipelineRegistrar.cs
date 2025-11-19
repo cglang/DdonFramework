@@ -8,30 +8,29 @@ namespace Ddon.Pipeline
     /// <summary>
     /// 管道注册
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class PipelineRegistrar<T> : IPipelineRegistrar<T>
+    /// <typeparam name="TContext"></typeparam>
+    public class PipelineRegistrar<TContext> : IPipelineRegistrar<TContext>
     {
-        private readonly List<IGeneralPipelineMiddleware<T>> _middlewareInstances;
-        private readonly IPipelineInstanceProvider<T> _instanceProvider;
+        private readonly List<IGeneralPipelineMiddleware<TContext>> _middlewareInstances;
+        private readonly IPipelineInstanceProvider<TContext> _instanceProvider;
 
-        private IGeneralPipelineMiddleware<T> curBox;
-        private int curIndex;
+        private int _curIndex;
 
-        public PipelineRegistrar(IPipelineInstanceProvider<T> instanceProvider)
+        public PipelineRegistrar(IPipelineInstanceProvider<TContext> instanceProvider)
         {
             _instanceProvider = instanceProvider;
-            _middlewareInstances = new List<IGeneralPipelineMiddleware<T>>();
-            curIndex = -1;
+            _middlewareInstances = new List<IGeneralPipelineMiddleware<TContext>>();
+            _curIndex = -1;
         }
 
-        public IGeneralPipelineMiddleware<T> Current => curBox ?? throw new ArgumentNullException();
+        public IGeneralPipelineMiddleware<TContext> Current { get => _middlewareInstances[_curIndex]; }
 
         object IEnumerator.Current => Current;
 
         /// <summary>
         /// 添加管道中间件
         /// </summary>
-        public void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralPipelineMiddleware<T>
+        public void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralPipelineMiddleware<TContext>
         {
             AddMiddleware(_instanceProvider.GetInstance(typeof(TMiddleware)));
         }
@@ -39,42 +38,43 @@ namespace Ddon.Pipeline
         /// <summary>
         /// 添加管道中间件
         /// </summary>
-        public void AddMiddleware(Func<T, Task> actionExecuting)
+        public void AddMiddleware(Func<TContext, Task> actionExecuting)
         {
-            var defaultGeneralMiddleware = new DefaultGeneralPipelineMiddleware<T>(actionExecuting);
+            var defaultGeneralMiddleware = new DefaultGeneralPipelineMiddleware<TContext>(actionExecuting);
             AddMiddleware(defaultGeneralMiddleware);
         }
 
         /// <summary>
         /// 添加管道中间件
         /// </summary>
-        public void AddMiddleware(Func<T, Task> actionExecuting, Func<T, Task> actionExecuted)
+        public void AddMiddleware(Func<TContext, Task> actionExecuting, Func<TContext, Task> actionExecuted)
         {
-            var defaultGeneralMiddleware = new DefaultGeneralPipelineMiddleware<T>(actionExecuting, actionExecuted);
+            var defaultGeneralMiddleware = new DefaultGeneralPipelineMiddleware<TContext>(actionExecuting, actionExecuted);
             AddMiddleware(defaultGeneralMiddleware);
         }
 
         /// <summary>
         /// 添加管道中间件
         /// </summary>
-        private void AddMiddleware(IGeneralPipelineMiddleware<T> middleware)
+        private void AddMiddleware(IGeneralPipelineMiddleware<TContext> middleware)
         {
+            middleware.Index = _middlewareInstances.Count + 1;
+
             _middlewareInstances.Add(middleware);
-            curIndex = _middlewareInstances.Count;
+
+            _curIndex = _middlewareInstances.Count;
         }
 
         public bool MoveNext()
         {
-            if (--curIndex < 0)
+            if (--_curIndex < 0)
                 return false;
-            else
-                curBox = _middlewareInstances[curIndex];
             return true;
         }
 
         public void Reset()
         {
-            curIndex = _middlewareInstances.Count;
+            _curIndex = _middlewareInstances.Count;
         }
 
         public void Dispose()

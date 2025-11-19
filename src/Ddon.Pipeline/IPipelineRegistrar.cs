@@ -7,13 +7,13 @@ namespace Ddon.Pipeline
     /// <summary>
     /// 管道注册接口 也用于注册的管道存储
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface IPipelineRegistrar<T> : IEnumerator<IGeneralPipelineMiddleware<T>>
+    /// <typeparam name="TContext"></typeparam>
+    public interface IPipelineRegistrar<TContext> : IEnumerator<IGeneralPipelineMiddleware<TContext>>
     {
-        void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralPipelineMiddleware<T>;
+        void AddMiddleware<TMiddleware>() where TMiddleware : IGeneralPipelineMiddleware<TContext>;
 
-        void AddMiddleware(Func<T, Task> actionExecuting);
+        void AddMiddleware(Func<TContext, Task> actionExecuting);
 
-        void AddMiddleware(Func<T, Task> actionExecuting, Func<T, Task> actionExecuted);
+        void AddMiddleware(Func<TContext, Task> actionExecuting, Func<TContext, Task> actionExecuted);
     }
 }

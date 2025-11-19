@@ -8,28 +8,16 @@ namespace Ddon.Pipeline
     /// <typeparam name="TContext">管道上下文数据</typeparam>
     public class GeneralCustomPipeline<TContext> : IGeneralCustomPipeline<TContext>
     {
-        private readonly IPipelineRegistrar<TContext> _pipelineRegistrar;
+        private readonly PipelineDelegate<TContext> _delegate;
 
-        public GeneralCustomPipeline(IPipelineRegistrar<TContext> pipelineRegistrar)
+        public GeneralCustomPipeline(PipelineDelegate<TContext> @delegate)
         {
-            _pipelineRegistrar = pipelineRegistrar;
+            _delegate = @delegate;
         }
-
-        static Task FinalMiddleware(TContext ctx) => Task.CompletedTask;
 
         public Task ExecuteAsync(TContext context)
         {
-            PipelineDelegate<TContext> pipeline = FinalMiddleware;
-
-            _pipelineRegistrar.Reset();
-            while (_pipelineRegistrar.MoveNext())
-            {
-                var currentMiddleware = _pipelineRegistrar.Current;
-                var nextMiddleware = pipeline;
-                pipeline = (ctx) => currentMiddleware.InvokeAsync(ctx, nextMiddleware);
-            }
-
-            return pipeline(context);
+            return _delegate(context);
         }
     }
 }

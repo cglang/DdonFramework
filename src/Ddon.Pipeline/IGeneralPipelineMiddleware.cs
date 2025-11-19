@@ -8,6 +8,11 @@ namespace Ddon.Pipeline
     /// <typeparam name="TContext">管道上下文数据</typeparam>
     public interface IGeneralPipelineMiddleware<TContext>
     {
+        /// <summary>
+        /// 管道中的第几个中间件
+        /// </summary>
+        int Index { get; set; }
+
         Task InvokeAsync(TContext context, PipelineDelegate<TContext> next);
     }
 }

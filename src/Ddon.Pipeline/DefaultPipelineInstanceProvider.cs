@@ -10,9 +10,11 @@ namespace Ddon.Pipeline
     {
         public IGeneralPipelineMiddleware<TContext> GetInstance(Type type)
         {
-            var instance = Activator.CreateInstance(type) ?? throw new Exception();
-            if (instance is IGeneralPipelineMiddleware<TContext> feneralMiddleware)
-                return feneralMiddleware;
+            var instance = Activator.CreateInstance(type)
+                ?? throw new InvalidOperationException($"The service type {type.FullName} is not a IGeneralPipelineMiddleware<{typeof(TContext).Name}>.");
+
+            if (instance is IGeneralPipelineMiddleware<TContext> generalMiddleware)
+                return generalMiddleware;
             throw new Exception();
         }
     }

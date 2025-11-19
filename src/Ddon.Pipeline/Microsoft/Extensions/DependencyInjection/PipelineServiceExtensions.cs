@@ -7,8 +7,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static void AddBasePipeline(this IServiceCollection services)
         {
             services.AddSingleton(typeof(IPipelineInstanceProvider<>), typeof(ContainerPipelineInstanceProvider<>));
-            services.AddSingleton(typeof(IPipelineRegistrar<>), typeof(PipelineRegistrar<>));
-            services.AddSingleton(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
+            services.AddTransient(typeof(IPipelineRegistrar<>), typeof(PipelineRegistrar<>));
+            services.AddTransient(typeof(IGeneralCustomPipeline<>), typeof(GeneralCustomPipeline<>));
         }
     }
 }

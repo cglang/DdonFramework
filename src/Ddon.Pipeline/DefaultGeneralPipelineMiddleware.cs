@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Ddon.Pipeline.Exceptions;
 
 namespace Ddon.Pipeline
 {
@@ -24,14 +25,38 @@ namespace Ddon.Pipeline
             _actionExecuted = actionExecuted;
         }
 
+        public int Index { get; set; }
+
         public async Task InvokeAsync(TContext context, PipelineDelegate<TContext> next)
         {
-            await _actionExecuting.Invoke(context);
+            try
+            {
+                await _actionExecuting.Invoke(context);
+            }
+            catch (PipelineException ex)
+            {
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                throw new PipelineException(PipelineDirection.Forward, Index, ex);
+            }
 
             await next(context);
 
-            if (_actionExecuted != null)
-                await _actionExecuted.Invoke(context);
+            try
+            {
+                if (_actionExecuted != null)
+                    await _actionExecuted.Invoke(context);
+            }
+            catch (PipelineException ex)
+            {
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                throw new PipelineException(PipelineDirection.Backward, Index, ex);
+            }
         }
     }
 }
