@@ -5,8 +5,9 @@ $rootFolder = (Get-Item -Path "./" -Verbose).FullName
 
 # List of projects
 $projects = (
+    "Ddon.Common"
     #"Ddon.DependencyInjection",
-    "Ddon.Pipeline"
+    #"Ddon.Pipeline"
 )
 
 [xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "version.props")
