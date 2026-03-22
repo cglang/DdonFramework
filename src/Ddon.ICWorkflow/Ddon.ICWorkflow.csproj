@@ -12,8 +12,4 @@
 
   <Import Project="../../version.props" />
 
-	<ItemGroup>
-	  <PackageReference Include="MediatR" />
-	  <PackageReference Include="System.Threading.Channels" />
-	</ItemGroup>
 </Project>
