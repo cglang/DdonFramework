@@ -2,7 +2,5 @@
 
 namespace Ddon.Cache.Redis
 {
-    public class CacheRedisOptions : RedisCacheOptions
-    {
-    }
+    public class CacheRedisOptions : RedisCacheOptions { }
 }

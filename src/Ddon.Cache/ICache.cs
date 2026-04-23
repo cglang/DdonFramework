@@ -6,7 +6,7 @@ namespace Ddon.Cache
 {
     public interface ICache : IDistributedCache
     {
-        Task<TItem?> GetAsync<TItem>(string key, CancellationToken token = default);
+        Task<TItem> GetAsync<TItem>(string key, CancellationToken token = default);
 
         Task SetAsync<TItem>(string key, TItem value, CancellationToken token = default);
 

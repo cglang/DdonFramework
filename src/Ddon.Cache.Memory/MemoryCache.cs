@@ -5,19 +5,19 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ddon.Cache.Redis
+namespace Ddon.Cache.Memory
 {
-    public class Cache : ICache
+    public class MemoryCache : ICache
     {
         private readonly IDistributedCache _distributedCache;
 
         public JsonSerializerOptions JsonSerializeroptions { get; set; }
 
-        public Cache(IDistributedCache distributedCache)
+        public MemoryCache(IDistributedCache distributedCache)
         {
             _distributedCache = distributedCache;
 
-            JsonSerializeroptions = new()
+            JsonSerializeroptions = new JsonSerializerOptions()
             {
                 ReferenceHandler = ReferenceHandler.IgnoreCycles,
                 WriteIndented = true
@@ -29,7 +29,7 @@ namespace Ddon.Cache.Redis
             return await _distributedCache.GetAsync(key) is not null;
         }
 
-        public async Task<TItem?> GetAsync<TItem>(string key, CancellationToken token = default)
+        public async Task<TItem> GetAsync<TItem>(string key, CancellationToken token = default)
         {
             var bytes = await _distributedCache.GetAsync(key, token);
             if (bytes != null)
@@ -57,13 +57,13 @@ namespace Ddon.Cache.Redis
             return _distributedCache.SetAsync(key, bytes, options, token);
         }
 
-        public byte[]? Get(string key) => _distributedCache.Get(key);
+        public byte[] Get(string key) => _distributedCache.Get(key);
 
-        public Task<byte[]?> GetAsync(string key, CancellationToken token = default) => _distributedCache.GetAsync(key, token);
+        public Task<byte[]> GetAsync(string key, CancellationToken token = default) => _distributedCache.GetAsync(key, token);
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => _distributedCache.Set(key, value, options);
 
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default) => _distributedCache.SetAsync(key, value, options);
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default) => _distributedCache.SetAsync(key, value, options, token);
 
         public void Refresh(string key) => _distributedCache.Refresh(key);
 

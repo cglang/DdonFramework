@@ -1,0 +1,12 @@
+```
+{
+  "CacheRedisOptions": {
+    "Configuration": "127.0.0.1:6379,password=123456,abortConnect=False",
+    "InstanceName": "YourProject:"
+  }
+}
+```
+
+```
+
+```
