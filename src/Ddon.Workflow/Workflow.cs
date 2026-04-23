@@ -17,6 +17,7 @@ namespace Ddon.Workflow
     public class Workflow<TContext> : Abstractions.Workflow, IPersistableWorkflow
     {
         protected readonly IList<IStep<TContext>> _steps;
+        private readonly IList<IStepExtension<TContext>> _extensions = new List<IStepExtension<TContext>>();
         private IWorkflowPersistenceStrategy _persistenceStrategy;
         private bool _isPersistenceEnabled;
         private int _lastPersistedStepIndex = -1;
@@ -54,6 +55,27 @@ namespace Ddon.Workflow
             _isPersistenceEnabled = false;
         }
 
+        private IEnumerable<IStepExtension<TContext>> GetExtensionsForStep(IStep<TContext> step)
+        {
+            var stepExtensions = Enumerable.Empty<IStepExtension<TContext>>();
+            if (step is Step<TContext> s)
+            {
+                stepExtensions = s.Extensions;
+            }
+
+            return _extensions.Concat(stepExtensions);
+        }
+
+        /// <summary>
+        /// 为工作流注册步骤扩展点
+        /// </summary>
+        public Workflow<TContext> AddExtension(IStepExtension<TContext> extension)
+        {
+            if (extension == null) throw new ArgumentNullException(nameof(extension));
+            _extensions.Add(extension);
+            return this;
+        }
+
         /// <summary>
         /// 启用此工作流的持久化
         /// </summary>
@@ -67,9 +89,18 @@ namespace Ddon.Workflow
         /// <summary>
         /// 开始执行工作流 从第一个步骤开始
         /// </summary>
-        public override Task StartAsync(CancellationToken cancellationToken)
+        public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            return _steps[0].OnEnterAsync(Context, cancellationToken);
+            await _steps[0].OnEnterAsync(Context, cancellationToken);
+            // 当首个步骤进入完成后，触发扩展点（异步、不阻塞启动流程）
+            foreach (var ext in GetExtensionsForStep(_steps[0]))
+            {
+                try
+                {
+                    await ext.AfterEnterAsync(_steps[0], Context, cancellationToken).ConfigureAwait(false);
+                }
+                catch { /* 扩展异常吞掉，避免影响流程启动 */ }
+            }
         }
 
         /// <summary>
@@ -86,6 +117,16 @@ namespace Ddon.Workflow
             {
                 await step.OnExitAsync(Context, cancellationToken);
 
+                // 在步骤退出后触发扩展点
+                foreach (var ext in GetExtensionsForStep(step))
+                {
+                    try
+                    {
+                        await ext.AfterExitAsync(step, Context, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch { }
+                }
+
                 // 当前步骤成功，跳转索引
                 _index++;
 
@@ -93,6 +134,16 @@ namespace Ddon.Workflow
                 {
                     // 启动下一步骤
                     await _steps[_index].OnEnterAsync(Context, cancellationToken);
+
+                    // 下一步骤进入后触发扩展点（仅触发该步骤对应的扩展以及工作流级扩展）
+                    foreach (var ext in GetExtensionsForStep(_steps[_index]))
+                    {
+                        try
+                        {
+                            await ext.AfterEnterAsync(_steps[_index], Context, cancellationToken).ConfigureAwait(false);
+                        }
+                        catch { }
+                    }
                 }
 
                 // 步骤成功转换后创建检查点

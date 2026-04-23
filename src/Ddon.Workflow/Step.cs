@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Workflow.Abstractions;
 
@@ -25,6 +26,21 @@ namespace Ddon.Workflow
         public virtual Task OnEnterAsync(TContext context, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 步骤级的扩展集合。可以为具体的 Step 实例注册扩展以便只在该步骤生效。
+        /// </summary>
+        public IList<IStepExtension<TContext>> Extensions { get; } = new List<IStepExtension<TContext>>();
+
+        /// <summary>
+        /// 为当前步骤注册扩展
+        /// </summary>
+        public Step<TContext> AddExtension(IStepExtension<TContext> extension)
+        {
+            if (extension != null)
+                Extensions.Add(extension);
+            return this;
         }
 
         /// <summary>
