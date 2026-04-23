@@ -79,5 +79,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 },
                 schedulerLifetime));
         }
+
+        public static void AddWorkflowCommon(this IServiceCollection services)
+        {
+            services.AddTransient<WorkflowBuilder>();
+        }
     }
 }

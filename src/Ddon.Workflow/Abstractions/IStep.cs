@@ -32,5 +32,12 @@ namespace Ddon.Workflow.Abstractions
         /// 步骤完成后的清理（仅执行一次）
         /// </summary>
         Task OnExitAsync(TContext context, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Step 拓展点，允许在 Step 的生命周期内插入自定义逻辑
+        /// </summary>
+        /// <param name="extension"></param>
+        /// <returns></returns>
+        Step<TContext> AddExtension(IStepExtension<TContext> extension);
     }
 }
