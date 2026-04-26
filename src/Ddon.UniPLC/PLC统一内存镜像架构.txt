@@ -1,0 +1,402 @@
+# 《PLC统一内存镜像架构》设计方案
+
+
+# 一、核心架构总览
+
+```text
+┌─────────────────────┐
+│ Business Layer      │
+│ UI / MES / SCADA    │
+└─────────┬───────────┘
+          ↓
+┌─────────────────────┐
+│ Tag API Layer       │
+│ Get/Set<Tag>        │
+└─────────┬───────────┘
+          ↓
+┌─────────────────────┐
+│ Memory Mirror Layer │ ← 只读缓存
+└─────────┬───────────┘
+          ↓ 周期刷新
+┌─────────────────────┐
+│ Sync Engine         │
+└─────────┬───────────┘
+          ↓
+┌─────────────────────┐
+│ PLC Protocol Layer  │
+│ Siemens/Mitsu/...   │
+└─────────────────────┘
+```
+
+---
+
+# 二、设计原则（非常重要）
+
+## 原则1：PLC是真实源
+
+任何状态最终以 PLC 当前值为准。
+
+---
+
+## 原则2：内存镜像只读
+
+镜像不能因业务写操作被本地篡改。
+
+---
+
+## 原则3：写入立即下发
+
+```csharp
+await tags.SetAsync("Motor.Run", true);
+```
+
+直接写 PLC。
+
+---
+
+## 原则4：下周期扫描后再反映结果
+
+UI可能在 200ms 后才看到新值。
+
+这是刻意接受的延迟，换取一致性。
+
+扫描周期可以手动控制，比如10ms、100ms
+
+---
+
+# 三、核心模块设计
+
+---
+
+# 1. IPlcClient（协议层）
+
+```csharp
+public interface IPlcClient
+{
+    Task ConnectAsync();
+    Task<byte[]> ReadBytesAsync(string area, int start, int length);
+    Task WriteBytesAsync(string address, byte[] data);
+    bool IsConnected { get; }
+}
+```
+
+实现：
+
+* SiemensClient
+* MitsubishiClient
+* OmronClient
+* ModbusClient
+
+---
+
+# 2. MemoryMirror（镜像层）
+
+```csharp
+public interface IPlcMemoryMirror
+{
+    byte[] GetRegion(string region);
+    T Read<T>(TagDefinition tag);
+    long Version { get; }
+    DateTime LastUpdateTime { get; }
+}
+```
+
+内部：
+
+```csharp
+DB1 => byte[512]
+DB2 => byte[256]
+M   => byte[2048]
+D   => byte[10000 * 2]
+```
+
+---
+
+# 3. Tag系统（推荐核心）
+
+```csharp
+public class TagDefinition
+{
+    public string Name { get; set; }
+    public string Address { get; set; }
+    public PlcDataType Type { get; set; }
+}
+```
+
+例：
+
+```csharp
+new TagDefinition("Temp", "DB1.DBD0", Float)
+new TagDefinition("Run", "M0.0", Bool)
+new TagDefinition("Count", "D100", Int16)
+```
+
+---
+
+# 4. Tag API
+
+```csharp
+public interface ITagService
+{
+    T Get<T>(string tagName);          // 读镜像
+    Task SetAsync<T>(string tagName, T value); // 直接写PLC
+}
+```
+
+---
+
+# 四、关键同步机制（扫描PLC）
+
+---
+
+# 周期任务
+
+```text
+每 200ms:
+读取配置区域
+覆盖本地镜像
+检测变化
+发布事件
+```
+
+---
+
+# SyncEngine
+
+```csharp
+public class PlcSyncEngine
+{
+    public async Task RunAsync()
+    {
+        while(true)
+        {
+            await ScanOnceAsync();
+            await Task.Delay(200);
+        }
+    }
+}
+```
+
+---
+
+# ScanOnceAsync()
+
+```csharp
+1. 读取 PLC 区域数据
+2. 替换 mirror byte[]
+3. version++
+4. 变化检测
+5. 发布订阅事件
+```
+
+---
+
+# 五、你指定的写冲突策略（正式定义）
+
+---
+
+# 用户写入：
+
+```csharp
+await tags.SetAsync("Run", true);
+```
+
+执行：
+
+```text
+① 直接写PLC
+② 本地mirror不变
+③ 等待下次扫描
+④ PLC真实值覆盖mirror
+```
+
+---
+
+# 举例
+
+当前：
+
+```text
+Mirror.Run = false
+PLC.Run    = false
+```
+
+业务写：
+
+```text
+SetAsync(true)
+```
+
+写入后瞬间：
+
+```text
+Mirror.Run = false
+PLC.Run    = true
+```
+
+200ms后扫描：
+
+```text
+Mirror.Run = true
+```
+
+---
+
+# 如果PLC程序拒绝写入
+
+例如 PLC 内部逻辑立刻改回 false：
+
+扫描后：
+
+```text
+Mirror.Run = false
+```
+
+系统自动体现真实状态。
+
+---
+
+# 八、变化通知系统
+
+```csharp
+tags.Subscribe("Temp", v =>
+{
+});
+```
+
+内部比较：
+
+```text
+旧镜像 vs 新镜像
+```
+
+---
+
+# 九、性能设计（重点）
+
+---
+
+# 读取合并（必须做）
+
+不要逐点读：
+
+```text
+100个Tag = 100次请求（错误）
+```
+
+应合并：
+
+```text
+DB1 offset 0~128 一次读取
+```
+
+---
+
+# 内存结构建议
+
+```csharp
+ConcurrentDictionary<string, MemoryRegion>
+```
+
+每个区域：
+
+```csharp
+class MemoryRegion
+{
+    byte[] Buffer;
+    ReaderWriterLockSlim Lock;
+}
+```
+
+---
+
+# 十、推荐配置方式
+
+```csharp
+services.AddPlcMirror(x =>
+{
+    x.UseSiemens("Main", plc =>
+    {
+        plc.Ip = "192.168.1.10";
+        plc.Port = 102;
+    });
+
+    x.ScanInterval = 200;
+
+    x.MapTag("Temp", "DB1.DBD0", Float);
+    x.MapTag("Run", "DB1.DBX10.0", Bool);
+});
+```
+
+---
+
+# 十一、接口总设计（可直接开发）
+
+```csharp
+IPlcClient
+IPlcMemoryMirror
+IPlcSyncEngine
+ITagService
+ITagRegistry
+IChangeNotifier
+IWriteCommandService
+```
+
+---
+
+# 十二、类结构建议
+
+```text
+Plc.Core
+Plc.MemoryMirror
+Plc.TagEngine
+Plc.SyncEngine
+Plc.Protocol.Siemens
+Plc.Protocol.Mitsubishi
+Plc.Protocol.Omron
+Plc.Hosting
+```
+
+---
+
+# 十三、二级思考：这个方案适合什么系统
+
+非常适合：
+
+* 上位机 HMI
+* SCADA
+* 数据采集
+* Dashboard
+* MES
+
+---
+
+不适合：
+
+* 高频运动控制
+* 毫秒级联锁
+* 安全停机控制
+
+这些必须 PLC 本地执行。
+
+---
+
+# 十四、我建议再加一个关键机制（很值）
+
+## 写命令结果对象
+
+```csharp
+var result = await tags.SetAsync("Run", true);
+```
+
+返回：
+
+```csharp
+Success = true
+SentTime = ...
+NeedConfirmByScan = true
+```
+
+说明：
+
+> 已发送，不代表已生效。

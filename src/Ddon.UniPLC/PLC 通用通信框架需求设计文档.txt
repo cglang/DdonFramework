@@ -1,0 +1,571 @@
+# PLC 通用通信框架需求设计文档（初稿）
+
+## 1. 项目目标
+
+设计并实现一个可扩展的 PLC 通信框架，统一接入不同品牌 PLC（如西门子 Siemens、三菱 Mitsubishi、欧姆龙 Omron 等），通过统一 API 完成：
+
+* 建立连接 / 断开连接
+* 检测连接状态
+* 读取 PLC 数据
+* 写入 PLC 数据
+* 批量读写
+* DB 块 / 寄存器映射
+* 内存模拟器（Mock PLC）
+* 插件式扩展新品牌 PLC
+* 类似 EFCore 的注册方式
+
+目标风格：
+
+```csharp
+services.AddPlc(options =>
+{
+    options.UseSiemens(x =>
+    {
+        x.Ip = "192.168.1.10";
+        x.Port = 102;
+        x.Rack = 0;
+        x.Slot = 1;
+    });
+
+    options.UseMitsubishi(...);
+});
+```
+
+---
+
+# 2. 核心设计原则
+
+## 2.1 抽象统一（Abstraction）
+
+屏蔽品牌差异：
+
+* 西门子：DB 块（DB Block）
+* 三菱：D/M/X/Y 寄存器
+* 欧姆龙：CIO/DM/W/HR
+
+统一抽象为：
+
+```csharp
+PlcAddress
+```
+
+---
+
+## 2.2 可扩展（Extensible）
+
+新增 PLC 品牌时：
+
+只需实现：
+
+```csharp
+IPlcClient
+IPlcAddressParser
+IPlcSerializer
+```
+
+注册：
+
+```csharp
+UseBrandX()
+```
+
+---
+
+## 2.3 高性能（High Performance）
+
+支持：
+
+* 长连接池（Connection Pool）
+* 异步 IO（async/await）
+* 批量读取（Batch Read）
+* 地址合并读取（Block Merge Read）
+* 零拷贝 Span<byte>
+
+---
+
+## 2.4 高可靠（Reliable）
+
+支持：
+
+* 自动重连（Reconnect）
+* 心跳检测（Heartbeat）
+* 超时控制（Timeout）
+* 重试策略（Retry Policy）
+* 日志追踪（Logging）
+* 熔断（Circuit Breaker）
+
+---
+
+# 3. 总体架构
+
+```text
+Application
+   ↓
+IPlcProvider
+   ↓
+IPlcClientFactory
+   ↓
+具体 PLC Client
+ ├── SiemensClient
+ ├── MitsubishiClient
+ ├── OmronClient
+ └── MemoryPlcClient
+```
+
+---
+
+# 4. 核心接口设计
+
+---
+
+## 4.1 IPlcClient
+
+```csharp
+public interface IPlcClient : IAsyncDisposable
+{
+    string Name { get; }
+
+    bool IsConnected { get; }
+
+    Task ConnectAsync();
+
+    Task DisconnectAsync();
+
+    Task<bool> PingAsync();
+
+    Task<PlcReadResult<byte[]>> ReadBytesAsync(string address, int length);
+
+    Task<PlcWriteResult> WriteBytesAsync(string address, byte[] data);
+
+    Task<T> ReadAsync<T>(string address);
+
+    Task WriteAsync<T>(string address, T value);
+
+    Task<IReadOnlyList<PlcValueResult>> BatchReadAsync(params string[] addresses);
+}
+```
+
+---
+
+## 4.2 IPlcProvider
+
+```csharp
+public interface IPlcProvider
+{
+    IPlcClient GetClient(string name);
+
+    T GetClient<T>() where T : IPlcClient;
+}
+```
+
+---
+
+## 4.3 IPlcClientFactory
+
+```csharp
+public interface IPlcClientFactory
+{
+    IPlcClient Create(PlcOptions options);
+}
+```
+
+---
+
+# 5. 配置系统（类似 EFCore）
+
+---
+
+## 5.1 注册方式
+
+```csharp
+services.AddPlc();
+```
+
+---
+
+## 5.2 UseSiemens
+
+```csharp
+services.AddPlc(options =>
+{
+    options.UseSiemens("MainPLC", x =>
+    {
+        x.Ip = "192.168.0.1";
+        x.Port = 102;
+        x.Rack = 0;
+        x.Slot = 1;
+    });
+});
+```
+
+---
+
+## 5.3 UseMitsubishi
+
+```csharp
+options.UseMitsubishi("PLC2", x =>
+{
+    x.Ip = "192.168.1.10";
+});
+```
+
+---
+
+## 5.4 UseMemory（模拟）
+
+```csharp
+options.UseMemory("Sim");
+```
+
+---
+
+# 6. 地址统一模型（关键）
+
+## 为什么必须做？
+
+不同 PLC 地址差异极大。
+
+例如：
+
+| 品牌         | 地址         |
+| ---------- | ---------- |
+| Siemens    | DB1.DBX0.0 |
+| Mitsubishi | D100       |
+| Omron      | DM100      |
+
+必须统一解析。
+
+---
+
+## Address Model
+
+```csharp
+public class PlcAddress
+{
+    string Area;      // DB / D / M / CIO
+    int BlockNumber;
+    int Offset;
+    int Bit;
+    DataType Type;
+}
+```
+
+---
+
+# 7. 数据类型支持
+
+```text
+Bool
+Byte
+Short
+UShort
+Int
+UInt
+Long
+Float
+Double
+String
+DateTime
+Struct
+Array
+Enum
+```
+
+---
+
+# 8. 高级对象映射（建议必须做）
+
+类似 ORM。
+
+```csharp
+public class MotorState
+{
+    [PlcAddress("DB1.DBX0.0")]
+    public bool Run { get; set; }
+
+    [PlcAddress("DB1.DBD4")]
+    public float Speed { get; set; }
+}
+```
+
+读取：
+
+```csharp
+var motor = await client.ReadModelAsync<MotorState>();
+```
+
+写入：
+
+```csharp
+await client.WriteModelAsync(motor);
+```
+
+这个功能价值极高。
+
+---
+
+# 9. Siemens 专项支持
+
+你提到 DB 块长度，这里建议做成：
+
+```csharp
+options.UseSiemens(x =>
+{
+    x.DbBlock(1, 256);
+    x.DbBlock(2, 128);
+});
+```
+
+框架自动缓存 DB Metadata。
+
+支持：
+
+* DB Read
+* DB Write
+* M 区
+* I/Q 区
+* Timer
+* Counter
+
+---
+
+# 10. 通信增强功能（建议做）
+
+---
+
+## 10.1 自动重连
+
+```csharp
+ReconnectInterval = 3s
+MaxRetry = Infinite
+```
+
+---
+
+## 10.2 心跳检测
+
+周期读取：
+
+```text
+DB1.DBX0.0
+```
+
+---
+
+## 10.3 写入确认
+
+写入后再读一次确认。
+
+---
+
+## 10.4 通知订阅（很重要）
+
+```csharp
+client.Subscribe("DB1.DBX0.0", value =>
+{
+});
+```
+
+值变化触发。
+
+工业现场非常常见。
+
+---
+
+# 11. 日志系统
+
+支持：
+
+```text
+连接日志
+断开日志
+发送报文
+接收报文
+异常日志
+耗时日志
+```
+
+接入：
+
+* ILogger
+
+---
+
+# 12. 异常体系
+
+```csharp
+PlcException
+PlcConnectionException
+PlcTimeoutException
+PlcAddressException
+PlcProtocolException
+PlcSerializationException
+```
+
+---
+
+# 13. Mock PLC（强烈建议）
+
+```csharp
+UseMemory()
+```
+
+支持：
+
+```csharp
+Write("D100", 123);
+Read<int>("D100");
+```
+
+用于：
+
+* 单元测试
+* UI 联调
+* 离线开发
+
+---
+
+# 15. 线程安全要求
+
+必须明确：
+
+```text
+IPlcClient 是否线程安全？
+支持并发读写？
+单连接串行发送？
+```
+
+建议：
+
+* 内部 SemaphoreSlim
+* 自动请求队列
+
+---
+
+# 16. 性能指标
+| 指标       | 目标        |
+| -------- | --------- |
+| 单次读取     | <10ms 局域网 |
+| 批量读取100点 | <50ms     |
+| 重连恢复     | <3秒       |
+| 内存占用     | <50MB     |
+
+---
+
+# 17. 未来扩展（你现在可能没想到）
+
+---
+
+## OPC UA（工业标准）
+
+很多 PLC 支持 OPC UA。
+
+建议后期加：
+
+```csharp
+UseOpcUa()
+```
+
+---
+
+## Modbus TCP / RTU
+
+很多设备不是 PLC，也是工业控制器。
+
+建议支持：
+
+```csharp
+UseModbusTcp()
+```
+
+---
+
+## Web Dashboard
+
+实时监控网页：
+
+```text
+PLC 在线状态
+变量实时曲线
+报警记录
+```
+
+---
+
+## 脚本引擎
+
+```csharp
+if(temp > 80) alarm=true;
+```
+
+---
+
+# 18. 推荐项目结构
+
+```text
+Core
+Abstractions
+DependencyInjection
+Plc.Siemens
+Plc.Mitsubishi
+Plc.Omron
+Plc.Modbus
+Plc.Memory
+Testing
+Diagnostics
+```
+
+---
+
+# 19. 二级思考（关键建议）
+
+当前思路是对的，但有一个潜在问题，真正难点是：
+
+## 地址模型统一
+
+和
+
+## 数据映射统一
+
+以及
+
+## 通信稳定性
+
+如果这三个没做好，框架会很快失控。
+
+所以建议优先级：
+
+```text
+第一阶段：
+IPlcClient
+Provider
+SiemensClient
+MemoryClient
+
+第二阶段：
+Address Parser
+Type Serializer
+Model Mapping
+
+第三阶段：
+Reconnect
+Subscribe
+Batch Read
+Plugin
+
+第四阶段：
+Mitsubishi / Omron / Modbus
+```
+
+---
+
+# 20. 最终建议
+
+如果让我做，我会参考：
+
+* EFCore（配置风格）
+* HttpClientFactory（生命周期管理）
+* Dapper（高性能映射）
+* SignalR（订阅机制）
+
+组合成工业版通信框架。
