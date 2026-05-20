@@ -31,6 +31,21 @@ namespace Ddon.Common.EventBus
             return new EventSubscription(() => channel.Remove(entry));
         }
 
+        /// <summary>
+        /// 订阅事件 <typeparamref name="T"/>。
+        /// <para>scheduler 为 null 时使用 <see cref="ImmediateScheduler"/>（在发布线程直接回调）。</para>
+        /// </summary>
+        public EventSubscription Subscribe<T>(
+            Func<T, Task> handler,
+            IEventScheduler scheduler = null)
+        {
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
+            var channel = GetOrCreateChannel<T>();
+            var entry = new SubscriberEntry<T>(handler, scheduler ?? ImmediateScheduler.Instance);
+            channel.Add(entry);
+            return new EventSubscription(() => channel.Remove(entry));
+        }
+
         // ── 发布（同步）──────────────────────────────────────
         /// <summary>从任意线程发布事件，立即遍历所有订阅者并按其调度策略分发。</summary>
         public void Publish<T>(T evt)
@@ -85,10 +100,21 @@ namespace Ddon.Common.EventBus
             {
                 foreach (var entry in Snapshot())
                 {
-                    var captured = entry; // 避免闭包捕获变量
+                    var captured = entry;
                     captured.Scheduler.Schedule(() =>
                     {
-                        try { captured.Handler(evt); }
+                        try
+                        {
+                            var task = captured.Handler(evt);
+                            // 异步 handler：等待完成并捕获异常
+                            if (task != null && task != Task.CompletedTask)
+                            {
+                                task.ContinueWith(
+                                    t => OnUnhandledException(t.Exception.InnerException, typeof(T)),
+                                    TaskContinuationOptions.OnlyOnFaulted |
+                                    TaskContinuationOptions.ExecuteSynchronously);
+                            }
+                        }
                         catch (Exception ex) { OnUnhandledException(ex, typeof(T)); }
                     });
                 }
@@ -107,11 +133,11 @@ namespace Ddon.Common.EventBus
                     var tcs = new TaskCompletionSource<bool>(
                         TaskCreationOptions.RunContinuationsAsynchronously);
 
-                    captured.Scheduler.Schedule(() =>
+                    captured.Scheduler.Schedule(async () =>
                     {
                         try
                         {
-                            captured.Handler(evt);
+                            await captured.Handler(evt);
                             tcs.TrySetResult(true);
                         }
                         catch (Exception ex)
