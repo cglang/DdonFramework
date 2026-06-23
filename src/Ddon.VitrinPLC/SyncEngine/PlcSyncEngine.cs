@@ -183,20 +183,19 @@ namespace Ddon.VitrinPLC.SyncEngine
             return dict;
         }
 
-        private static object ReadFromBuffer(byte[] buf, ParsedAddress addr, TagDefinition tag)
+        private object ReadFromBuffer(byte[] buf, ParsedAddress addr, TagDefinition tag)
         {
-            // 根据类型调用泛型 Codec（统一用 object 装箱）
             return tag.Type switch
             {
-                PlcDataType.Bool => PlcCodec.Read<bool>(buf, addr),
-                PlcDataType.Byte => PlcCodec.Read<byte>(buf, addr),
-                PlcDataType.Int16 => PlcCodec.Read<short>(buf, addr),
-                PlcDataType.UInt16 => PlcCodec.Read<ushort>(buf, addr),
-                PlcDataType.Int32 => PlcCodec.Read<int>(buf, addr),
-                PlcDataType.UInt32 => PlcCodec.Read<uint>(buf, addr),
-                PlcDataType.Float => PlcCodec.Read<float>(buf, addr),
-                PlcDataType.Double => PlcCodec.Read<double>(buf, addr),
-                PlcDataType.String => PlcCodec.Read<string>(buf, addr, tag.StringLength),
+                PlcDataType.Bool => PlcCodec.Read<bool>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.Byte => PlcCodec.Read<byte>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.Int16 => PlcCodec.Read<short>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.UInt16 => PlcCodec.Read<ushort>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.Int32 => PlcCodec.Read<int>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.UInt32 => PlcCodec.Read<uint>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.Float => PlcCodec.Read<float>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.Double => PlcCodec.Read<double>(buf, addr, endian: _mirror.Endian),
+                PlcDataType.String => PlcCodec.Read<string>(buf, addr, tag.StringLength, _mirror.Endian),
                 _ => throw new NotSupportedException()
             };
         }

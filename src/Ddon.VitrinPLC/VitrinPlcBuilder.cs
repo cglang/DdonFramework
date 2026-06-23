@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Ddon.VitrinPLC.Abstractions;
 using Ddon.VitrinPLC.Clients;
+using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +43,7 @@ namespace Ddon.VitrinPLC
         {
             var connOpts = new SiemensOptions { Name = name };
             connection(connOpts);
-            var hostOpts = new PlcHostOptions();
+            var hostOpts = new PlcHostOptions { Endian = EndianFormat.ABCD };
             host(hostOpts);
 
             Descriptors.Add(new PlcHostDescriptor(name,
@@ -57,7 +58,7 @@ namespace Ddon.VitrinPLC
         {
             var connOpts = new MitsubishiOptions { Name = name };
             connection(connOpts);
-            var hostOpts = new PlcHostOptions();
+            var hostOpts = new PlcHostOptions { Endian = EndianFormat.DCBA };
             host(hostOpts);
 
             Descriptors.Add(new PlcHostDescriptor(name,
@@ -72,7 +73,7 @@ namespace Ddon.VitrinPLC
         {
             var connOpts = new OmronOptions { Name = name };
             connection(connOpts);
-            var hostOpts = new PlcHostOptions();
+            var hostOpts = new PlcHostOptions { Endian = EndianFormat.CDAB };
             host(hostOpts);
 
             Descriptors.Add(new PlcHostDescriptor(name,

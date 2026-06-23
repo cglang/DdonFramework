@@ -14,13 +14,13 @@ namespace Ddon.Workflow
             _serviceProvider = serviceProvider;
         }
 
-        public WorkflowBuilder<T, TContext> CreateWorkflow<T, TContext>()
+        public WorkflowBuilder<TContext> CreateWorkflow<TContext>()
         {
-            return new WorkflowBuilder<T, TContext>(_serviceProvider);
+            return new WorkflowBuilder<TContext>(_serviceProvider);
         }
     }
 
-    public class WorkflowBuilder<T, TContext>
+    public class WorkflowBuilder<TContext>
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -31,14 +31,14 @@ namespace Ddon.Workflow
             _serviceProvider = serviceProvider;
         }
 
-        public WorkflowBuilder<T, TContext> AddStep<TStep>() where TStep : IStep<TContext>
+        public WorkflowBuilder<TContext> AddStep<TStep>() where TStep : IStep<TContext>
         {
             var step = _serviceProvider.GetRequiredService<TStep>();
             _steps.Add(step);
             return this;
         }
 
-        public WorkflowBuilder<T, TContext> AddStep<TStep, TStepExtension>()
+        public WorkflowBuilder<TContext> AddStep<TStep, TStepExtension>()
             where TStep : IStep<TContext>
             where TStepExtension : IStepExtension<TContext>
         {
@@ -49,14 +49,14 @@ namespace Ddon.Workflow
             return this;
         }
 
-        public WorkflowBuilder<T, TContext> AddStep(IStep<TContext> step)
+        public WorkflowBuilder<TContext> AddStep(IStep<TContext> step)
         {
             if (step != null)
                 _steps.Add(step);
             return this;
         }
 
-        public WorkflowBuilder<T, TContext> AddStep(IStep<TContext> step, IStepExtension<TContext> stepExtension)
+        public WorkflowBuilder<TContext> AddStep(IStep<TContext> step, IStepExtension<TContext> stepExtension)
         {
             if (step != null)
             {

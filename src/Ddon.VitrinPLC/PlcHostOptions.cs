@@ -4,12 +4,15 @@ using Ddon.VitrinPLC.Models;
 namespace Ddon.VitrinPLC
 {
     /// <summary>
-    /// 单个 PLC 主机配置：Tags、Regions、扫描间隔。
+    /// 单个 PLC 主机配置：Tags、Regions、扫描间隔、字节序。
     /// 不包含协议/连接参数（由 <see cref="VitrinPlcBuilder"/> 的 Add* 方法承载）。
     /// </summary>
     public sealed class PlcHostOptions
     {
         public int ScanInterval { get; set; } = 200;
+
+        /// <summary>PLC 内存字节序。品牌默认值由 <see cref="VitrinPlcBuilder"/> 预设，用户可覆盖。</summary>
+        public EndianFormat Endian { get; set; } = EndianFormat.ABCD;
 
         internal List<TagDefinition> Tags { get; } = new();
 

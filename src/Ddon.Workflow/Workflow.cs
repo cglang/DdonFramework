@@ -14,7 +14,7 @@ namespace Ddon.Workflow
     /// <summary>
     /// 串行执行的工作流引擎 负责按顺序驱动一组 Step
     /// </summary>
-    public class Workflow<TContext> : Abstractions.Workflow, IPersistableWorkflow
+    public class Workflow<TContext> : WorkflowBase, IPersistableWorkflow
     {
         protected readonly IList<IStep<TContext>> _steps;
         private readonly IList<IStepExtension<TContext>> _extensions = new List<IStepExtension<TContext>>();
@@ -200,8 +200,7 @@ namespace Ddon.Workflow
             catch (Exception ex)
             {
                 // 记录但不失败 - 持久化是非关键的
-                System.Diagnostics.Debug.WriteLine(
-                    $"[工作流] 工作流 {Id} 检查点失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[工作流] 工作流 {Id} 检查点失败: {ex.Message}");
             }
         }
 

@@ -118,7 +118,7 @@ public class TestProgram
 {
     private static readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-    public static async Task Main(string[] args)
+    public static async Task Run(string[] args)
     {
         Console.WriteLine("=== Ddon.Workflow 持久化功能测试 ===\n");
 

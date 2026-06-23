@@ -20,7 +20,7 @@ namespace Ddon.EventBus
             _backgroundEventProcessor = backgroundEventProcessor;
         }
 
-        public async Task PublishAsync(IEventData eventData, EventPublishOptions options = default, CancellationToken cancellationToken = default)
+        public async Task PublishAsync(IEventData eventData, EventPublishOptions? options = default, CancellationToken cancellationToken = default)
         {
             if (options == default || options.Mode == Mode.Default)
             {
@@ -46,7 +46,7 @@ namespace Ddon.EventBus
             }
         }
 
-        public Task PublishAsync(IDomainEventData eventData, EventPublishOptions options = default, CancellationToken cancellationToken = default)
+        public Task PublishAsync(IDomainEventData eventData, EventPublishOptions? options = default, CancellationToken cancellationToken = default)
         {
             return PublishAsync((IEventData)eventData, options, cancellationToken);
         }

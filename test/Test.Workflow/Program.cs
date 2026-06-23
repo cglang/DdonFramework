@@ -1,4 +1,5 @@
-﻿using Ddon.Workflow;
+﻿using Ddon.Common.Utilities.MainLoop;
+using Ddon.Workflow;
 using Ddon.Workflow.Abstractions;
 using Ddon.Workflow.Steps;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +17,18 @@ namespace Test.Workflow
 
         public static async Task Main(string[] args)
         {
-            await TestProgram.Main(args);
+            var loop = new SyncMainLoop(TimeSpan.FromMilliseconds(1000), (s) =>
+            {
+                Console.WriteLine($"[MainLoop] Tick at {DateTime.Now:HH:mm:ss.fff}");
+            });
+            loop.Start();
 
+
+            Console.ReadKey();
+
+            //await TestProgram.Run(args);
+
+            await WorkflowCoreTest.Run();
             return;
 
             ServiceProvider = ConfigureServices();
@@ -122,7 +133,7 @@ namespace Test.Workflow
 
         public override void Write<TState>(
             in LogEntry<TState> logEntry,
-            IExternalScopeProvider scopeProvider,
+            IExternalScopeProvider? scopeProvider,
             TextWriter textWriter)
         {
             var message = logEntry.Formatter?.Invoke(logEntry.State, logEntry.Exception);

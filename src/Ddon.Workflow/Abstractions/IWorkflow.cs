@@ -18,13 +18,13 @@ namespace Ddon.Workflow.Abstractions
         Task UpdateAsync(CancellationToken cancellationToken);
     }
 
-    public abstract class Workflow : IWorkflow
+    public abstract class WorkflowBase : IWorkflow
     {
         protected int _index;
 
         private readonly IEnumerable<IStep> _steps;
 
-        protected Workflow(IEnumerable<IStep> steps)
+        protected WorkflowBase(IEnumerable<IStep> steps)
         {
             _steps = steps;
         }

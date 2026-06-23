@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
 
             services.AddTransient<IEventBus, InMemoryEventBus>();
-
+            
             services.AddSingleton<BackgroundEventProcessor>();
         }
     }

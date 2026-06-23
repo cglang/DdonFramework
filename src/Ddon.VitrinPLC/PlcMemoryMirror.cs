@@ -7,10 +7,6 @@ using Ddon.VitrinPLC.Models;
 
 namespace Ddon.VitrinPLC
 {
-    /// <summary>
-    /// 内存镜像实现。
-    /// 只读对外暴露；唯一写入点是 SyncEngine 调用 ApplySnapshot()。
-    /// </summary>
     public sealed class PlcMemoryMirror : IPlcMemoryMirror
     {
         private readonly ConcurrentDictionary<string, MemoryRegion> _regions = new();
@@ -18,8 +14,13 @@ namespace Ddon.VitrinPLC
 
         public long Version => Interlocked.Read(ref _version);
         public DateTime LastUpdateTime { get; private set; } = DateTime.MinValue;
+        public EndianFormat Endian { get; }
 
-        // ── 供 SyncEngine 注册区域 ────────────────────────
+        public PlcMemoryMirror(EndianFormat endian = EndianFormat.ABCD)
+        {
+            Endian = endian;
+        }
+
         public void RegisterRegion(string regionKey, string area, int startOffset, int length)
         {
             var region = new MemoryRegion(regionKey, area, startOffset, length);
@@ -53,7 +54,7 @@ namespace Ddon.VitrinPLC
         {
             var addr = AddressParser.Parse(tag.Address, tag.Type);
             var snap = GetRegion(addr.RegionKey);
-            return PlcCodec.Read<T>(snap, addr, tag.StringLength);
+            return PlcCodec.Read<T>(snap, addr, tag.StringLength, Endian);
         }
 
         public IReadOnlyDictionary<string, MemoryRegionInfo> GetRegionInfo()

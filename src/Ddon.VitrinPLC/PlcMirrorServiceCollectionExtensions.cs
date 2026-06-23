@@ -50,7 +50,8 @@ namespace Ddon.VitrinPLC
                 {
                     var client = descriptor.ClientFactory(sp);
                     var group = BuildPlcServices(client, descriptor.Options.Tags,
-                        descriptor.Options.Regions, descriptor.Options.ScanInterval, logFactory);
+                        descriptor.Options.Regions, descriptor.Options.ScanInterval,
+                        descriptor.Options.Endian, logFactory);
                     sessions[descriptor.Name] = group.Session;
                     engines.Add(group.Engine);
                 }
@@ -69,13 +70,14 @@ namespace Ddon.VitrinPLC
             IReadOnlyList<TagDefinition> tags,
             IReadOnlyList<RegionConfig> regions,
             int scanInterval,
+            EndianFormat endian,
             ILoggerFactory loggerFactory)
         {
             var registry = new TagRegistry();
             foreach (var tag in tags)
                 registry.Register(tag);
 
-            var mirror = new PlcMemoryMirror();
+            var mirror = new PlcMemoryMirror(endian);
             foreach (var r in regions)
                 mirror.RegisterRegion(r.Key, r.Area, r.Start, r.Length);
             foreach (var tag in registry.GetAll())
@@ -86,7 +88,7 @@ namespace Ddon.VitrinPLC
             }
 
             var notifier = new ChangeNotifier();
-            var writeService = new WriteCommandService(client, registry,
+            var writeService = new WriteCommandService(client, registry, endian,
                 loggerFactory.CreateLogger<WriteCommandService>());
 
             var engine = new PlcSyncEngine(client, mirror, registry, notifier, scanInterval,

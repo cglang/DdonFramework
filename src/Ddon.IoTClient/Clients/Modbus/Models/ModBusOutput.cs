@@ -18,6 +18,10 @@ namespace IoTClient.Models
         /// 功能码
         /// </summary>
         public byte FunctionCode { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public object Value { get; set; }
     }
 }

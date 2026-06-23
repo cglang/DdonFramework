@@ -141,8 +141,7 @@ namespace Ddon.Workflow.Persistence
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
-                    $"[持久化] 删除工作流 {workflowId} 的检查点失败");
+                _logger.LogError(ex, $"[持久化] 删除工作流 {workflowId} 的检查点失败");
                 throw;
             }
         }

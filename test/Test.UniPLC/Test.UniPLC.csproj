@@ -13,8 +13,4 @@
     <PackageReference Include="MSTest.TestFramework" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Ddon.UniPLC\Ddon.UniPLC.csproj" />
-  </ItemGroup>
-
 </Project>

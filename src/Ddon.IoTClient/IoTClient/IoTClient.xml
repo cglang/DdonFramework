@@ -3169,6 +3169,11 @@
             功能码
             </summary>
         </member>
+        <member name="P:IoTClient.Models.ModbusOutput.Value">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:IoTClient.Models.MitsubishiMCAddress">
             <summary>
             三菱解析后的地址信息

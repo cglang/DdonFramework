@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static void AddWorkflow(this IServiceCollection services)
         {
             services.AddTransient<IWorkflowScheduler, WorkflowScheduler>();
+            services.AddWorkflowCommon();
         }
 
         /// <summary>
@@ -50,6 +51,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 return new WorkflowScheduler(logger, recoveryService, persistenceStrategy);
             });
+
+            services.AddWorkflowCommon();
         }
 
         /// <summary>
@@ -78,9 +81,11 @@ namespace Microsoft.Extensions.DependencyInjection
                     return new WorkflowScheduler(logger, recoveryService, persistenceStrategy);
                 },
                 schedulerLifetime));
+
+            services.AddWorkflowCommon();
         }
 
-        public static void AddWorkflowCommon(this IServiceCollection services)
+        private static void AddWorkflowCommon(this IServiceCollection services)
         {
             services.AddTransient<WorkflowBuilder>();
         }

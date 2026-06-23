@@ -7,8 +7,10 @@ $rootFolder = (Get-Item -Path "./" -Verbose).FullName
 $projects = (
     "Ddon.Common",
     "Ddon.DependencyInjection",
-    "Ddon.Pipeline"
-    "Ddon.Workflow"
+    "Ddon.Pipeline",
+    "Ddon.Workflow",
+    "Ddon.Cache",
+    "Ddon.Cache.Redis"
 )
 
 [xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "version.props")
@@ -21,6 +23,7 @@ foreach($project in $projects) {
     dotnet build $projectFolder -c Release 
     #dotnet publish $projectFolder -p:Configuration=Release -p:SourceLinkCreate=true -t:pack -f netstandard2.0
     #dotnet publish $projectFolder -p:Configuration=Release -p:SourceLinkCreate=true -t:pack
+    
     dotnet nuget push ($releasePath + $project + "." + $version + ".nupkg") --api-key $apikey --source https://api.nuget.org/v3/index.json --skip-duplicate
 }
 
