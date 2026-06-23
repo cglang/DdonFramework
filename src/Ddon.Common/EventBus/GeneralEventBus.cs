@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -126,29 +127,16 @@ namespace Ddon.Common.EventBus
                 var snapshot = Snapshot();
                 if (snapshot.Count == 0) return Task.CompletedTask;
 
-                var tasks = new List<Task>(snapshot.Count);
-                foreach (var entry in snapshot)
+                var tasks = snapshot.Select(entry =>
                 {
                     var captured = entry;
-                    var tcs = new TaskCompletionSource<bool>(
-                        TaskCreationOptions.RunContinuationsAsynchronously);
 
-                    captured.Scheduler.Schedule(async () =>
+                    return captured.Scheduler.ScheduleAsync(async () =>
                     {
-                        try
-                        {
-                            await captured.Handler(evt);
-                            tcs.TrySetResult(true);
-                        }
-                        catch (Exception ex)
-                        {
-                            OnUnhandledException(ex, typeof(T));
-                            tcs.TrySetException(ex);
-                        }
+                        try { await captured.Handler(evt); }
+                        catch (Exception ex) { OnUnhandledException(ex, typeof(T)); throw; }
                     });
-
-                    tasks.Add(tcs.Task);
-                }
+                });
 
                 return Task.WhenAll(tasks);
             }

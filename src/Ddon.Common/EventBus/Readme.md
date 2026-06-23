@@ -50,6 +50,12 @@ var sub = GeneralEventBus.Default.Subscribe<SensorDataEvent>(e =>
 {
     myLabel.Text = $"{e.SensorId}: {e.Value}°C"; // 安全，已在 UI 线程
 }, uiScheduler);
+
+// 异步方法订阅者：回调在异步函数中执行，适合耗时操作，默认在线程池执行
+var sub = GeneralEventBus.Default.Subscribe<SensorDataEvent>(async e =>
+{
+    Console.WriteLine($"[{e.SensorId}] {e.Value}°C @ {e.Timestamp}");
+});
 ```
 
 ### 3. 发布事件

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Ddon.Common.EventBus
 {
@@ -8,5 +9,7 @@ namespace Ddon.Common.EventBus
     public interface IEventScheduler
     {
         void Schedule(Action action);
+
+        Task ScheduleAsync(Func<Task> action);
     }
 }
