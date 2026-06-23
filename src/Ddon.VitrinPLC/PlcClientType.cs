@@ -1,6 +1,5 @@
 ﻿namespace Ddon.VitrinPLC
 {
-
     public enum PlcClientType
     {
         None,

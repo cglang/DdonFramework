@@ -1,111 +1,109 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Ddon.VitrinPLC.Clients;
 using Ddon.VitrinPLC.Abstractions;
+using Ddon.VitrinPLC.Models;
 using Ddon.VitrinPLC.TagEngine;
 using Ddon.VitrinPLC.SyncEngine;
-using Plc.Hosting;
 
 namespace Ddon.VitrinPLC
 {
-    // ─────────────────────────────────────────────
-    // IServiceCollection 扩展
-    // ─────────────────────────────────────────────
     public static class PlcMirrorServiceCollectionExtensions
     {
         /// <summary>
-        /// 注册 PLC 统一内存镜像框架所有服务。
+        /// 注册多 PLC 支持。每个 PLC 拥有独立的 SyncEngine、Mirror 和 TagService，
+        /// 通过 <see cref="IPlcHub"/> 按名称访问。
         ///
         /// 示例：
         /// <code>
-        /// services.AddPlcMirror(x =>
+        /// services.AddVitrinPlc(builder =>
         /// {
-        ///     x.UseSiemens("Main", plc =>
-        ///     {
-        ///         plc.Ip   = "192.168.1.10";
-        ///         plc.Port = 102;
-        ///     });
-        ///     x.ScanInterval = 200;
-        ///     x.MapTag("Temp", "DB1.DBD0",   PlcDataType.Float);
-        ///     x.MapTag("Run",  "DB1.DBX10.0", PlcDataType.Bool);
-        ///     x.MapTag("Count","D100",        PlcDataType.Int16);
+        ///     builder.AddSiemens("main",
+        ///         c => { c.Ip = "192.168.1.10"; },
+        ///         h => { h.ScanInterval = 200; h.MapTag("Temp", "DB1.DBD0", PlcDataType.Float); });
+        ///
+        ///     builder.AddMitsubishi("sub",
+        ///         c => { c.Ip = "192.168.1.20"; },
+        ///         h => { h.MapTag("Speed", "D100", PlcDataType.Int16); });
+        ///
+        ///     builder.AddClient("custom", new MyPlcClient(), h => { h.MapTag("Valve", "X0", PlcDataType.Bool); });
+        ///
+        ///     builder.AddClientFactory("custom2", new MyFactory(), h => { h.MapTag("Motor", "Y0", PlcDataType.Bool); });
         /// });
         /// </code>
         /// </summary>
-        public static IServiceCollection AddPlcMirror(this IServiceCollection services, Action<PlcMirrorOptions> configure)
+        public static IServiceCollection AddVitrinPlc(
+            this IServiceCollection services,
+            Action<VitrinPlcBuilder> configure)
         {
-            var options = new PlcMirrorOptions();
+            var builder = new VitrinPlcBuilder();
+            configure(builder);
 
-            configure(options);
-
-            // ── 协议客户端 ────────────────────────────────
-            services.AddSingleton<IPlcClient>(sp =>
+            services.AddSingleton<PlcHub>(sp =>
             {
                 var logFactory = sp.GetRequiredService<ILoggerFactory>();
-                return options.Protocol switch
+                var tagServices = new Dictionary<string, ITagService>();
+                var engines = new List<PlcSyncEngine>();
+
+                foreach (var descriptor in builder.Descriptors)
                 {
-                    PlcClientType.Siemens => new SiemensClient(options.Siemens,
-                                                 logFactory.CreateLogger<SiemensClient>()),
-                    PlcClientType.Mitsubishi => new MitsubishiClient(options.Mitsubishi,
-                                                 logFactory.CreateLogger<MitsubishiClient>()),
-                    PlcClientType.Omron => new OmronClient(options.Omron,
-                                                 logFactory.CreateLogger<OmronClient>()),
-                    _ => throw new InvalidOperationException(
-                             "请调用 UseSiemens / UseMitsubishi / UseOmron 选择协议。")
-                };
-            });
-
-            // ── Tag 注册表 ────────────────────────────────
-            services.AddSingleton<ITagRegistry>(sp =>
-            {
-                var reg = new TagRegistry();
-                foreach (var tag in options.Tags) reg.Register(tag);
-                return reg;
-            });
-
-            // ── 内存镜像 ──────────────────────────────────
-            services.AddSingleton<PlcMemoryMirror>(sp =>
-            {
-                var mirror = new PlcMemoryMirror();
-
-                // 注册显式配置的区域
-                foreach (var r in options.Regions)
-                    mirror.RegisterRegion(r.Key, r.Area, r.Start, r.Length);
-
-                // 根据 Tag 自动推断缺少的区域（默认 4096 字节）
-                var registry = sp.GetRequiredService<ITagRegistry>();
-                foreach (var tag in registry.GetAll())
-                {
-                    var addr = AddressParser.Parse(tag.Address, tag.Type);
-                    try { mirror.RegisterRegion(addr.RegionKey, addr.Area, 0, 4096); }
-                    catch { /* 已注册，忽略 */ }
+                    var client = descriptor.ClientFactory(sp);
+                    var group = BuildPlcServices(client, descriptor.Options.Tags,
+                        descriptor.Options.Regions, descriptor.Options.ScanInterval, logFactory);
+                    tagServices[descriptor.Name] = group.TagService;
+                    engines.Add(group.Engine);
                 }
-                return mirror;
+
+                return new PlcHub(tagServices, engines);
             });
-            services.AddSingleton<IPlcMemoryMirror>(sp => sp.GetRequiredService<PlcMemoryMirror>());
-            services.AddSingleton<PlcMirrorOptions>(options);
 
-            // ── 变化通知 ──────────────────────────────────
-            services.AddSingleton<ChangeNotifier>();
-            services.AddSingleton<IChangeNotifier>(sp => sp.GetRequiredService<ChangeNotifier>());
-
-            // ── 写命令服务 ────────────────────────────────
-            services.AddSingleton<IWriteCommandService, WriteCommandService>();
-
-            // ── 同步引擎 ──────────────────────────────────
-            //services.AddSingleton(new SyncEngineOptions { ScanInterval = options.ScanInterval });
-            services.AddSingleton<PlcSyncEngine>();
-            services.AddSingleton<IPlcSyncEngine>(sp => sp.GetRequiredService<PlcSyncEngine>());
-
-            // ── Tag 服务（业务入口）──────────────────────
-            services.AddSingleton<TagService>();
-            services.AddSingleton<ITagService>(sp => sp.GetRequiredService<TagService>());
-
-            // ── 托管后台服务（自动启动/停止）────────────
-            services.AddHostedService<PlcMirrorHostedService>();
+            services.AddSingleton<IPlcHub>(sp => sp.GetRequiredService<PlcHub>());
+            services.AddHostedService<VitrinPlcHostedService>();
 
             return services;
         }
+
+        private static PlcServiceGroup BuildPlcServices(
+            IPlcClient client,
+            IReadOnlyList<TagDefinition> tags,
+            IReadOnlyList<RegionConfig> regions,
+            int scanInterval,
+            ILoggerFactory loggerFactory)
+        {
+            var registry = new TagRegistry();
+            foreach (var tag in tags)
+                registry.Register(tag);
+
+            var mirror = new PlcMemoryMirror();
+            foreach (var r in regions)
+                mirror.RegisterRegion(r.Key, r.Area, r.Start, r.Length);
+            foreach (var tag in registry.GetAll())
+            {
+                var addr = AddressParser.Parse(tag.Address, tag.Type);
+                try { mirror.RegisterRegion(addr.RegionKey, addr.Area, 0, 4096); }
+                catch { }
+            }
+
+            var notifier = new ChangeNotifier();
+            var writeService = new WriteCommandService(client, registry,
+                loggerFactory.CreateLogger<WriteCommandService>());
+
+            var engine = new PlcSyncEngine(client, mirror, registry, notifier, scanInterval,
+                loggerFactory.CreateLogger<PlcSyncEngine>());
+
+            var tagService = new TagService(registry, mirror, writeService, notifier,
+                loggerFactory.CreateLogger<TagService>());
+
+            return new PlcServiceGroup(registry, mirror, notifier, writeService, engine, tagService);
+        }
+
+        private sealed record PlcServiceGroup(
+            TagRegistry Registry,
+            PlcMemoryMirror Mirror,
+            ChangeNotifier Notifier,
+            WriteCommandService WriteService,
+            PlcSyncEngine Engine,
+            TagService TagService);
     }
 }

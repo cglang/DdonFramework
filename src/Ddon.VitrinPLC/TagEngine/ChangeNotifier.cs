@@ -8,11 +8,11 @@ namespace Ddon.VitrinPLC.TagEngine
 {
     /// <summary>
     /// 基于旧镜像 vs 新镜像差异发布变化通知。
-    /// 订阅者通过弱引用管理，自动回收，无内存泄漏。
+    /// 订阅者通过 Dispose 自动移除，无内存泄漏。
     /// </summary>
     public sealed class ChangeNotifier : IChangeNotifier
     {
-        // tagName → List of WeakReference<Subscription>
+        // tagName → List of Subscription
         private readonly ConcurrentDictionary<string, List<Subscription>> _subs =
             new(StringComparer.OrdinalIgnoreCase);
 

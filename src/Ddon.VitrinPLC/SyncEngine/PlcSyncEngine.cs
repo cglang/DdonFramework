@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Ddon.VitrinPLC.Abstractions;
 using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.Logging;
-using Plc.Hosting;
 
 namespace Ddon.VitrinPLC.SyncEngine
 {
@@ -27,7 +26,8 @@ namespace Ddon.VitrinPLC.SyncEngine
         private readonly PlcMemoryMirror _mirror;
         private readonly ITagRegistry _registry;
         private readonly IChangeNotifier _notifier;
-        private readonly PlcMirrorOptions _options;
+        private readonly int _scanInterval;
+        private readonly IReadOnlyDictionary<string, int> _regionLengths;
         private readonly ILogger<PlcSyncEngine> _logger;
 
         private CancellationTokenSource _cts;
@@ -41,14 +41,16 @@ namespace Ddon.VitrinPLC.SyncEngine
             PlcMemoryMirror mirror,
             ITagRegistry registry,
             IChangeNotifier notifier,
-            PlcMirrorOptions options,
+            int scanInterval,
             ILogger<PlcSyncEngine> logger)
         {
             _client = client;
             _mirror = mirror;
             _registry = registry;
             _notifier = notifier;
-            _options = options;
+            _scanInterval = scanInterval;
+            _regionLengths = mirror.GetRegionInfo()
+                .ToDictionary(x => x.Key, x => x.Value.Length, StringComparer.OrdinalIgnoreCase);
             _logger = logger;
         }
 
@@ -57,7 +59,7 @@ namespace Ddon.VitrinPLC.SyncEngine
             if (IsRunning) return;
 
             await _client.ConnectAsync(ct);
-            _logger.LogInformation("PLC 已连接，启动同步引擎（周期 {Interval}ms）", _options.ScanInterval);
+            _logger.LogInformation("PLC 已连接，启动同步引擎（周期 {Interval}ms）", _scanInterval);
 
             _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             _runTask = RunLoopAsync(_cts.Token);
@@ -90,7 +92,7 @@ namespace Ddon.VitrinPLC.SyncEngine
                 }
 
                 var elapsed = sw.Elapsed;
-                var delay = TimeSpan.FromMilliseconds(_options.ScanInterval) - elapsed;
+                var delay = TimeSpan.FromMilliseconds(_scanInterval) - elapsed;
                 if (delay > TimeSpan.Zero)
                     await Task.Delay(delay, ct);
             }
@@ -121,20 +123,24 @@ namespace Ddon.VitrinPLC.SyncEngine
                 var area = AddressParser.Parse(regionTags[0].Address, regionTags[0].Type).Area;
 
                 // ── Step 2：批量读取原始字节 ─────────────────
-                byte[] newData = await _client.ReadBytesAsync(area, minOff, length, ct);
+                byte[] rawSegment = await _client.ReadBytesAsync(area, minOff, length, ct);
 
-                // 若区域长度不匹配需要对齐（填充到注册大小）
-                // 简化实现：直接用读到的数据作为新 buffer
-                var oldData = _mirror.ApplySnapshot(regionKey, PadOrTrim(newData, GetRegisteredLength(regionKey)));
+                // 将原始 PLC 数据填入全尺寸 buffer 的正确偏移位置
+                int regionLength = GetRegisteredLength(regionKey);
+                var newFullData = new byte[regionLength];
+                Buffer.BlockCopy(rawSegment, 0, newFullData, minOff,
+                    Math.Min(rawSegment.Length, regionLength - minOff));
 
-                // ── Step 3：变化检测 ─────────────────────────
+                var oldFullData = _mirror.ApplySnapshot(regionKey, newFullData);
+
+                // ── Step 3：变化检测（双方都在全尺寸 buffer 的同偏移位置读取）─
                 foreach (var tag in regionTags)
                 {
                     try
                     {
                         var addr = AddressParser.Parse(tag.Address, tag.Type);
-                        object oldV = ReadFromBuffer(oldData, addr, tag);
-                        object newV = ReadFromBuffer(newData, addr, tag);
+                        object oldV = ReadFromBuffer(oldFullData, addr, tag);
+                        object newV = ReadFromBuffer(newFullData, addr, tag);
 
                         if (!Equals(oldV, newV))
                         {
@@ -195,19 +201,8 @@ namespace Ddon.VitrinPLC.SyncEngine
             };
         }
 
-        private byte[] PadOrTrim(byte[] src, int targetLen)
-        {
-            if (src.Length == targetLen) return src;
-            var result = new byte[targetLen];
-            Buffer.BlockCopy(src, 0, result, 0, Math.Min(src.Length, targetLen));
-            return result;
-        }
-
-        private int GetRegisteredLength(string regionKey)
-        {
-            // 简化实现，实际应从 MemoryRegion 配置获取
-            return _options.Regions.FirstOrDefault(x => x.Key == regionKey)?.Length ?? 4096;
-        }
+        private int GetRegisteredLength(string regionKey) =>
+            _regionLengths.TryGetValue(regionKey, out var len) ? len : 4096;
 
         public async ValueTask DisposeAsync()
         {

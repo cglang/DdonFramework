@@ -2,15 +2,20 @@
 
 namespace Ddon.VitrinPLC.Models
 {
-    // ─────────────────────────────────────────────
-    // Tag 定义
-    // ─────────────────────────────────────────────
+    /// <summary>
+    /// Tag 定义
+    /// </summary>
     public sealed class TagDefinition
     {
         public string Name { get; init; }
+
         public string Address { get; init; }
+
         public PlcDataType Type { get; init; }
-        /// <summary>仅限 String 类型使用</summary>
+
+        /// <summary>
+        /// 仅限 String 类型使用
+        /// </summary>
         public int StringLength { get; init; } = 0;
 
         public TagDefinition(string name, string address, PlcDataType type, int stringLength = 0)
