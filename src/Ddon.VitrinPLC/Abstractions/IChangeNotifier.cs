@@ -10,6 +10,7 @@ namespace Ddon.VitrinPLC.Abstractions
     public interface IChangeNotifier
     {
         IDisposable Subscribe<T>(string tagName, Action<T> handler);
+        IDisposable Subscribe<T>(string tagName, Action<T, T> onChanged);
         void NotifyChanges(IEnumerable<TagChange> changes);
     }
 }

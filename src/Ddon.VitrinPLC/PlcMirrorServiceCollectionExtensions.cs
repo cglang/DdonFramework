@@ -12,7 +12,7 @@ namespace Ddon.VitrinPLC
     public static class PlcMirrorServiceCollectionExtensions
     {
         /// <summary>
-        /// 注册多 PLC 支持。每个 PLC 拥有独立的 SyncEngine、Mirror 和 TagService，
+        /// 注册多 PLC 支持。每个 PLC 拥有独立的 SyncEngine、Mirror 和 PlcSession，
         /// 通过 <see cref="IPlcHub"/> 按名称访问。
         ///
         /// 示例：
@@ -43,7 +43,7 @@ namespace Ddon.VitrinPLC
             services.AddSingleton<PlcHub>(sp =>
             {
                 var logFactory = sp.GetRequiredService<ILoggerFactory>();
-                var tagServices = new Dictionary<string, ITagService>();
+                var sessions = new Dictionary<string, IPlcSession>();
                 var engines = new List<PlcSyncEngine>();
 
                 foreach (var descriptor in builder.Descriptors)
@@ -51,11 +51,11 @@ namespace Ddon.VitrinPLC
                     var client = descriptor.ClientFactory(sp);
                     var group = BuildPlcServices(client, descriptor.Options.Tags,
                         descriptor.Options.Regions, descriptor.Options.ScanInterval, logFactory);
-                    tagServices[descriptor.Name] = group.TagService;
+                    sessions[descriptor.Name] = group.Session;
                     engines.Add(group.Engine);
                 }
 
-                return new PlcHub(tagServices, engines);
+                return new PlcHub(sessions, engines);
             });
 
             services.AddSingleton<IPlcHub>(sp => sp.GetRequiredService<PlcHub>());
@@ -92,10 +92,10 @@ namespace Ddon.VitrinPLC
             var engine = new PlcSyncEngine(client, mirror, registry, notifier, scanInterval,
                 loggerFactory.CreateLogger<PlcSyncEngine>());
 
-            var tagService = new TagService(registry, mirror, writeService, notifier,
-                loggerFactory.CreateLogger<TagService>());
+            var session = new PlcSession(registry, mirror, writeService, notifier,
+                loggerFactory.CreateLogger<PlcSession>());
 
-            return new PlcServiceGroup(registry, mirror, notifier, writeService, engine, tagService);
+            return new PlcServiceGroup(registry, mirror, notifier, writeService, engine, session);
         }
 
         private sealed record PlcServiceGroup(
@@ -104,6 +104,6 @@ namespace Ddon.VitrinPLC
             ChangeNotifier Notifier,
             WriteCommandService WriteService,
             PlcSyncEngine Engine,
-            TagService TagService);
+            PlcSession Session);
     }
 }

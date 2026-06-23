@@ -21,11 +21,12 @@ var host = Host.CreateDefaultBuilder(args)
                 h =>
                 {
                     h.ScanInterval = 200;
+                    h.MapRegion("DB1", "DB1", 0, 512);
+                    h.MapRegion("DB2", "DB2", 0, 256);
                     h.MapTag("Temp", "DB1.DBD0", PlcDataType.Float);
                     h.MapTag("Run", "DB1.DBX10.0", PlcDataType.Bool);
                     h.MapTag("Speed", "DB1.DBW4", PlcDataType.Int16);
                     h.MapTag("Alarm", "DB1.DBX10.1", PlcDataType.Bool);
-                    h.MapRegion("DB1", "DB1", 0, 512);
                 });
 
             builder.AddSiemens("sub",
@@ -33,11 +34,12 @@ var host = Host.CreateDefaultBuilder(args)
                 h =>
                 {
                     h.ScanInterval = 200;
+                    h.MapRegion("DB1", "DB1", 0, 512);
+                    h.MapRegion("DB2", "DB2", 0, 256);
                     h.MapTag("Temp", "DB1.DBD0", PlcDataType.Float);
                     h.MapTag("Run", "DB1.DBX10.0", PlcDataType.Bool);
                     h.MapTag("Speed", "DB1.DBW4", PlcDataType.Int16);
                     h.MapTag("Alarm", "DB1.DBX10.1", PlcDataType.Bool);
-                    h.MapRegion("DB1", "DB1", 0, 512);
                 });
         });
 
@@ -72,11 +74,13 @@ _ = Task.Run(async () =>
     }
 });
 
+byte[] buf = hub.For("main").Mirror.GetRegion("DB1");
+
 logger.LogInformation("═══ 订阅示例 ═══");
 using var sub1 = hub.For("main").Subscribe<float>("Temp",
-    v => logger.LogInformation("[变化] main.Temp = {V}°C", v));
+    (oldV, newV) => logger.LogInformation("[变化] main.Temp: {Old} → {New}°C", oldV, newV));
 using var sub2 = hub.For("main").Subscribe<bool>("Run",
-    v => logger.LogInformation("[变化] main.Run = {V}", v));
+    (oldV, newV) => logger.LogInformation("[变化] main.Run: {Old} → {New}", oldV, newV));
 using var sub3 = hub.For("main").Subscribe<bool>("Alarm", v =>
 {
     if (v) logger.LogWarning("[变化] 警报触发！");

@@ -13,20 +13,20 @@ namespace Ddon.VitrinPLC.TagEngine
     /// SetAsync → 直接写 PLC，镜像不变，等待下次扫描确认
     /// Subscribe → 注册值变化回调
     /// </summary>
-    public sealed class TagService : ITagService
+    public sealed class PlcSession : IPlcSession
     {
         private readonly ITagRegistry _registry;
         private readonly IPlcMemoryMirror _mirror;
         private readonly IWriteCommandService _writer;
         private readonly IChangeNotifier _notifier;
-        private readonly ILogger<TagService> _logger;
+        private readonly ILogger<PlcSession> _logger;
 
-        public TagService(
+        public PlcSession(
             ITagRegistry registry,
             IPlcMemoryMirror mirror,
             IWriteCommandService writer,
             IChangeNotifier notifier,
-            ILogger<TagService> logger)
+            ILogger<PlcSession> logger)
         {
             _registry = registry;
             _mirror = mirror;
@@ -34,6 +34,8 @@ namespace Ddon.VitrinPLC.TagEngine
             _notifier = notifier;
             _logger = logger;
         }
+
+        public IPlcMemoryMirror Mirror => _mirror;
 
         /// <summary>从镜像读取 Tag 值（同步，极低延迟）</summary>
         public T Get<T>(string tagName)
@@ -53,8 +55,14 @@ namespace Ddon.VitrinPLC.TagEngine
         /// <summary>订阅 Tag 值变化（扫描后触发）</summary>
         public IDisposable Subscribe<T>(string tagName, Action<T> handler)
         {
-            _ = _registry.Resolve(tagName); // 校验 Tag 存在
+            _ = _registry.Resolve(tagName);
             return _notifier.Subscribe(tagName, handler);
+        }
+
+        public IDisposable Subscribe<T>(string tagName, Action<T, T> onChanged)
+        {
+            _ = _registry.Resolve(tagName);
+            return _notifier.Subscribe(tagName, onChanged);
         }
     }
 }
