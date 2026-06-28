@@ -18,8 +18,8 @@ namespace Ddon.Pipeline
         public IGeneralPipelineMiddleware<TContext> GetInstance(Type type)
         {
             var instance = _service.GetService(type);
-            if (instance is IGeneralPipelineMiddleware<TContext> feneralMiddleware)
-                return feneralMiddleware;
+            if (instance is IGeneralPipelineMiddleware<TContext> generalMiddleware)
+                return generalMiddleware;
             throw new Exception();
         }
     }

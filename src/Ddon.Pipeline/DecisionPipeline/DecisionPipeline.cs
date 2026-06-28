@@ -4,7 +4,7 @@ namespace Ddon.Pipeline
 {
     public class DecisionPipeline
     {
-        public static IGeneralCustomPipeline<TContext> Build<TContext>(params DecisionPipelineMiddleware<TContext>[] middlewares) where TContext : new()
+        public static IGeneralCustomPipeline<TContext> Build<TContext>(params DecisionPipelineMiddleware<TContext>[] middlewares)
         {
             return GeneralCustomPipelineFactory<TContext>.CreatePipelineBuild().ConfigureMiddlewares(builder =>
             {

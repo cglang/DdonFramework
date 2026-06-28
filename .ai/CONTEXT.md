@@ -5,6 +5,16 @@
 ## 当前会话上下文
 
 ### 最近操作
+- **Ddon.Pipeline 修复**: 修复 6 个问题（2025-06）
+  1. `MoveNext()` 反向迭代 → 前向迭代（符合 IEnumerator 契约）
+  2. `Reset()` 设 `_curIndex = -1`（原为 `Count`，越界）
+  3. `AddMiddleware` 设 `_curIndex = Count - 1`（原为 `Count`）
+  4. `Dispose()` 移除 `GC.SuppressFinalize`（无终结器）
+  5. `ContainerPipelineInstanceProvider` 变量名 `feneralMiddleware` → `generalMiddleware`
+  6. `Build()` 新增 `IPipelineInstanceProvider` 参数重载（原硬编码 DefaultPipelineInstanceProvider）
+  7. `DecisionPipeline.Build<TContext>` 移除 `where TContext : new()` 约束
+  - Ddon.Pipeline + Ddon.Serial + Ddon.Socket 全部构建通过（0 警告 0 错误）
+
 - **实现 Ddon.Serial 框架**: 根据 Ddon.Serial/设计文档.md，完整实现了 24 个源文件
   - Abstractions 9 接口、Builder 3 类、Configuration 2 类
   - Core 6 实现、Models 2 类、Hosted 1 类、Extensions 1 类
@@ -28,8 +38,9 @@
 8. DI 注册采用 Singleton SerialManager + 可选 HostedService
 
 ### 已知问题/待办
-- `PipelineBuilder.Use(Func<SerialContext, Task>)` 方法签名已正确调整（移除了不必要的泛型约束）
-- `UseBackgroundService()` 方法已移除（设计文档有提及但当前架构通过 SerialHostedService 统一管理）
+- Ddon.Pipeline 修复已完成，无待办
+- Ddon.Serial 和 Ddon.Socket 构建通过，无待办
+- `PipelineBuilder.Use(Func<SerialContext, Task>)` 方法签名已正确调整
 - 包版本冲突已解决：通过移除显式 Microsoft.Extensions.* 引用，依赖 Ddon.Pipeline 传递解析
 
 ## 代码库约定速查

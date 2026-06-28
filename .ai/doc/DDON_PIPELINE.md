@@ -32,11 +32,23 @@ IPipelineInstanceProvider<TContext>
 ## 核心类
 
 - **GeneralCustomPipelineFactory\<T\>** — 静态工厂，创建 PipelineBuild
-- **GeneralCustomPipelineBuild\<T\>** — 构造器，链式配置中间件后 Build()
+- **GeneralCustomPipelineBuild\<T\>** — 构造器，链式配置中间件后 Build()（支持可选的 IPipelineInstanceProvider）
 - **GeneralCustomPipeline\<T\>** — 最终管道实现
-- **PipelineRegistrar\<T\>** — 默认注册器实现
+- **PipelineRegistrar\<T\>** — 默认注册器实现（IEnumerator 前向迭代）
 - **DefaultPipelineInstanceProvider\<T\>** — Activator 创建中间件实例
 - **ContainerPipelineInstanceProvider\<T\>** — 从 DI 容器解析中间件
+
+## PipelineRegistrar 注意事项
+
+`PipelineRegistrar<TContext>` 实现 `IEnumerator<IGeneralPipelineMiddleware<TContext>>`。枚举按**前向**（插入顺序）进行：
+
+- `MoveNext()` 递增 `_curIndex`（从 -1 开始到 `Count - 1`）
+- `Reset()` 设 `_curIndex = -1`
+- `Build()` 调用链依次包裹：中间件 0 包裹 FinalMiddleware，中间件 1 包裹中间件 0...最终中间件在最外层运行
+
+`PipelineRegistrar.Build()` 有两个重载：
+- `Build()` — 使用 `DefaultPipelineInstanceProvider`（Activator 创建）
+- `Build(IPipelineInstanceProvider<TContext>)` — 使用自定义实例提供器（如 DI 容器）
 
 ## 使用方式
 

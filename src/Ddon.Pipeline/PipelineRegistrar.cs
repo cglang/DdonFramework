@@ -62,24 +62,21 @@ namespace Ddon.Pipeline
 
             _middlewareInstances.Add(middleware);
 
-            _curIndex = _middlewareInstances.Count;
+            _curIndex = _middlewareInstances.Count - 1;
         }
 
         public bool MoveNext()
         {
-            if (--_curIndex < 0)
+            if (++_curIndex >= _middlewareInstances.Count)
                 return false;
             return true;
         }
 
         public void Reset()
         {
-            _curIndex = _middlewareInstances.Count;
+            _curIndex = -1;
         }
 
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
+        public void Dispose() { }
     }
 }

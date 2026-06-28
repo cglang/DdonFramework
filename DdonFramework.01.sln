@@ -62,6 +62,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{73607AF6-948
 		.ai\doc\ARCHITECTURE.md = .ai\doc\ARCHITECTURE.md
 		.ai\doc\DDON_PIPELINE.md = .ai\doc\DDON_PIPELINE.md
 		.ai\doc\DDON_SERIAL.md = .ai\doc\DDON_SERIAL.md
+		.ai\doc\DDON_SOCKET.md = .ai\doc\DDON_SOCKET.md
 		.ai\doc\PROJECT_OVERVIEW.md = .ai\doc\PROJECT_OVERVIEW.md
 	EndProjectSection
 EndProject

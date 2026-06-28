@@ -37,7 +37,11 @@ namespace Ddon.Pipeline
 
         public GeneralCustomPipeline<TContext> Build()
         {
-            var instanceProvider = new DefaultPipelineInstanceProvider<TContext>();
+            return Build(new DefaultPipelineInstanceProvider<TContext>());
+        }
+
+        public GeneralCustomPipeline<TContext> Build(IPipelineInstanceProvider<TContext> instanceProvider)
+        {
             var pipelineRegistrar = new PipelineRegistrar<TContext>(instanceProvider);
 
             foreach (var registrar in _pipelineRegistrars)
