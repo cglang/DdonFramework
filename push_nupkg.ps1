@@ -10,7 +10,9 @@ $projects = (
     "Ddon.Pipeline",
     "Ddon.Workflow",
     "Ddon.Cache",
-    "Ddon.Cache.Redis"
+    "Ddon.Cache.Redis",
+    "Ddon.Serial",
+    "Ddon.Socket"
 )
 
 [xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "version.props")
