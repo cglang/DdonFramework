@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Ddon.Pipeline\Ddon.Pipeline.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.IO.Ports" />
+  </ItemGroup>
+
 </Project>
