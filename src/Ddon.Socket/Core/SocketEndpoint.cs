@@ -19,7 +19,9 @@ namespace Ddon.Socket.Core
         private readonly ILogger? _logger;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly List<byte> _receiveBuffer = new List<byte>();
+        private readonly bool _isServerEndpoint;
         private Task? _receiveTask;
+        private Task? _reconnectTask;
         private int _retryCount;
         private bool _disposed;
 
@@ -30,7 +32,8 @@ namespace Ddon.Socket.Core
             SocketDispatcher dispatcher,
             ISocketProtocol? protocol = null,
             IReconnectStrategy? reconnectStrategy = null,
-            ILogger<SocketEndpoint>? logger = null)
+            ILogger<SocketEndpoint>? logger = null,
+            bool isServerEndpoint = false)
         {
             _name = name;
             _worker = worker;
@@ -39,6 +42,7 @@ namespace Ddon.Socket.Core
             _dispatcher = dispatcher;
             _reconnectStrategy = reconnectStrategy;
             _logger = logger;
+            _isServerEndpoint = isServerEndpoint;
         }
 
         public string Name => _name;
@@ -63,11 +67,16 @@ namespace Ddon.Socket.Core
         {
             if (!IsRunning) return;
 
+            _cts.Cancel();
+
+            if (_reconnectTask != null)
+            {
+                try { await _reconnectTask; } catch { }
+            }
+
             _worker.DataReceived -= OnDataReceived;
             _worker.ErrorOccurred -= OnErrorOccurred;
             _worker.Disconnected -= OnDisconnected;
-
-            _cts.Cancel();
 
             if (_receiveTask != null)
             {
@@ -123,8 +132,31 @@ namespace Ddon.Socket.Core
 
         private void OnDisconnected(object? sender, EventArgs e)
         {
-            _logger?.LogWarning("Socket endpoint '{Name}' disconnected", _name);
             IsRunning = false;
+            _logger?.LogWarning("Socket endpoint '{Name}' disconnected", _name);
+
+            if (!_isServerEndpoint && _reconnectStrategy != null && !_disposed)
+            {
+                _reconnectTask = ReconnectLoopAsync(_cts.Token);
+            }
+        }
+
+        private async Task ReconnectLoopAsync(CancellationToken cancellationToken)
+        {
+            _retryCount = 0;
+
+            try
+            {
+                await ConnectWithRetryAsync(cancellationToken);
+
+                IsRunning = true;
+                _logger?.LogInformation("Socket endpoint '{Name}' reconnected", _name);
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Reconnect failed for endpoint '{Name}'", _name);
+            }
         }
 
         private async Task ProcessDataAsync(byte[] data, CancellationToken cancellationToken)

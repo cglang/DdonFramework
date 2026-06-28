@@ -27,6 +27,14 @@
   - SocketEndpointBuilder：`Build(TcpClient)` 重载用于 Server 模式创建 Endpoint
   - 构建成功（netstandard2.0 + net8.0，0 警告 0 错误）
 
+- **Ddon.Socket 断线自动重连**: 实现 Client 模式断线自动重连
+  - 新增 `DefaultReconnectStrategy` — 指数退避（1s→2s→4s→8s→15s→封顶 30s）
+  - `SocketEndpoint.OnDisconnected` — 触发 `ReconnectLoopAsync` 后台重连
+  - `SocketWorker.ConnectAsync` — 修复 `_receiveCts` 不可复用的 bug（dispose 旧对象，创建新的）
+  - `SocketEndpointBuilder.Build(TcpClient)` — Server 端接受连接的 Endpoint 不重连
+  - `StopAsync` — 先 cancel 再 await 重连任务，确保干净退出
+  - 构建成功（0 警告 0 错误）
+
 ### Ddon.Serial 关键设计决策
 1. Pipeline 使用 Ddon.Pipeline（设计文档明确要求）
 2. 每个 Endpoint 完全独立（Worker/Pipeline/Dispatcher/Protocol/Handler）

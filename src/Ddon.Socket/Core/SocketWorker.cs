@@ -12,7 +12,7 @@ namespace Ddon.Socket.Core
         private readonly SocketClientOptions? _options;
         private TcpClient? _tcpClient;
         private NetworkStream? _stream;
-        private readonly CancellationTokenSource _receiveCts = new CancellationTokenSource();
+        private CancellationTokenSource _receiveCts = new CancellationTokenSource();
         private Task? _receiveTask;
         private bool _disposed;
         private bool _isAccepted;
@@ -52,6 +52,10 @@ namespace Ddon.Socket.Core
         {
             if (_isAccepted) return;
 
+            try { _receiveCts?.Cancel(); } catch { }
+            _receiveCts?.Dispose();
+            _receiveCts = new CancellationTokenSource();
+
             _tcpClient = new TcpClient();
             _tcpClient.NoDelay = _options!.NoDelay;
             _tcpClient.ReceiveBufferSize = _options.ReceiveBufferSize;
@@ -76,7 +80,7 @@ namespace Ddon.Socket.Core
 
         public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
-            _receiveCts.Cancel();
+            try { _receiveCts?.Cancel(); } catch { }
 
             if (_receiveTask != null)
             {
@@ -131,8 +135,8 @@ namespace Ddon.Socket.Core
             if (_disposed) return;
             _disposed = true;
 
-            _receiveCts.Cancel();
-            _receiveCts.Dispose();
+            _receiveCts?.Cancel();
+            _receiveCts?.Dispose();
             _stream?.Dispose();
             _tcpClient?.Dispose();
         }

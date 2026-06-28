@@ -113,15 +113,11 @@ namespace Ddon.Socket.Builder
             if (_protocolType != null)
                 protocol = factory.CreateProtocol(_protocolType);
 
-            IReconnectStrategy? reconnectStrategy = null;
-            if (_reconnectStrategyType != null)
-                reconnectStrategy = factory.CreateReconnectStrategy(_reconnectStrategyType);
-
             var pipeline = _serialPipeline ?? BuildDefaultPipeline();
 
             var dispatcher = new SocketDispatcher(_handlers);
 
-            return new SocketEndpoint(_name, worker, pipeline, dispatcher, protocol, reconnectStrategy);
+            return new SocketEndpoint(_name, worker, pipeline, dispatcher, protocol, null, isServerEndpoint: true);
         }
 
         private ISocketPipeline BuildDefaultPipeline()
