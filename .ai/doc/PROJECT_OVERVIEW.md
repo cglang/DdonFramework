@@ -9,7 +9,7 @@ framework/
 ├── common.props          # 公共编译属性 (net7.0)
 ├── version.props         # 版本定义 (7.0.12)
 ├── Directory.Packages.props  # 集中包版本管理
-├── src/                  # 33 个子项目
+├── src/                  # 34 个子项目
 ├── test/                 # 测试项目
 └── nupkgs/               # NuGet 打包输出
 ```
@@ -22,6 +22,7 @@ framework/
 | Ddon.Pipeline | Ddon.Pipeline | 通用 Pipeline 管道中间件框架 |
 | Ddon.Serial | Ddon.Serial | **串口通信框架**，基于 Ddon.Pipeline |
 | Ddon.Socket | Ddon.Socket | Socket 通信框架（Server+Client），基于 Ddon.Pipeline |
+| Ddon.OpenProtocol | Ddon.OpenProtocol | **Open Protocol TCP Client**，基于 Ddon.Socket + Ddon.Pipeline |
 | Ddon.SimpeSocket | - | 简单 Socket 封装 |
 | Ddon.Cache | Ddon.Cache | 缓存抽象 |
 | Ddon.Cache.Memory | - | 内存缓存实现 |

@@ -17,7 +17,7 @@
 ## 依赖层次 (已知部分)
 ```
 Ddon.Pipeline
-  └─ 被 Ddon.Socket / Ddon.Serial / Ddon.Core 引用
+  └─ 被 Ddon.Socket / Ddon.Serial / Ddon.Core / Ddon.OpenProtocol 引用
 
 Ddon.Core
   ├─ Ddon.DependencyInjection
@@ -32,10 +32,14 @@ Ddon.Serial
 
 Ddon.Socket
   └─ Ddon.Pipeline
+
+Ddon.OpenProtocol
+  ├─ Ddon.Pipeline
+  └─ Ddon.Socket (TCP 传输)
 ```
 
 ## Pipeline 复用模式
-多个通信模块（Socket、Serial、UniPLC）共享同一套 Pipeline 机制：
+多个通信模块（Socket、Serial、OpenProtocol、UniPLC）共享同一套 Pipeline 机制：
 1. 定义上下文 Context 类
 2. 定义中间件接口继承 `IGeneralPipelineMiddleware<Context>`
 3. 使用 `GeneralCustomPipelineFactory` 构建管道
@@ -49,5 +53,5 @@ Ddon.Socket
 ## 目标框架策略
 | 框架 | 适用模块 |
 |------|----------|
-| netstandard2.0;net8.0 | Ddon.Pipeline, Ddon.Serial, Ddon.Socket（多目标） |
+| netstandard2.0;net8.0 | Ddon.Pipeline, Ddon.Serial, Ddon.Socket, Ddon.OpenProtocol（多目标） |
 | net7.0 | Ddon.Core 等（common.props 默认） |

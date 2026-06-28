@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageIcon>icon.nuget.jpg</PackageIcon>
+  </PropertyGroup>
+
+  <Import Project="../../version.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ddon.Pipeline\Ddon.Pipeline.csproj" />
+    <ProjectReference Include="..\Ddon.Socket\Ddon.Socket.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenProtocolInterpreter" />
+    <PackageReference Include="System.Threading.Channels" />
+  </ItemGroup>
+
+</Project>

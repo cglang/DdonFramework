@@ -9,6 +9,8 @@ namespace Ddon.Socket.Abstractions
 
         bool IsRunning { get; }
 
+        ISocketWorker Worker { get; }
+
         Task StartAsync(CancellationToken cancellationToken = default);
 
         Task StopAsync(CancellationToken cancellationToken = default);

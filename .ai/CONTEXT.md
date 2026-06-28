@@ -35,6 +35,18 @@
   - `StopAsync` — 先 cancel 再 await 重连任务，确保干净退出
   - 构建成功（0 警告 0 错误）
 
+- **重构 Ddon.OpenProtocol**: 完全重写 Open Protocol TCP Client（2026-06）
+  - 删除旧 DdonOPClient 目录（6 个旧文件）
+  - 按 Ddon.Socket 同构七层结构重构（25 个新文件）
+  - TCP 传输复用 Ddon.Socket 的 `ISocketWorker`
+  - 5 个核心问题修复：
+    1. NUL 终止符写死 → `MessageTerminator` 枚举（None/Nul/CrLf/Custom）
+    2. Mid0004 无法处理 → `RequestResponseMatcher` 自动路由 + `OpenProtocolException`
+    3. 订阅结果不可等待 → `SubscribeAsync<T>` 首个响应 Task
+    4. 命名空间/结构混乱 → `Ddon.OpenProtocol.*` 统一 + 七层结构
+    5. 自定义 MID 不便捷 → `RegisterCustomMid<T>()` 类型驱动
+  - 构建成功（netstandard2.0 + net8.0，0 警告 0 错误）
+
 ### Ddon.Serial 关键设计决策
 1. Pipeline 使用 Ddon.Pipeline（设计文档明确要求）
 2. 每个 Endpoint 完全独立（Worker/Pipeline/Dispatcher/Protocol/Handler）
@@ -46,10 +58,7 @@
 8. DI 注册采用 Singleton SerialManager + 可选 HostedService
 
 ### 已知问题/待办
-- Ddon.Pipeline 修复已完成，无待办
-- Ddon.Serial 和 Ddon.Socket 构建通过，无待办
-- `PipelineBuilder.Use(Func<SerialContext, Task>)` 方法签名已正确调整
-- 包版本冲突已解决：通过移除显式 Microsoft.Extensions.* 引用，依赖 Ddon.Pipeline 传递解析
+- Ddon.OpenProtocol 已重构完成（0 警告 0 错误），无待办
 
 ## 代码库约定速查
 | 约定 | 说明 |

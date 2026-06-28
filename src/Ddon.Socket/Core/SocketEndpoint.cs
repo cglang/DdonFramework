@@ -49,6 +49,8 @@ namespace Ddon.Socket.Core
 
         public bool IsRunning { get; private set; }
 
+        public ISocketWorker Worker => _worker;
+
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             if (IsRunning) return;
