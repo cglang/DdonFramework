@@ -12,7 +12,7 @@ namespace Ddon.Cache
 
         Task SetAsync<TItem>(string key, TItem value, DistributedCacheEntryOptions options, CancellationToken token = default);
 
-        Task<bool> ContainsKeyAsync(string key);
+        Task<bool> ContainsKeyAsync(string key, CancellationToken token = default);
 
         Task RemoveAsync(string[] keys, CancellationToken token = default);
     }

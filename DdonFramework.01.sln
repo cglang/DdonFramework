@@ -78,6 +78,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.OpenProtocolSimulator"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.SocketClient", "test\Test.SocketClient\Test.SocketClient.csproj", "{11879C0F-85ED-4CA1-B6E0-30F12407CB1F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Localizer", "src\Ddon.Localizer\Ddon.Localizer.csproj", "{C8771FDB-9561-57E1-7F6E-83BCA6F4E253}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Cache.Sqlite", "src\Ddon.Cache.Sqlite\Ddon.Cache.Sqlite.csproj", "{C672CEB8-8F42-436F-AB28-7C8279E1616C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -180,6 +184,14 @@ Global
 		{11879C0F-85ED-4CA1-B6E0-30F12407CB1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11879C0F-85ED-4CA1-B6E0-30F12407CB1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11879C0F-85ED-4CA1-B6E0-30F12407CB1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8771FDB-9561-57E1-7F6E-83BCA6F4E253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8771FDB-9561-57E1-7F6E-83BCA6F4E253}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8771FDB-9561-57E1-7F6E-83BCA6F4E253}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8771FDB-9561-57E1-7F6E-83BCA6F4E253}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C672CEB8-8F42-436F-AB28-7C8279E1616C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C672CEB8-8F42-436F-AB28-7C8279E1616C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C672CEB8-8F42-436F-AB28-7C8279E1616C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C672CEB8-8F42-436F-AB28-7C8279E1616C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,6 +222,8 @@ Global
 		{36B0647A-FF42-48A2-9432-671979D53E36} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 		{0161A0BA-607C-4861-9B0E-33DE932DAC61} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 		{11879C0F-85ED-4CA1-B6E0-30F12407CB1F} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
+		{C8771FDB-9561-57E1-7F6E-83BCA6F4E253} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
+		{C672CEB8-8F42-436F-AB28-7C8279E1616C} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}

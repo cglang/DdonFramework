@@ -7,7 +7,7 @@
     <FileVersion>$(Version)</FileVersion>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageIcon>icon.nuget.jpg</PackageIcon>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    
   </PropertyGroup>
 
   <Import Project="../../version.props" />

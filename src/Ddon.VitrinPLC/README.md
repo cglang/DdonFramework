@@ -5,7 +5,6 @@
 ```
 ┌─────────────────────────────────────────────────┐
 │  业务层  UI / MES / SCADA / Dashboard           │
-│  ↓ 单 PLC: 注入 ITagService                     │
 │  ↓ 多 PLC: 注入 IPlcHub → .For("name")         │
 ├─────────────────────────────────────────────────┤
 │  Tag API 层  TagService                         │
@@ -33,64 +32,7 @@
 | 1 | PLC 是真实源 | 任何状态最终以 PLC 当前值为准 |
 | 2 | 内存镜像只读 | 业务写操作不修改本地镜像 |
 | 3 | 写入立即下发 | `SetAsync` 直接写 PLC，不经过镜像 |
-| 4 | 下周期再反映 | UI 在 200ms 后才看到新值，是刻意的一致性换延迟 |
-
----
-
-## 单 PLC 模式（AddPlcMirror）
-
-适合只连接一台 PLC 的场景，注入 `ITagService` 直接使用。
-
-### 注册
-
-```csharp
-services.AddPlcMirror(x =>
-{
-    x.UseSiemens("Main", plc =>
-    {
-        plc.Ip   = "192.168.1.10";
-        plc.Port = 102;
-        plc.Rack = 0;
-        plc.Slot = 1;
-    });
-    x.ScanInterval = 200;
-    x.MapTag("Temp",  "DB1.DBD0",    PlcDataType.Float);
-    x.MapTag("Run",   "DB1.DBX10.0", PlcDataType.Bool);
-    x.MapTag("Count", "D100",        PlcDataType.Int16);
-});
-```
-
-三菱 / 欧姆龙同理，将 `UseSiemens` 换成 `UseMitsubishi` 或 `UseOmron`：
-
-```csharp
-x.UseMitsubishi("Sub", plc => { plc.Ip = "192.168.1.20"; plc.Port = 5007; });
-x.UseOmron("Sub",      plc => { plc.Ip = "192.168.1.30"; plc.Port = 9600; });
-```
-
-### 使用
-
-```csharp
-public class MyService(ITagService tags)
-{
-    public void Read()
-    {
-        float temp  = tags.Get<float>("Temp");
-        bool  run   = tags.Get<bool>("Run");
-        short count = tags.Get<short>("Count");
-    }
-
-    public async Task WriteAsync()
-    {
-        WriteResult r = await tags.SetAsync("Run", true);
-        // r.NeedConfirmByScan == true：值将在下次扫描后反映到镜像
-    }
-
-    public void Watch()
-    {
-        tags.Subscribe<float>("Temp", v => Console.WriteLine($"温度变化: {v}°C"));
-    }
-}
-```
+| 4 | 下周期再反映 | UI 在 200ms 后才看到新值，是刻意的延迟换一致性 |
 
 ---
 

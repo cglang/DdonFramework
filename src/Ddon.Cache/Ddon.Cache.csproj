@@ -6,14 +6,15 @@
     <FileVersion>$(Version)</FileVersion>
     <PackageIcon>icon.nuget.jpg</PackageIcon>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    
   </PropertyGroup>
 
   <Import Project="../../version.props" />
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>

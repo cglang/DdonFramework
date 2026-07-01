@@ -1,11 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Ddon.Cache;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
@@ -13,14 +11,12 @@ namespace Ddon.Localizer
 {
     public class JsonStringLocalizer : IStringLocalizer
     {
-        private readonly ICache _cache;
+        private static readonly ConcurrentDictionary<string, Dictionary<string, string>> _cache = new();
+
         private readonly IOptions<JsonLocalizerOptions> _options;
 
-        private readonly Dictionary<string, string> Pairs = new();
-
-        public JsonStringLocalizer(ICache cache, IOptions<JsonLocalizerOptions> options)
+        public JsonStringLocalizer(IOptions<JsonLocalizerOptions> options)
         {
-            _cache = cache;
             _options = options;
         }
 
@@ -28,10 +24,13 @@ namespace Ddon.Localizer
         {
             get
             {
-                var task = GetStringAsync(name);
-                task.Wait();
-                var value = task.Result;
-                return new LocalizedString(name, value ?? $"[{name}]", value == null);
+                var culture = CultureInfo.CurrentCulture.Name;
+                var dictionary = _cache.GetOrAdd(culture, _ => LoadDictionary(culture));
+
+                if (dictionary.TryGetValue(name, out var value))
+                    return new LocalizedString(name, value, false);
+
+                return new LocalizedString(name, $"[{name}]", true);
             }
         }
 
@@ -39,72 +38,60 @@ namespace Ddon.Localizer
         {
             get
             {
-                var actualValue = this[name];
-                return !actualValue.ResourceNotFound
-                    ? new LocalizedString(name, string.Format(actualValue.Value, arguments), false)
-                    : actualValue;
+                var entry = this[name];
+                return entry.ResourceNotFound
+                    ? entry
+                    : new LocalizedString(name, string.Format(entry.Value, arguments), false);
             }
         }
 
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
-            foreach (var lkv in Pairs)
-            {
-                yield return new LocalizedString($"{lkv.Key}", lkv.Value, false);
-            }
+            var culture = CultureInfo.CurrentCulture.Name;
+            var dictionary = _cache.GetOrAdd(culture, _ => LoadDictionary(culture));
+
+            foreach (var kv in dictionary)
+                yield return new LocalizedString(kv.Key, kv.Value, false);
         }
 
-        private async Task<string?> GetStringAsync(string key)
+        private Dictionary<string, string> LoadDictionary(string culture)
         {
-            var prefixKey = new StringBuilder(_options.Value.CacheKeyPrefix).Append('_').Append(CultureInfo.CurrentCulture.Name);
+            var fullPath = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                _options.Value.ResourcesPath,
+                $"{culture}.json");
 
-            var languageCacheValue = await _cache.GetAsync<bool>(prefixKey.ToString());
-            if (!languageCacheValue) await LoadLocalizer();
+            if (!File.Exists(fullPath))
+                return new Dictionary<string, string>();
 
-            return await _cache.GetAsync<string>(prefixKey.Append($"_{key}").ToString());
+            var json = File.ReadAllText(fullPath);
+            return FlattenJson(json);
         }
 
-        private async Task LoadLocalizer()
+        private static Dictionary<string, string> FlattenJson(string json, string prefix = "")
         {
-            var fullFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _options.Value.ResourcesPath, $"{CultureInfo.CurrentCulture.Name}.json");
-            if (!File.Exists(fullFilePath)) return;
+            var result = new Dictionary<string, string>();
+            var dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+            if (dict is null) return result;
 
-            var json = await File.ReadAllTextAsync(fullFilePath);
-            var lkvs = await PullDeserialize(json);
-
-            await _cache.SetAsync($"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}", true);
-            Parallel.ForEach(lkvs, async lkv =>
+            foreach (var kv in dict)
             {
-                await _cache.SetAsync($"{_options.Value.CacheKeyPrefix}_{CultureInfo.CurrentCulture.Name}_{lkv.Key}", lkv.Value);
-            });
-        }
+                var key = string.IsNullOrEmpty(prefix) ? kv.Key : $"{prefix}{kv.Key}";
 
-        private async Task<Dictionary<string, string>> PullDeserialize(string json, string baseKey = "", Dictionary<string, string>? pairs = null)
-        {
-            if (pairs == null) pairs = new Dictionary<string, string>();
-            var dics = JsonSerializer.Deserialize<IDictionary<string, object?>>(json)!;
-            foreach (var dic in dics)
-            {
-                var jsonEliment = (JsonElement?)dic.Value;
-                if (jsonEliment != null)
+                switch (kv.Value.ValueKind)
                 {
-                    var kind = jsonEliment.Value.ValueKind;
-                    if (kind == JsonValueKind.Object)
-                    {
-                        await PullDeserialize($"{dic.Value}", $"{baseKey}{dic.Key}:", pairs);
-                    }
-                    else if (kind == JsonValueKind.Array)
-                    {
-                        // Array 需要特殊处理
-                        pairs.Add($"{baseKey}{dic.Key}", dic.Value?.ToString() ?? string.Empty);
-                    }
-                    else
-                    {
-                        pairs.Add($"{baseKey}{dic.Key}", dic.Value?.ToString() ?? string.Empty);
-                    }
+                    case JsonValueKind.Object:
+                        var nested = FlattenJson(kv.Value.GetRawText(), $"{key}:");
+                        foreach (var n in nested)
+                            result[n.Key] = n.Value;
+                        break;
+                    default:
+                        result[key] = kv.Value.ToString();
+                        break;
                 }
             }
-            return pairs;
+
+            return result;
         }
     }
 }
