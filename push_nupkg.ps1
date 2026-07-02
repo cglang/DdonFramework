@@ -11,6 +11,7 @@ $projects = (
     "Ddon.Workflow",
     "Ddon.Cache",
     "Ddon.Cache.Redis",
+    "Ddon.Cache.Memory",
     "Ddon.Serial",
     "Ddon.Socket"
 )

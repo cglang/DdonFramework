@@ -19,7 +19,7 @@ namespace Ddon.Schedule
             return Task.Run(() =>
             {
                 ScheduleData.Schedules.Add(id, data);
-                ScheduleData.DelayQueue.Add(id, data.NextSpan);
+                ScheduleData.DelayQueue.Enqueue(id, data.NextSpan);
             });
         }
 

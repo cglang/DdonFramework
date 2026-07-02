@@ -9,4 +9,11 @@
 
   <Import Project="../../common.props" />
 
+  <ItemGroup>
+    <PackageReference Include="Cronos" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <ProjectReference Include="..\Ddon.Common\Ddon.Common.csproj" />
+  </ItemGroup>
+
 </Project>

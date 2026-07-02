@@ -13,7 +13,7 @@
   <Import Project="../../version.props" />
 
 	<ItemGroup>
-	  <PackageReference Include="MediatR" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
 	  <PackageReference Include="System.Threading.Channels" />
 	</ItemGroup>
 </Project>

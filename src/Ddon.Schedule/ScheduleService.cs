@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Schedule;
@@ -11,14 +10,14 @@ namespace Ddon.Schedule;
 /// </summary>
 internal class ScheduleService
 {
-    private readonly IMediator _mediator;
+    private readonly ScheduleInvokeHandler _handler;
     private readonly ILogger<ScheduleService> _logger;
 
     public ScheduleService(
-        IMediator mediator,
+        ScheduleInvokeHandler handler,
         ILogger<ScheduleService> logger)
     {
-        _mediator = mediator;
+        _handler = handler;
         _logger = logger;
     }
 
@@ -26,7 +25,7 @@ internal class ScheduleService
     {
         foreach (var job in ScheduleData.Schedules)
         {
-            ScheduleData.DelayQueue.Add(job.Key, job.Value.NextSpan);
+            ScheduleData.DelayQueue.Enqueue(job.Key, job.Value.NextSpan);
         }
 
         try
@@ -35,9 +34,9 @@ internal class ScheduleService
             {
                 var jobId = await ScheduleData.DelayQueue.TakeAsync(stoppingToken);
 
-                await _mediator.Publish(new ScheduleInvokeEventData(jobId), stoppingToken);
+                await _handler.Handle(new ScheduleInvokeEventData(jobId), stoppingToken);
 
-                ScheduleData.DelayQueue.Add(jobId, ScheduleData.Schedules[jobId].NextSpan);
+                ScheduleData.DelayQueue.Enqueue(jobId, ScheduleData.Schedules[jobId].NextSpan);
             }
         }
         catch (TaskCanceledException)

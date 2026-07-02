@@ -82,6 +82,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Localizer", "src\Ddon.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Cache.Sqlite", "src\Ddon.Cache.Sqlite\Ddon.Cache.Sqlite.csproj", "{C672CEB8-8F42-436F-AB28-7C8279E1616C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.EventBus.Memory", "test\Test.EventBus.Memory\Test.EventBus.Memory.csproj", "{81DF8A07-45DB-1B9E-9BB1-A193903E4873}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -192,6 +194,10 @@ Global
 		{C672CEB8-8F42-436F-AB28-7C8279E1616C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C672CEB8-8F42-436F-AB28-7C8279E1616C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C672CEB8-8F42-436F-AB28-7C8279E1616C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81DF8A07-45DB-1B9E-9BB1-A193903E4873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81DF8A07-45DB-1B9E-9BB1-A193903E4873}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81DF8A07-45DB-1B9E-9BB1-A193903E4873}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81DF8A07-45DB-1B9E-9BB1-A193903E4873}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -224,6 +230,7 @@ Global
 		{11879C0F-85ED-4CA1-B6E0-30F12407CB1F} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 		{C8771FDB-9561-57E1-7F6E-83BCA6F4E253} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{C672CEB8-8F42-436F-AB28-7C8279E1616C} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
+		{81DF8A07-45DB-1B9E-9BB1-A193903E4873} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}

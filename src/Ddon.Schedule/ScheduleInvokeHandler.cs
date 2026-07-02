@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.Core.Scripts;
-using Ddon.Core.Use.Reflection;
-using MediatR;
+using Ddon.Common.Utilities.Reflection;
+using Ddon.Schedule.Scripts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Schedule;
 
-internal class ScheduleInvokeHandler : INotificationHandler<ScheduleInvokeEventData>
+internal class ScheduleInvokeHandler
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly Python _python;
@@ -49,12 +48,12 @@ internal class ScheduleInvokeHandler : INotificationHandler<ScheduleInvokeEventD
 
     private async Task Method(MethodValue value, CancellationToken _)
     {
-        var classType = DdonType.GetTypeByName<ISchedule>(value.ClassName);
+        var classType = TypeExtend.GetTypeByName<ISchedule>(value.ClassName);
         var instance = _serviceProvider.GetRequiredService(classType) ??
             throw new Exception($"从[ServiceProvider]中找不到[{nameof(classType)}]类型的对象");
 
-        var method = DdonType.GetMothodByName(classType, value.MethodName);
-        await DdonInvoke.InvokeAsync(instance, method);
+        var method = TypeExtend.GetMothodByName(classType, value.MethodName);
+        await InvokeExtend.InvokeAsync(instance, method);
     }
 
     private Task Script(ScriptValue value, CancellationToken cancellationToken)
@@ -66,7 +65,7 @@ internal class ScheduleInvokeHandler : INotificationHandler<ScheduleInvokeEventD
     }
 }
 
-internal class ScheduleInvokeEventData : INotification
+internal class ScheduleInvokeEventData
 {
     public ScheduleInvokeEventData(Guid scheduleId)
     {

@@ -1,8 +1,6 @@
-﻿using MediatR;
-
-namespace Ddon.EventBus.Contracts
+﻿namespace Ddon.EventBus.Contracts
 {
-    public interface IEventData : INotification
+    public interface IEventData
     {
     }
 }

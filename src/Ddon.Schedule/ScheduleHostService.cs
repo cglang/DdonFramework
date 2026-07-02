@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.Core.Use.Cronos;
+using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -49,10 +48,6 @@ internal class ScheduleHostService : BackgroundService
                         where attr.Enable
                         let cron = CronExpression.Parse(attr.CronExpression, attr.Format)
                         select new ScheduleInvokeData(cron, TimeZoneInfo.Local, attr.Inclusive, implementType.FullName!, method.Name);
-        foreach (var jobInvokeData in schedules)
-            ScheduleData.Schedules.Add(Guid.NewGuid(), jobInvokeData);
-
-        schedules = ScheduleInvokeData.GetPathSchedule(_options.SchedulePath);
         foreach (var jobInvokeData in schedules)
             ScheduleData.Schedules.Add(Guid.NewGuid(), jobInvokeData);
 

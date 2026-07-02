@@ -1,9 +1,11 @@
-﻿using MediatR;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ddon.EventBus.Contracts
 {
-    public interface IEventHandler<in IEventData> : INotificationHandler<IEventData>
-        where IEventData : INotification
+    public interface IEventHandler<in TEvent>
+        where TEvent : IEventData
     {
+        Task HandleAsync(TEvent eventData, CancellationToken cancellationToken = default);
     }
 }

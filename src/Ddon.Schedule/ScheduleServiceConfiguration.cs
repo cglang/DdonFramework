@@ -1,5 +1,5 @@
 ﻿using System;
-using Ddon.Core.Use.Cronos;
+using Cronos;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Ddon.Schedule;

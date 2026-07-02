@@ -1,0 +1,39 @@
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using Microsoft.Extensions.Options;
+
+namespace Ddon.Schedule.Scripts
+{
+    public class Python
+    {
+        private readonly string PythonPath;
+
+        public Python(IOptions<ScriptsBinPathOptions> options)
+        {
+            PythonPath = options.Value.PythonPath
+                ?? throw new Exception("没有设置python环境信息");
+        }
+
+        public int Run(string script)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                WorkingDirectory = Path.GetDirectoryName(script),
+                FileName = PythonPath,
+                Arguments = script,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var process = Process.Start(startInfo);
+
+            while (process?.HasExited is false)
+            { }
+
+            return process?.ExitCode ?? -1;
+        }
+    }
+}

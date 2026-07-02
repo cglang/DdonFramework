@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ddon.Core.Use.Queue;
+using Ddon.Common.Utilities;
 
 namespace Ddon.Schedule;
 

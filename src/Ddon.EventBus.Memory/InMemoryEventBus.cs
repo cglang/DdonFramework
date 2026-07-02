@@ -1,37 +1,22 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Ddon.EventBus.Abstractions;
-using MediatR;
+using Ddon.Common.EventBus;
+using Ddon.EventBus.Contracts;
 
-namespace Ddon.EventBus
+namespace Ddon.EventBus.Memory
 {
     public class InMemoryEventBus : IEventBus
     {
-        private readonly IMediator _mediator;
+        private readonly GeneralEventBus _eventBus = GeneralEventBus.Default;
 
-        public InMemoryEventBus(IMediator mediator)
+        public Task PublishAsync(IEventData eventData, EventPublishOptions options = default, CancellationToken cancellationToken = default)
         {
-            _mediator = mediator;
+            return _eventBus.PublishAsync((dynamic)eventData);
         }
 
-        public Task PublishAsync(IDistributedEventData eventData, CancellationToken cancellationToken = default)
+        public Task PublishAsync(IDomainEventData eventData, EventPublishOptions options = default, CancellationToken cancellationToken = default)
         {
-            return _mediator.Publish(eventData, cancellationToken);
-        }
-
-        public Task PublishAsync(IEventData eventData, CancellationToken cancellationToken = default)
-        {
-            return _mediator.Publish(eventData, cancellationToken);
-        }
-
-        public Task PublishAsync(IDomainEventData eventData, CancellationToken cancellationToken = default)
-        {
-            return _mediator.Send(eventData, cancellationToken);
-        }
-
-        public Task<TResponse> PublishAsync<TResponse>(IDomainEventData<TResponse> eventData, CancellationToken cancellationToken = default)
-        {
-            return _mediator.Send(eventData, cancellationToken);
+            return _eventBus.PublishAsync((dynamic)eventData);
         }
     }
 }
