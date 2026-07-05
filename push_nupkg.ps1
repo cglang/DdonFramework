@@ -5,15 +5,19 @@ $rootFolder = (Get-Item -Path "./" -Verbose).FullName
 
 # List of projects
 $projects = (
-    "Ddon.Common",
-    "Ddon.DependencyInjection",
-    "Ddon.Pipeline",
-    "Ddon.Workflow",
-    "Ddon.Cache",
-    "Ddon.Cache.Redis",
-    "Ddon.Cache.Memory",
-    "Ddon.Serial",
-    "Ddon.Socket"
+    #"Ddon.Common",
+    #"Ddon.DependencyInjection",
+    #"Ddon.Pipeline",
+    #"Ddon.Workflow",
+    #"Ddon.Cache",
+    #"Ddon.Cache.Redis",
+    #"Ddon.Cache.Memory",
+    #"Ddon.Serial",
+    #"Ddon.Socket",
+    #"Ddon.EventBus",
+    #"Ddon.EventBus.Memory",
+    #"Ddon.VitrinPLC",
+    "Ddon.Hosting"
 )
 
 [xml]$commonPropsXml = Get-Content(Join-Path $rootFolder "version.props")
