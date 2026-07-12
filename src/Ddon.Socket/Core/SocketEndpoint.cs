@@ -51,6 +51,8 @@ namespace Ddon.Socket.Core
 
         public ISocketWorker Worker => _worker;
 
+        public event EventHandler? Disconnected;
+
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             if (IsRunning) return;
@@ -136,6 +138,8 @@ namespace Ddon.Socket.Core
         {
             IsRunning = false;
             _logger?.LogWarning("Socket endpoint '{Name}' disconnected", _name);
+
+            Disconnected?.Invoke(this, EventArgs.Empty);
 
             if (!_isServerEndpoint && _reconnectStrategy != null && !_disposed)
             {

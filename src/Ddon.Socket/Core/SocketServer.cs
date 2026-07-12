@@ -94,11 +94,19 @@ namespace Ddon.Socket.Core
                 var endpoint = builder.Build(tcpClient);
 
                 _manager.AddEndpoint(id, endpoint);
+
+                endpoint.Disconnected += (_, _) =>
+                {
+                    _manager.RemoveEndpoint(id);
+                    endpoint.Dispose();
+                };
+
                 await endpoint.StartAsync(cancellationToken);
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Failed to handle client on server '{Name}'", _name);
+                _manager.RemoveEndpoint(id);
                 tcpClient.Dispose();
             }
         }
