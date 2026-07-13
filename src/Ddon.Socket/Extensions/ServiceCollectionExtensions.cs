@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ddon.Socket.Abstractions;
 using Ddon.Socket.Builder;
 using Ddon.Socket.Core;
@@ -14,9 +15,11 @@ namespace Ddon.Socket.Extensions
             this IServiceCollection services,
             Action<SocketBuilder> configure)
         {
+            services.AddSingleton(configure);
             services.TryAddSingleton<ISocketManager>(sp =>
             {
-                var manager = new SocketManager(sp, configure);
+                var actions = sp.GetServices<Action<SocketBuilder>>();
+                var manager = new SocketManager(sp, actions);
                 return manager;
             });
 
@@ -25,6 +28,12 @@ namespace Ddon.Socket.Extensions
 
         public static IServiceCollection AddSocketHostedService(this IServiceCollection services)
         {
+            services.TryAddSingleton<ISocketManager>(sp =>
+            {
+                var actions = sp.GetServices<Action<SocketBuilder>>();
+                var manager = new SocketManager(sp, actions);
+                return manager;
+            });
             services.AddHostedService<SocketHostedService>();
             return services;
         }

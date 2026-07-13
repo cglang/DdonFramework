@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Socket.Abstractions;
@@ -13,7 +14,7 @@ namespace Ddon.Socket.Core
     {
         private readonly ConcurrentDictionary<string, ISocketEndpoint> _endpoints = new ConcurrentDictionary<string, ISocketEndpoint>();
 
-        private readonly Action<SocketBuilder>? _configureAction;
+        private readonly IEnumerable<Action<SocketBuilder>> _configureActions;
 
         private readonly IServiceProvider? _serviceProvider;
 
@@ -21,17 +22,18 @@ namespace Ddon.Socket.Core
 
         public SocketManager()
         {
+            _configureActions = Enumerable.Empty<Action<SocketBuilder>>();
         }
 
-        public SocketManager(Action<SocketBuilder> configureAction)
+        public SocketManager(IEnumerable<Action<SocketBuilder>> configureActions)
         {
-            _configureAction = configureAction;
+            _configureActions = configureActions;
         }
 
-        public SocketManager(IServiceProvider serviceProvider, Action<SocketBuilder>? configureAction = null)
+        public SocketManager(IServiceProvider serviceProvider, IEnumerable<Action<SocketBuilder>>? configureActions = null)
         {
             _serviceProvider = serviceProvider;
-            _configureAction = configureAction;
+            _configureActions = configureActions ?? Enumerable.Empty<Action<SocketBuilder>>();
         }
 
         public ISocketEndpoint AddEndpoint(string name, Action<SocketEndpointBuilder> configure)
@@ -80,10 +82,10 @@ namespace Ddon.Socket.Core
 
         public async Task StartAllAsync(CancellationToken cancellationToken = default)
         {
-            if (_configureAction != null)
+            var builder = new SocketBuilder(this, _serviceProvider);
+            foreach (var action in _configureActions)
             {
-                var builder = new SocketBuilder(this, _serviceProvider);
-                _configureAction(builder);
+                action(builder);
             }
 
             if (_server != null)
