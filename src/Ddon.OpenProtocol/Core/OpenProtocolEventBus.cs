@@ -8,19 +8,17 @@ using OpenProtocolInterpreter;
 
 namespace Ddon.OpenProtocol.Core
 {
-    public class OpenProtocolEventBus : IAsyncDisposable
+    public sealed class OpenProtocolEventBus : IAsyncDisposable
     {
         private readonly Channel<Mid> _channel =
-            Channel.CreateBounded<Mid>(
-                new BoundedChannelOptions(1024)
-                {
-                    FullMode = BoundedChannelFullMode.DropOldest,
-                    SingleReader = true,
-                    SingleWriter = false,
-                });
+            Channel.CreateBounded<Mid>(new BoundedChannelOptions(1024)
+            {
+                FullMode = BoundedChannelFullMode.DropOldest,
+                SingleReader = true,
+                SingleWriter = false,
+            });
 
-        private readonly ConcurrentDictionary<int, List<Func<Mid, Task>>>
-            _handlers = new();
+        private readonly ConcurrentDictionary<int, List<Func<Mid, Task>>> _handlers = new();
 
         private readonly Task _dispatchTask;
         private readonly CancellationTokenSource _cts = new();
@@ -30,15 +28,13 @@ namespace Ddon.OpenProtocol.Core
             _dispatchTask = Task.Run(DispatchLoop);
         }
 
-        public IDisposable Subscribe<TMid>(Func<TMid, Task> handler)
-            where TMid : Mid
+        public IDisposable Subscribe<TMid>(Func<TMid, Task> handler) where TMid : Mid
         {
             int midNumber = ((TMid)Activator.CreateInstance(typeof(TMid))!).Header.Mid;
             return SubscribeByMid(midNumber, mid => handler((TMid)mid));
         }
 
-        public IDisposable Subscribe<TMid>(Action<TMid> handler)
-            where TMid : Mid
+        public IDisposable Subscribe<TMid>(Action<TMid> handler) where TMid : Mid
             => Subscribe<TMid>(mid =>
             {
                 handler(mid);
@@ -50,7 +46,7 @@ namespace Ddon.OpenProtocol.Core
 
         private IDisposable SubscribeByMid(int midNumber, Func<Mid, Task> handler)
         {
-            var list = _handlers.GetOrAdd(midNumber, _ => []);
+            var list = _handlers.GetOrAdd(midNumber, _ => new List<Func<Mid, Task>>());
 
             lock (list) { list.Add(handler); }
 
@@ -81,19 +77,12 @@ namespace Ddon.OpenProtocol.Core
 
             Func<Mid, Task>[] snapshot;
 
-            lock (list) { snapshot = [.. list]; }
+            lock (list) { snapshot = list.ToArray(); }
 
             foreach (var handler in snapshot)
             {
-                try
-                {
-                    await handler(mid);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine(
-                        $"[EventBus] Handler exception for MID{midNumber:D4}: {ex}");
-                }
+                try { await handler(mid); }
+                catch { }
             }
         }
 

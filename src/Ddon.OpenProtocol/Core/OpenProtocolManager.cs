@@ -28,33 +28,26 @@ namespace Ddon.OpenProtocol.Core
             _loggerFactory = loggerFactory;
         }
 
-        public IOpenProtocolEndpoint AddEndpoint(
-            string name,
-            Action<OpenProtocolEndpointBuilder> configure)
+        public void AddEndpoint(string name, Action<OpenProtocolEndpointBuilder> configure)
         {
             if (_endpoints.ContainsKey(name))
-                throw new InvalidOperationException(
-                    $"Endpoint '{name}' already exists.");
+                throw new InvalidOperationException($"Endpoint '{name}' already exists.");
 
-            var builder = new OpenProtocolEndpointBuilder(
-                name, _socketFactory, _serviceProvider, _loggerFactory);
-
+            var builder = new OpenProtocolEndpointBuilder(name, _socketFactory, _serviceProvider, _loggerFactory);
             configure(builder);
             var endpoint = builder.Build();
-
             _endpoints[name] = endpoint;
-            return endpoint;
+        }
+
+        public void AddEndpoint(string name, IOpenProtocolEndpoint endpoint)
+        {
+            if (!_endpoints.TryAdd(name, endpoint))
+                throw new InvalidOperationException($"Endpoint '{name}' already exists.");
         }
 
         public bool RemoveEndpoint(string name)
         {
-            if (_endpoints.TryRemove(name, out var endpoint))
-            {
-                if (endpoint is IAsyncDisposable d)
-                    _ = d.DisposeAsync();
-                return true;
-            }
-            return false;
+            return _endpoints.TryRemove(name, out _);
         }
 
         public IOpenProtocolEndpoint? GetEndpoint(string name)
@@ -64,7 +57,9 @@ namespace Ddon.OpenProtocol.Core
         }
 
         public IEnumerable<IOpenProtocolEndpoint> GetAllEndpoints()
-            => _endpoints.Values;
+        {
+            return _endpoints.Values;
+        }
 
         public async Task StartAllAsync(CancellationToken cancellationToken = default)
         {

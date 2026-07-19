@@ -8,7 +8,9 @@ namespace Ddon.OpenProtocol.Abstractions
 {
     public interface IOpenProtocolManager
     {
-        IOpenProtocolEndpoint AddEndpoint(string name, Action<OpenProtocolEndpointBuilder> configure);
+        void AddEndpoint(string name, Action<OpenProtocolEndpointBuilder> configure);
+
+        void AddEndpoint(string name, IOpenProtocolEndpoint endpoint);
 
         bool RemoveEndpoint(string name);
 

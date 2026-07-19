@@ -13,6 +13,10 @@
   <Import Project="../../version.props" />
 
   <ItemGroup>
+    <Compile Remove="old\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Ddon.Pipeline\Ddon.Pipeline.csproj" />
     <ProjectReference Include="..\Ddon.Socket\Ddon.Socket.csproj" />
   </ItemGroup>
