@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wv="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.WebView"
+        mc:Ignorable="d"
+        x:Class="Ddon.Desktop.Avalonia.MainWindow"
+        FontFamily="DejaVu Sans"
+        WindowStartupLocation="CenterScreen"
+        Background="White"
+        d:DesignHeight="600" d:DesignWidth="900">
+    <Grid>
+        <Grid x:Name="LoadingPanel" Background="White" ZIndex="1">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock x:Name="LoadingTitleBlock" FontSize="28" Foreground="#409eff"
+                           HorizontalAlignment="Center" Margin="0,0,0,20" />
+                <ProgressBar Width="200" Height="4" IsIndeterminate="True"
+                             Foreground="#409eff" Background="#ecf5ff"
+                             Margin="0,0,0,10" />
+                <TextBlock x:Name="LoadingTextBlock" FontSize="13" Foreground="#909399"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+        <wv:NativeWebView x:Name="WebView" IsVisible="False" ZIndex="0" />
+    </Grid>
+</Window>
