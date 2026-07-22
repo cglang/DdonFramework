@@ -103,6 +103,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ddon_desktop", "ddon_deskto
 		.ai\doc\ddon_desktop\设计方案.md = .ai\doc\ddon_desktop\设计方案.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Desktop.Avalonia", "test\Test.Desktop.Avalonia\Test.Desktop.Avalonia.csproj", "{ABC0C8C8-ADD3-E6C1-E2E0-184FCDC1643B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -241,6 +243,10 @@ Global
 		{D4BEED9F-3EFC-4C34-8BEB-DC7E1D1F7D9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4BEED9F-3EFC-4C34-8BEB-DC7E1D1F7D9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4BEED9F-3EFC-4C34-8BEB-DC7E1D1F7D9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABC0C8C8-ADD3-E6C1-E2E0-184FCDC1643B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABC0C8C8-ADD3-E6C1-E2E0-184FCDC1643B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABC0C8C8-ADD3-E6C1-E2E0-184FCDC1643B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABC0C8C8-ADD3-E6C1-E2E0-184FCDC1643B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -281,6 +287,7 @@ Global
 		{69E642A2-C0CB-4B44-AC04-E72C0839D222} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{D4BEED9F-3EFC-4C34-8BEB-DC7E1D1F7D9D} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{A5F7C75A-4281-4CAE-B221-FE533FD1C535} = {73607AF6-948D-4F77-BFCA-5F009BDED651}
+		{ABC0C8C8-ADD3-E6C1-E2E0-184FCDC1643B} = {FC23654E-61BD-47CA-AC6B-19AD802E1266}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}
