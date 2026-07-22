@@ -1,17 +1,15 @@
+using System.Text;
+using System.Text.Json;
 using Avalonia.Controls;
 using Ddon.Desktop.Bridge;
 using Ddon.Desktop.Protocol;
-using System.Text;
-using System.Text.Json;
+using Ddon.Desktop.Transport;
 
-namespace Ddon.Desktop.Transport;
+namespace Ddon.Desktop.Avalonia.Transport;
 
 public class AvaloniaWebViewTransport : ITransport
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     private readonly Dictionary<string, Delegate> _handlers = new();
     private readonly Dictionary<string, TaskCompletionSource<string>> _pendingRequests = new();
@@ -27,12 +25,7 @@ public class AvaloniaWebViewTransport : ITransport
 
     public async Task<T> InvokeAsync<T>(string method, object? payload = null)
     {
-        var request = new BridgeRequest
-        {
-            Id = Guid.NewGuid().ToString(),
-            Method = method,
-            Payload = payload
-        };
+        var request = new BridgeRequest { Id = Guid.NewGuid().ToString(), Method = method, Payload = payload };
 
         var tcs = new TaskCompletionSource<string>();
         _pendingRequests[request.Id] = tcs;
@@ -93,7 +86,14 @@ public class AvaloniaWebViewTransport : ITransport
     public async Task InjectBridgeAsync()
     {
         var script = GetBridgeJavaScript();
-        await (WebView?.InvokeScript(script) ?? Task.CompletedTask);
+        try
+        {
+            await (WebView?.InvokeScript(script) ?? Task.CompletedTask);
+        }
+        catch (Exception e)
+        {
+            // TODO 记录日志
+        }
     }
 
     public void HandleResponse(string responseJson)
@@ -114,21 +114,11 @@ public class AvaloniaWebViewTransport : ITransport
         try
         {
             var result = await _bridgeDispatcher.DispatchAsync(request.Method, request.Payload);
-            await PostMessage("response", new BridgeResponse
-            {
-                Id = request.Id,
-                Success = true,
-                Data = result
-            });
+            await PostMessage("response", new BridgeResponse { Id = request.Id, Success = true, Data = result });
         }
         catch (Exception ex)
         {
-            await PostMessage("response", new BridgeResponse
-            {
-                Id = request.Id,
-                Success = false,
-                Error = ex.Message
-            });
+            await PostMessage("response", new BridgeResponse { Id = request.Id, Success = false, Error = ex.Message });
         }
     }
 
@@ -157,6 +147,7 @@ public class AvaloniaWebViewTransport : ITransport
         }
         catch
         {
+            // TODO: 添加日志
         }
     }
 
@@ -172,7 +163,8 @@ public class AvaloniaWebViewTransport : ITransport
         return data switch
         {
             JsonElement je => JsonSerializer.Deserialize(je.GetRawText(), targetType, _jsonOptions),
-            not null => JsonSerializer.Deserialize(JsonSerializer.Serialize(data, _jsonOptions), targetType, _jsonOptions),
+            not null => JsonSerializer.Deserialize(JsonSerializer.Serialize(data, _jsonOptions), targetType,
+                _jsonOptions),
             null => null
         };
     }

@@ -2,7 +2,7 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using Ddon.Desktop.Transport;
+using Ddon.Desktop.Avalonia.Transport;
 
 namespace Ddon.Desktop.Avalonia;
 
@@ -41,9 +41,9 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.InvokeAsync(() => LoadingTextBlock.Text = text);
     }
 
-    public Task InitializeWebViewAsync(string url, AvaloniaWebViewTransport _transport)
+    public Task InitializeWebViewAsync(string url, AvaloniaWebViewTransport transport)
     {
-        _transport.WebView = WebView;
+        transport.WebView = WebView;
 
         WebView.EnvironmentRequested += (sender, args) =>
         {
@@ -56,14 +56,14 @@ public partial class MainWindow : Window
         WebView.WebMessageReceived += async (sender, args) =>
         {
             if (args.Body is not null)
-                await _transport.HandleMessage(args.Body);
+                await transport.HandleMessage(args.Body);
         };
 
         WebView.NavigationCompleted += async (sender, args) =>
         {
             await HideLoadingAsync();
             await ShowWebViewAsync();
-            await _transport.InjectBridgeAsync();
+            await transport.InjectBridgeAsync();
         };
 
         WebView.Navigate(new Uri(url));
@@ -74,15 +74,15 @@ public partial class MainWindow : Window
     private async Task HideLoadingAsync()
     {
         const int transitionsMicroseconds = 300;
-        LoadingPanel.Transitions = new Transitions
-        {
+        LoadingPanel.Transitions =
+        [
             new DoubleTransition
             {
                 Property = OpacityProperty,
-                Duration = TimeSpan.FromSeconds((double)transitionsMicroseconds/1000),
+                Duration = TimeSpan.FromSeconds((double)transitionsMicroseconds / 1000),
                 Easing = new CubicEaseOut()
             }
-        };
+        ];
 
         LoadingPanel.Opacity = 0;
 
