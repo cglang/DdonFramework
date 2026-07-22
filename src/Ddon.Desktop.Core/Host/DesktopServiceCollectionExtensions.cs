@@ -1,9 +1,9 @@
-using Ddon.Desktop.Bridge;
-using Ddon.Desktop.Platform;
-using Ddon.Desktop.Transport;
+using Ddon.Desktop.Core.Bridge;
+using Ddon.Desktop.Core.Platform;
+using Ddon.Desktop.Core.Transport;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ddon.Desktop.Hosting;
+namespace Ddon.Desktop.Core.Host;
 
 public static class DesktopServiceCollectionExtensions
 {

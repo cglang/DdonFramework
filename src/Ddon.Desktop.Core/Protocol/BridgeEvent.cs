@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Ddon.Desktop.Protocol;
+namespace Ddon.Desktop.Core.Protocol;
 
 public class BridgeEvent
 {

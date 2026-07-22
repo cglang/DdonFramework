@@ -1,9 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using Avalonia.Controls;
-using Ddon.Desktop.Bridge;
-using Ddon.Desktop.Protocol;
-using Ddon.Desktop.Transport;
+using Ddon.Desktop.Core.Bridge;
+using Ddon.Desktop.Core.Protocol;
+using Ddon.Desktop.Core.Transport;
+using Microsoft.Extensions.Logging;
 
 namespace Ddon.Desktop.Avalonia.Transport;
 
@@ -14,12 +15,14 @@ public class AvaloniaWebViewTransport : ITransport
     private readonly Dictionary<string, Delegate> _handlers = new();
     private readonly Dictionary<string, TaskCompletionSource<string>> _pendingRequests = new();
     private readonly IBridgeDispatcher _bridgeDispatcher;
+    private readonly ILogger<AvaloniaWebViewTransport> _logger;
 
     public NativeWebView? WebView { get; set; }
 
-    public AvaloniaWebViewTransport(IBridgeDispatcher bridgeDispatcher)
+    public AvaloniaWebViewTransport(IBridgeDispatcher bridgeDispatcher, ILogger<AvaloniaWebViewTransport> logger)
     {
-        this._bridgeDispatcher = bridgeDispatcher;
+        _bridgeDispatcher = bridgeDispatcher;
+        _logger = logger;
     }
 
 
@@ -90,13 +93,13 @@ public class AvaloniaWebViewTransport : ITransport
         {
             await (WebView?.InvokeScript(script) ?? Task.CompletedTask);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            // TODO 记录日志
+            _logger.LogError(ex, "WebView 执行脚本错误: {Script}", script);
         }
     }
 
-    public void HandleResponse(string responseJson)
+    private void HandleResponse(string responseJson)
     {
         var response = JsonSerializer.Deserialize<BridgeResponse>(responseJson, _jsonOptions);
         if (response is not null && _pendingRequests.TryGetValue(response.Id, out var tcs))
@@ -145,9 +148,9 @@ public class AvaloniaWebViewTransport : ITransport
         {
             await WebView.InvokeScript($"window.ui.onMessage(atob('{safe}'))");
         }
-        catch
+        catch (Exception ex)
         {
-            // TODO: 添加日志
+            _logger.LogError(ex, "PostMessage 错误{Json}", json);
         }
     }
 

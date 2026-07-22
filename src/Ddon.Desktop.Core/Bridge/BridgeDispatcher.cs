@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
-using Ddon.Desktop.Annotations;
+using Ddon.Desktop.Core.Annotations;
 
-namespace Ddon.Desktop.Bridge;
+namespace Ddon.Desktop.Core.Bridge;
 
 public class BridgeDispatcher : IBridgeDispatcher
 {

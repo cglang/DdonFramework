@@ -1,7 +1,7 @@
 using System.Windows;
-using Ddon.Desktop.Hosting;
-using Ddon.Desktop.Bridge;
-using Ddon.Desktop.Transport;
+using Ddon.Desktop.Core.Bridge;
+using Ddon.Desktop.Core.Host;
+using Ddon.Desktop.Core.Transport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

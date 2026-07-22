@@ -1,8 +1,8 @@
-using Ddon.Desktop.Bridge;
-using Ddon.Desktop.Protocol;
+using Ddon.Desktop.Core.Bridge;
+using Ddon.Desktop.Core.Protocol;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Ddon.Desktop.Hosting;
+namespace Ddon.Desktop.Core.Host;
 
 [ApiController]
 [Route("api/bridge")]

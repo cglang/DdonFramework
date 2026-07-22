@@ -1,5 +1,5 @@
 using System.Windows;
-using Ddon.Desktop.Platform;
+using Ddon.Desktop.Core.Platform;
 
 namespace Ddon.Desktop.Wpf.Platform;
 

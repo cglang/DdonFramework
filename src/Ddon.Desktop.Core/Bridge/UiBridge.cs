@@ -1,7 +1,7 @@
-using Ddon.Desktop.Platform;
-using Ddon.Desktop.Transport;
+using Ddon.Desktop.Core.Platform;
+using Ddon.Desktop.Core.Transport;
 
-namespace Ddon.Desktop.Bridge;
+namespace Ddon.Desktop.Core.Bridge;
 
 public class UiBridge : IUiBridge
 {

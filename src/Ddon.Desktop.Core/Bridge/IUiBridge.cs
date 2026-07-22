@@ -1,4 +1,4 @@
-namespace Ddon.Desktop.Bridge;
+namespace Ddon.Desktop.Core.Bridge;
 
 public interface IUiBridge
 {

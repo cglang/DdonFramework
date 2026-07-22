@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Ddon.Desktop.Avalonia.Transport;
-using Ddon.Desktop.Hosting;
+using Ddon.Desktop.Core.Host;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +11,7 @@ public abstract class DesktopApplication : Application
 {
     private DesktopHost? _desktopHost;
 
-    protected IConfiguration Configuration { get; private set; } = null!;
+    private IConfiguration Configuration { get; set; } = null!;
 
     protected abstract void ConfigureServices(IServiceCollection services, IConfiguration configuration);
 

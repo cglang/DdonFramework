@@ -1,4 +1,4 @@
-namespace Ddon.Desktop.Transport;
+namespace Ddon.Desktop.Core.Transport;
 
 public interface ITransport
 {

@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Ddon.Desktop.Protocol;
+using Ddon.Desktop.Core.Protocol;
 
-namespace Ddon.Desktop.Transport;
+namespace Ddon.Desktop.Core.Transport;
 
 public class BrowserTransport : ITransport
 {

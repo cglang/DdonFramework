@@ -1,4 +1,4 @@
-namespace Ddon.Desktop.Protocol;
+namespace Ddon.Desktop.Core.Protocol;
 
 public class HeartbeatMessage
 {

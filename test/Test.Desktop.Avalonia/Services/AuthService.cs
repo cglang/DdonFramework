@@ -1,5 +1,5 @@
-using Ddon.Desktop.Annotations;
-using Ddon.Desktop.Bridge;
+using Ddon.Desktop.Core.Annotations;
+using Ddon.Desktop.Core.Bridge;
 
 namespace Test.Desktop.Avalonia.Services;
 

@@ -14,8 +14,8 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
 	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\Ddon.Desktop.Hosting\Ddon.Desktop.Hosting.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ddon.Desktop.Core\Ddon.Desktop.Core.csproj"/>
+  </ItemGroup>
 
 </Project>
