@@ -41,7 +41,7 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.InvokeAsync(() => LoadingTextBlock.Text = text);
     }
 
-    public async Task InitializeWebViewAsync(string url, AvaloniaWebViewTransport _transport)
+    public Task InitializeWebViewAsync(string url, AvaloniaWebViewTransport _transport)
     {
         _transport.WebView = WebView;
 
@@ -67,6 +67,8 @@ public partial class MainWindow : Window
         };
 
         WebView.Navigate(new Uri(url));
+
+        return Task.CompletedTask;
     }
 
     private async Task HideLoadingAsync()
@@ -91,9 +93,10 @@ public partial class MainWindow : Window
         LoadingPanel.Opacity = 1;
     }
 
-    private async Task ShowWebViewAsync()
+    private Task ShowWebViewAsync()
     {
         // 显示 WebView
         WebView.IsVisible = true;
+        return Task.CompletedTask;
     }
 }
