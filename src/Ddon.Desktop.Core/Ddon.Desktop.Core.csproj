@@ -6,8 +6,5 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Ddon.Desktop</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Controls.WebView"/>
-  </ItemGroup>
+  
 </Project>

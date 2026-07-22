@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Ddon.Desktop.Bridge;
 using Ddon.Desktop.Hosting;
 using Ddon.Desktop.Transport;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +10,6 @@ namespace Ddon.Desktop.Avalonia;
 public abstract class DesktopApplication : Application
 {
     private DesktopHost? _desktopHost;
-    private MainWindow? _mainWindow;
 
     protected IConfiguration Configuration { get; private set; } = null!;
 
@@ -48,13 +46,15 @@ public abstract class DesktopApplication : Application
         var windowTitle = Configuration.GetValue<string>("Window:Title") ?? "Ddon Desktop";
         var loadingTitle = Configuration.GetValue<string>("Window:LoadingTitle") ?? "Ddon Desktop";
         var loadingText = Configuration.GetValue<string>("Window:LoadingText") ?? "正在启动服务...";
-        
+
         // Normal、Maximized、Minimized、FullScreen
         var windowState = Configuration.GetValue<string>("Window:WindowState") ?? "Maximized";
         var windowWidth = Configuration.GetValue<int>("Window:Width");
         var windowHeight = Configuration.GetValue<int>("Window:Height");
 
-        _mainWindow = new MainWindow();
+        var _mainWindow = new MainWindow();
+
+        // 这里需要启动一个桌面窗口 用来加载WebView
         _mainWindow.ApplyConfig(windowTitle, loadingTitle, loadingText,
             Enum.TryParse<global::Avalonia.Controls.WindowState>(windowState, true, out var ws) ? ws : global::Avalonia.Controls.WindowState.Maximized,
             windowWidth > 0 ? windowWidth : 800,
@@ -62,33 +62,35 @@ public abstract class DesktopApplication : Application
         _mainWindow.SetOnClosing(() => _desktopHost?.StopAsync() ?? Task.CompletedTask);
         _mainWindow.Show();
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-        {
-            lifetime.MainWindow = _mainWindow;
-        }
-
+        // 窗体启动后，启动桌面服务
         _desktopHost = new DesktopHost();
-        await _desktopHost.StartAsync(e.Args ?? [], builder =>
+        var app = await _desktopHost.StartAsync(e.Args ?? [], builder =>
         {
             builder.UseUrls(backendUrls);
             builder.ConfigureServices(services =>
             {
                 services.AddSingleton(Configuration);
                 services.AddDesktop();
+                services.AddSingleton<AvaloniaWebViewTransport>();
                 services.AddDesktopTransport<AvaloniaWebViewTransport>();
                 ConfigureServices(services, Configuration);
             });
-            builder.OnInitialized(async sp =>
+            builder.OnInitialized(async services =>
             {
-                _mainWindow!.SetLoadingText("正在准备浏览器引擎...");
-                _mainWindow!.BridgeDispatcher = sp.GetRequiredService<IBridgeDispatcher>();
-                await _mainWindow.InitializeWebViewAsync(navigateUrl);
+                var _transport = services.GetRequiredService<AvaloniaWebViewTransport>();
+                await _mainWindow.InitializeWebViewAsync(navigateUrl, _transport);
+
+                // 在这里设置一个延时, 这个无关紧要, 如果 WebView 加载慢了就显示这个
+                // WebView 加载快了这个就无效
+                await Task.Delay(500);
+                _mainWindow.SetLoadingText("正在准备浏览器引擎...");
             });
         });
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime2)
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
         {
-            lifetime2.ShutdownRequested += async (s, args) =>
+            lifetime.MainWindow = _mainWindow;
+            lifetime.ShutdownRequested += async (s, args) =>
             {
                 if (_desktopHost is not null)
                     await _desktopHost.StopAsync();

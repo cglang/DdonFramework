@@ -1,17 +1,13 @@
 using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using Ddon.Desktop.Bridge;
 using Ddon.Desktop.Transport;
 
 namespace Ddon.Desktop.Avalonia;
 
 public partial class MainWindow : Window
 {
-    private AvaloniaWebViewTransport? _transport;
-
-    public IBridgeDispatcher? BridgeDispatcher { get; set; }
-
     private Func<Task>? _onClosing;
 
     public MainWindow()
@@ -45,18 +41,9 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.InvokeAsync(() => LoadingTextBlock.Text = text);
     }
 
-    public Task InitializeWebViewAsync(string url)
+    public async Task InitializeWebViewAsync(string url, AvaloniaWebViewTransport _transport)
     {
-        _transport = new AvaloniaWebViewTransport
-        {
-            WebView = WebView,
-            OnInvoke = async (method, payload) =>
-            {
-                if (BridgeDispatcher is not null)
-                    return await BridgeDispatcher.DispatchAsync(method, payload);
-                throw new InvalidOperationException("Dispatcher not configured");
-            }
-        };
+        _transport.WebView = WebView;
 
         WebView.EnvironmentRequested += (sender, args) =>
         {
@@ -68,31 +55,45 @@ public partial class MainWindow : Window
 
         WebView.WebMessageReceived += async (sender, args) =>
         {
-            if (_transport is not null && args.Body is not null)
+            if (args.Body is not null)
                 await _transport.HandleMessage(args.Body);
         };
 
         WebView.NavigationCompleted += async (sender, args) =>
         {
-            WebView.IsVisible = true;
-            LoadingPanel.Transitions = new Transitions
-            {
-                new DoubleTransition
-                {
-                    Property = OpacityProperty,
-                    Duration = TimeSpan.FromMilliseconds(400)
-                }
-            };
-            LoadingPanel.Opacity = 0;
-            await Task.Delay(400);
-            LoadingPanel.IsVisible = false;
-            LoadingPanel.Opacity = 1;
-            LoadingPanel.Transitions = null;
-            if (_transport is not null)
-                await _transport.InjectBridgeAsync();
+            await HideLoadingAsync();
+            await ShowWebViewAsync();
+            await _transport.InjectBridgeAsync();
         };
 
         WebView.Navigate(new Uri(url));
-        return Task.CompletedTask;
+    }
+
+    private async Task HideLoadingAsync()
+    {
+        const int transitionsMicroseconds = 300;
+        LoadingPanel.Transitions = new Transitions
+        {
+            new DoubleTransition
+            {
+                Property = OpacityProperty,
+                Duration = TimeSpan.FromSeconds((double)transitionsMicroseconds/1000),
+                Easing = new CubicEaseOut()
+            }
+        };
+
+        LoadingPanel.Opacity = 0;
+
+        await Task.Delay(transitionsMicroseconds);
+
+        LoadingPanel.IsVisible = false;
+        LoadingPanel.Transitions = null;
+        LoadingPanel.Opacity = 1;
+    }
+
+    private async Task ShowWebViewAsync()
+    {
+        // 显示 WebView
+        WebView.IsVisible = true;
     }
 }

@@ -59,6 +59,16 @@ public class BrowserTransport : ITransport
         return (T)data!;
     }
 
+    public Task InjectBridgeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task HandleMessage(string message)
+    {
+        return Task.CompletedTask;
+    }
+
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true

@@ -9,7 +9,7 @@ public class DesktopHost
 {
     private WebApplication? _app;
 
-    public async Task StartAsync(string[] args, Action<DesktopHostBuilder> configure)
+    public async Task<WebApplication> StartAsync(string[] args, Action<DesktopHostBuilder> configure)
     {
         var builder = new DesktopHostBuilder();
         configure(builder);
@@ -36,12 +36,14 @@ public class DesktopHost
         app.UseCors();
         app.UseFileServer();
         app.MapControllers();
-
+        
         await app.StartAsync();
         _app = app;
 
         foreach (var ia in builder.InitActions)
             await ia(app.Services);
+
+        return app;
     }
 
     public async Task StopAsync()

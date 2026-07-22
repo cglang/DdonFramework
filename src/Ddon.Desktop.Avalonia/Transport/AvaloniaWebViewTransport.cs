@@ -1,7 +1,8 @@
+using Avalonia.Controls;
+using Ddon.Desktop.Bridge;
+using Ddon.Desktop.Protocol;
 using System.Text;
 using System.Text.Json;
-using Avalonia.Controls;
-using Ddon.Desktop.Protocol;
 
 namespace Ddon.Desktop.Transport;
 
@@ -14,9 +15,15 @@ public class AvaloniaWebViewTransport : ITransport
 
     private readonly Dictionary<string, Delegate> _handlers = new();
     private readonly Dictionary<string, TaskCompletionSource<string>> _pendingRequests = new();
+    private readonly IBridgeDispatcher _bridgeDispatcher;
 
     public NativeWebView? WebView { get; set; }
-    public Func<string, object?, Task<object?>>? OnInvoke { get; set; }
+
+    public AvaloniaWebViewTransport(IBridgeDispatcher bridgeDispatcher)
+    {
+        this._bridgeDispatcher = bridgeDispatcher;
+    }
+
 
     public async Task<T> InvokeAsync<T>(string method, object? payload = null)
     {
@@ -62,13 +69,15 @@ public class AvaloniaWebViewTransport : ITransport
         var root = doc.RootElement;
         var type = root.GetProperty("type").GetString();
 
+        Console.WriteLine(message);
+
         switch (type)
         {
             case "response":
                 HandleResponse(root.GetProperty("data").GetRawText());
                 break;
 
-            case "invoke" when OnInvoke is not null:
+            case "invoke":
                 await HandleIncomingInvoke(root.GetProperty("data"));
                 break;
 
@@ -104,7 +113,7 @@ public class AvaloniaWebViewTransport : ITransport
 
         try
         {
-            var result = await OnInvoke!(request.Method, request.Payload);
+            var result = await _bridgeDispatcher.DispatchAsync(request.Method, request.Payload);
             await PostMessage("response", new BridgeResponse
             {
                 Id = request.Id,
@@ -142,7 +151,13 @@ public class AvaloniaWebViewTransport : ITransport
 
         var json = JsonSerializer.Serialize(new { type, data }, _jsonOptions);
         var safe = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
-        await WebView.InvokeScript($"window.__bridgeReceive(atob('{safe}'))");
+        try
+        {
+            await WebView.InvokeScript($"window.ui.onMessage(atob('{safe}'))");
+        }
+        catch
+        {
+        }
     }
 
     private static T DeserializeData<T>(object? data)
@@ -164,41 +179,6 @@ public class AvaloniaWebViewTransport : ITransport
 
     private static string GetBridgeJavaScript()
     {
-        return """
-(function() {
-  window.__bridgeCallbacks = {};
-
-  window.__bridgeReceive = function(data) {
-    try {
-      var msg = typeof data === 'string' ? JSON.parse(data) : data;
-      if (msg.type === 'response') {
-        var resolve = window.__bridgeCallbacks[msg.data.id];
-        if (resolve) {
-          resolve(msg.data);
-          delete window.__bridgeCallbacks[msg.data.id];
-        }
-      } else if (msg.type === 'event') {
-        console.log('[bridge] event:', msg.data.name);
-      }
-    } catch(e) {
-      console.error('[bridge] receive error:', e);
-    }
-  };
-
-  window.invokeCSharpAction = function(body) {
-    try {
-      var msg = JSON.parse(body);
-      if (msg.type === 'invoke') {
-        window.__bridgeCallbacks[msg.data.id] = function(response) {
-          invokeCSharpAction(JSON.stringify({ type: 'response', data: response }));
-        };
-      }
-    } catch(e) {}
-  };
-
-  invokeCSharpAction(JSON.stringify({ type: 'bridgeReady', data: {} }));
-  console.log('[bridge] injected');
-})();
-""";
+        return "(function() { injectBridge() })()";
     }
 }

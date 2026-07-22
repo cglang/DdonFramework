@@ -144,6 +144,11 @@ public class WebViewTransport : ITransport
         };
     }
 
+    public Task InjectBridgeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true

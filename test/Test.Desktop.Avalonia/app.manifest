@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="Ddon.Desktop.Sample.Avalonia"/>
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
+      <supportedOS Id="{4f476546-937c-4b69-9a9c-d8740c6b3f8b}" />
+      <supportedOS Id="{1e2ac1b5-4f63-4b6b-9e4c-6d1b9f1c8f8d}" />
+    </application>
+  </compatibility>
+</assembly>
