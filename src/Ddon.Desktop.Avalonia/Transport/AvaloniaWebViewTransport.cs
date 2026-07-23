@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using Avalonia.Controls;
 using Ddon.Desktop.Core.Bridge;
@@ -10,7 +10,7 @@ namespace Ddon.Desktop.Avalonia.Transport;
 
 public class AvaloniaWebViewTransport : ITransport
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     private readonly Dictionary<string, Delegate> _handlers = new();
     private readonly Dictionary<string, TaskCompletionSource<string>> _pendingRequests = new();

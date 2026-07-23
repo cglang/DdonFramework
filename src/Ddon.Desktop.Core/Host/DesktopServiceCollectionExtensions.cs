@@ -18,7 +18,8 @@ public static class DesktopServiceCollectionExtensions
     public static IServiceCollection AddDesktopTransport<T>(this IServiceCollection services)
         where T : class, ITransport
     {
-        services.AddSingleton<ITransport, T>();
+        services.AddSingleton<T>();
+        services.AddSingleton<ITransport>(sp => sp.GetRequiredService<T>());
         return services;
     }
 

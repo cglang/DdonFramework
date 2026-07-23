@@ -72,8 +72,7 @@ public abstract class DesktopApplication : Application
             builder.ConfigureServices(services =>
             {
                 services.AddSingleton(Configuration);
-                services.AddDesktop();
-                services.AddSingleton<AvaloniaWebViewTransport>();
+                services.AddDesktop();                
                 services.AddDesktopTransport<AvaloniaWebViewTransport>();
                 ConfigureServices(services, Configuration);
             });
