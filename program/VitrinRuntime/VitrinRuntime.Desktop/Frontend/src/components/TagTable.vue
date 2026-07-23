@@ -23,6 +23,16 @@ const editForm = reactive({
 const editingValue = ref<{ [key: string]: unknown }>({})
 const writingTags = ref<Set<string>>(new Set())
 
+// 编辑点位状态
+const editDialogVisible = ref(false)
+const editingTagId = ref('')
+const editFormState = reactive({
+  tagName: '',
+  address: '',
+  dataType: 'Int32',
+  stringLength: 0,
+})
+
 // 定时刷新 loading 状态（用于刷新按钮）
 const refreshing = ref(false)
 
@@ -99,6 +109,31 @@ async function handleRemoveTag(tagId: string, tagName: string) {
     emit('refresh')
   } catch (e: any) {
     if (e !== 'cancel') ElMessage.error('移除失败: ' + (e.message || e))
+  }
+}
+
+async function handleEditTag(tag: TagInfo) {
+  editingTagId.value = tag.id
+  editFormState.tagName = tag.name
+  editFormState.address = tag.address
+  editFormState.dataType = tag.dataType
+  editFormState.stringLength = 0
+  editDialogVisible.value = true
+}
+
+async function handleSaveEdit() {
+  if (!editFormState.tagName || !editFormState.address) {
+    ElMessage.warning('请填写点位名称和地址')
+    return
+  }
+  try {
+    await plcData.updateTag(editingTagId.value, editFormState.tagName, editFormState.address, editFormState.dataType, editFormState.stringLength)
+    ElMessage.success('点位更新成功')
+    editDialogVisible.value = false
+    await loadTags()
+    emit('refresh')
+  } catch (e: any) {
+    ElMessage.error('更新点位失败: ' + (e.message || e))
   }
 }
 
@@ -207,7 +242,7 @@ defineExpose({ refresh: loadTags })
           />
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="160" fixed="right">
+      <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }: { row: TagInfo }">
           <el-button
             type="primary"
@@ -215,6 +250,7 @@ defineExpose({ refresh: loadTags })
             :loading="writingTags.has(row.id)"
             @click="handleWriteTag(row)"
           >写入</el-button>
+          <el-button size="small" @click="handleEditTag(row)">编辑</el-button>
           <el-button type="danger" size="small" @click="handleRemoveTag(row.id, row.name)">移除</el-button>
         </template>
       </el-table-column>
@@ -249,6 +285,36 @@ defineExpose({ refresh: loadTags })
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleAddTag">确定添加</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑点位对话框 -->
+    <el-dialog v-model="editDialogVisible" title="编辑点位" width="450px">
+      <el-form :model="editFormState" label-width="100px">
+        <el-form-item label="名称" required>
+          <el-input v-model="editFormState.tagName" placeholder="如: Temperature" />
+        </el-form-item>
+        <el-form-item label="地址" required>
+          <el-input v-model="editFormState.address" placeholder="如: DB1.DBD0" />
+          <el-text type="info" size="small" style="margin-top: 4px; display: block">西门子格式: DB1.DBD0 / DB1.DBX10.5 / DB1.DBW4</el-text>
+        </el-form-item>
+        <el-form-item label="数据类型">
+          <el-select v-model="editFormState.dataType" style="width: 100%">
+            <el-option
+              v-for="opt in dataTypeOptions"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="editFormState.dataType === 'String'" label="字符串长度">
+          <el-input-number v-model="editFormState.stringLength" :min="1" :max="1024" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveEdit">保存修改</el-button>
       </template>
     </el-dialog>
   </div>

@@ -148,6 +148,15 @@ public sealed class PlcManagerService
                 var tags = _store.GetAllTagsForPlc(req.Name);
                 foreach (var tag in tags)
                     host.MapTag(tag.Name, tag.Address, tag.DataType, tag.StringLength);
+
+                // 预注册各 DB 块的镜像区域（使用自定义大小，替代默认的 4096）
+                var groups = _store.GetGroupsByPlc(req.Name);
+                foreach (var group in groups)
+                {
+                    var regionKey = $"DB{group.DbNumber}";
+                    var area = $"DB{group.DbNumber}";
+                    host.MapRegion(regionKey, area, 0, group.DbSize);
+                }
             });
 
             _store.UpdatePlcConnection(req.Name, true);

@@ -65,6 +65,7 @@ export interface CreateGroupResult {
   id: string
   name: string
   dbNumber: number
+  dbSize: number
 }
 
 // ── PlcManager API ─────────────────────────────
@@ -94,8 +95,8 @@ export const plcData = {
   listDbGroups: (plcName: string) =>
     invoke<DbGroupInfo[]>('PlcData.ListDbGroups', { plcName }),
 
-  createDbGroup: (plcName: string, groupName: string, dbNumber: number) =>
-    invoke<CreateGroupResult>('PlcData.CreateDbGroup', { plcName, groupName, dbNumber }),
+  createDbGroup: (plcName: string, groupName: string, dbNumber: number, dbSize = 4096) =>
+    invoke<CreateGroupResult>('PlcData.CreateDbGroup', { plcName, groupName, dbNumber, dbSize }),
 
   deleteDbGroup: (groupId: string) =>
     invoke<boolean>('PlcData.DeleteDbGroup', { groupId }),
@@ -111,6 +112,9 @@ export const plcData = {
 
   removeTag: (tagId: string) =>
     invoke<boolean>('PlcData.RemoveTag', { tagId }),
+
+  updateTag: (tagId: string, tagName: string, address: string, dataType: string, stringLength = 0) =>
+    invoke<AddTagResult>('PlcData.UpdateTag', { tagId, tagName, address, dataType, stringLength }),
 
   readTag: (tagId: string) =>
     invoke<unknown>('PlcData.ReadTag', { tagId }),

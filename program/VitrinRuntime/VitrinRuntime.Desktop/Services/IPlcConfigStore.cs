@@ -39,4 +39,6 @@ public interface IPlcConfigStore
     void AddTag(TagConfig tag);
 
     TagConfig? RemoveTag(string tagId);
+
+    void UpdateTag(TagConfig tag);
 }

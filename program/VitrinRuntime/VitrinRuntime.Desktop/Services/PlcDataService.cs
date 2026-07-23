@@ -44,10 +44,11 @@ public sealed class PlcDataService
         {
             PlcName = req.PlcName,
             Name = req.GroupName,
-            DbNumber = req.DbNumber
+            DbNumber = req.DbNumber,
+            DbSize = req.DbSize
         };
         _store.AddGroup(group);
-        return new { id = group.Id, name = group.Name, dbNumber = group.DbNumber };
+        return new { id = group.Id, name = group.Name, dbNumber = group.DbNumber, dbSize = group.DbSize };
     }
 
     [BridgeMethod(Name = "DeleteDbGroup")]
@@ -151,6 +152,57 @@ public sealed class PlcDataService
 
         _store.RemoveTag(req.TagId);
         return true;
+    }
+
+    [BridgeMethod(Name = "UpdateTag")]
+    public async Task<object> UpdateTag(UpdateTagRequest req)
+    {
+        var oldTag = _store.GetTag(req.TagId)
+            ?? throw new KeyNotFoundException($"点位 '{req.TagId}' 未找到。");
+
+        if (!Enum.TryParse<PlcDataType>(req.DataType, true, out var plcType))
+            throw new ArgumentException($"不支持的数据类型: {req.DataType}");
+
+        // 更新存储
+        var updatedTag = new TagConfig
+        {
+            Id = oldTag.Id,
+            GroupId = oldTag.GroupId,
+            Name = req.TagName,
+            Address = req.Address,
+            DataType = plcType,
+            StringLength = req.StringLength,
+            CreatedAt = oldTag.CreatedAt
+        };
+        _store.UpdateTag(updatedTag);
+
+        // 同步更新 PLC 会话中的点位定义
+        var group = _store.GetGroup(oldTag.GroupId);
+        if (group is not null)
+        {
+            try
+            {
+                var session = _hub.For(group.PlcName);
+                // 如果名称变了，需要移除旧标签再添加新标签
+                if (!string.Equals(oldTag.Name, req.TagName, StringComparison.Ordinal))
+                {
+                    session.RemoveTag(oldTag.Name);
+                }
+                session.AddTag(new TagDefinition(req.TagName, req.Address, plcType, req.StringLength));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "点位 '{TagName}' 已更新但未能同步到 PLC 会话。", req.TagName);
+            }
+        }
+
+        return new
+        {
+            id = updatedTag.Id,
+            name = updatedTag.Name,
+            address = updatedTag.Address,
+            dataType = updatedTag.DataType.ToString()
+        };
     }
 
     [BridgeMethod(Name = "ReadTag")]

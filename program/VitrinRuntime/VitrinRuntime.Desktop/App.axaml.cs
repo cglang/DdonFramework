@@ -21,6 +21,6 @@ public partial class App : DesktopApplication
         services.AddSingleton<PlcDataService>();
 
         // 注册后台事件推送（WebView 模式下前端可通过事件自动刷新点位数据）
-        services.AddHostedService<TagEventPublisherService>();
+        services.AddHostedService<TagChangeMonitorService>();
     }
 }

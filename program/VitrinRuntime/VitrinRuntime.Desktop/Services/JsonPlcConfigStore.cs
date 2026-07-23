@@ -262,6 +262,17 @@ public sealed class JsonPlcConfigStore : IPlcConfigStore
         SaveToFile();
         return removed;
     }
+
+    public void UpdateTag(TagConfig tag)
+    {
+        lock (_lock)
+        {
+            var idx = _tags.FindIndex(t => t.Id == tag.Id);
+            if (idx >= 0)
+                _tags[idx] = tag;
+        }
+        SaveToFile();
+    }
 }
 
 /// <summary>JSON 序列化用的数据容器</summary>

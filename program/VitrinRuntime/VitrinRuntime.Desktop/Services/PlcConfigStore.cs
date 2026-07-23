@@ -97,4 +97,9 @@ public sealed class MemoryPlcConfigStore : IPlcConfigStore
         _tags.TryRemove(tagId, out var t);
         return t;
     }
+
+    public void UpdateTag(TagConfig tag)
+    {
+        _tags[tag.Id] = tag;
+    }
 }

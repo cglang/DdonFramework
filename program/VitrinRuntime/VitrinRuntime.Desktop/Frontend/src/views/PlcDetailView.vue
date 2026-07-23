@@ -23,6 +23,7 @@ const renameTargetName = ref('')
 const groupForm = reactive({
   groupName: '',
   dbNumber: 1,
+  dbSize: 4096,
 })
 
 const tagTableRef = ref<InstanceType<typeof TagTable> | null>(null)
@@ -69,10 +70,10 @@ async function handleCreateGroup() {
     return
   }
   try {
-    await plcData.createDbGroup(plcName, groupForm.groupName, groupForm.dbNumber)
+    await plcData.createDbGroup(plcName, groupForm.groupName, groupForm.dbNumber, groupForm.dbSize)
     ElMessage.success('分组创建成功')
     groupDialogVisible.value = false
-    Object.assign(groupForm, { groupName: '', dbNumber: 1 })
+    Object.assign(groupForm, { groupName: '', dbNumber: 1, dbSize: 4096 })
     activeGroup.value = ''
     await loadGroups()
   } catch (e: any) {
@@ -235,6 +236,10 @@ onMounted(() => {
         <el-form-item label="DB 块号" required>
           <el-input-number v-model="groupForm.dbNumber" :min="1" :max="65535" style="width: 100%" />
           <el-text type="info" size="small" style="margin-top: 4px; display: block">西门子 DB 数据块编号</el-text>
+        </el-form-item>
+        <el-form-item label="DB 大小">
+          <el-input-number v-model="groupForm.dbSize" :min="256" :max="65536" :step="256" style="width: 100%" />
+          <el-text type="info" size="small" style="margin-top: 4px; display: block">该 DB 块的字节数，默认 4096（4KB）</el-text>
         </el-form-item>
       </el-form>
       <template #footer>
