@@ -25,6 +25,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\src\Ddon.Desktop.Avalonia\Ddon.Desktop.Avalonia.csproj" />
 		<ProjectReference Include="..\..\..\src\Ddon.VitrinPLC\Ddon.VitrinPLC.csproj" />
+		<ProjectReference Include="..\..\..\src\Ddon.EventBus\Ddon.EventBus.csproj" />
+		<ProjectReference Include="..\..\..\src\Ddon.EventBus.Memory\Ddon.EventBus.Memory.csproj" />
 	</ItemGroup>
 
 	<Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('frontend\node_modules')">

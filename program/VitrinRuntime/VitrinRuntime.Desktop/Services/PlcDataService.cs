@@ -11,12 +11,14 @@ public sealed class PlcDataService
 {
     private readonly IPlcHub _hub;
     private readonly IPlcConfigStore _store;
+    private readonly TagSubscriptionManager _subscriptionManager;
     private readonly ILogger<PlcDataService> _logger;
 
-    public PlcDataService(IPlcHub hub, IPlcConfigStore store, ILogger<PlcDataService> logger)
+    public PlcDataService(IPlcHub hub, IPlcConfigStore store, TagSubscriptionManager subscriptionManager, ILogger<PlcDataService> logger)
     {
         _hub = hub;
         _store = store;
+        _subscriptionManager = subscriptionManager;
         _logger = logger;
     }
 
@@ -118,6 +120,7 @@ public sealed class PlcDataService
         {
             var session = _hub.For(group.PlcName);
             session.AddTag(new TagDefinition(tag.Name, tag.Address, tag.DataType, tag.StringLength));
+            _subscriptionManager.SubscribeTag(group.PlcName, tag.Name, tag.Address, plcType.ToString());
         }
         catch (Exception ex)
         {
@@ -145,6 +148,7 @@ public sealed class PlcDataService
             try
             {
                 var session = _hub.For(group.PlcName);
+                _subscriptionManager.UnsubscribeTag(group.PlcName, tag.Name);
                 session.RemoveTag(tag.Name);
             }
             catch { }
@@ -183,12 +187,19 @@ public sealed class PlcDataService
             try
             {
                 var session = _hub.For(group.PlcName);
+
+                // 取消旧订阅
+                _subscriptionManager.UnsubscribeTag(group.PlcName, oldTag.Name);
+
                 // 如果名称变了，需要移除旧标签再添加新标签
                 if (!string.Equals(oldTag.Name, req.TagName, StringComparison.Ordinal))
                 {
                     session.RemoveTag(oldTag.Name);
                 }
                 session.AddTag(new TagDefinition(req.TagName, req.Address, plcType, req.StringLength));
+
+                // 建立新订阅
+                _subscriptionManager.SubscribeTag(group.PlcName, req.TagName, req.Address, plcType.ToString());
             }
             catch (Exception ex)
             {

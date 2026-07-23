@@ -13,17 +13,20 @@ public sealed class PlcManagerService
 {
     private readonly IPlcHub _hub;
     private readonly IPlcConfigStore _store;
+    private readonly TagSubscriptionManager _subscriptionManager;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<PlcManagerService> _logger;
 
     public PlcManagerService(
         IPlcHub hub,
         IPlcConfigStore store,
+        TagSubscriptionManager subscriptionManager,
         IServiceProvider serviceProvider,
         ILogger<PlcManagerService> logger)
     {
         _hub = hub;
         _store = store;
+        _subscriptionManager = subscriptionManager;
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
@@ -159,6 +162,9 @@ public sealed class PlcManagerService
                 }
             });
 
+            // 为所有已注册点位建立变化订阅
+            _subscriptionManager.SubscribeAllTags(req.Name);
+
             _store.UpdatePlcConnection(req.Name, true);
             _logger.LogInformation("PLC '{Name}' 已连接。", req.Name);
         }
@@ -173,6 +179,9 @@ public sealed class PlcManagerService
     [BridgeMethod(Name = "DisconnectPlc")]
     public async Task DisconnectPlc(PlcNameRequest req)
     {
+        // 先取消所有点位订阅
+        _subscriptionManager.UnsubscribePlc(req.Name);
+
         try
         {
             await _hub.RemovePlcAsync(req.Name);

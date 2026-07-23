@@ -1,7 +1,10 @@
 <Solution>
   <Folder Name="/framework/">
+    <Project Path="../../src/Ddon.Common/Ddon.Common.csproj" />
     <Project Path="../../src/Ddon.Desktop.Avalonia/Ddon.Desktop.Avalonia.csproj" />
     <Project Path="../../src/Ddon.Desktop.Core/Ddon.Desktop.Core.csproj" />
+    <Project Path="../../src/Ddon.EventBus.Memory/Ddon.EventBus.Memory.csproj" />
+    <Project Path="../../src/Ddon.EventBus/Ddon.EventBus.csproj" />
     <Project Path="../../src/Ddon.VitrinPLC/Ddon.VitrinPLC.csproj" />
   </Folder>
   <Folder Name="/src/">

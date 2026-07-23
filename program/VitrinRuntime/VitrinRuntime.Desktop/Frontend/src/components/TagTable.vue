@@ -23,6 +23,15 @@ const editForm = reactive({
 const editingValue = ref<{ [key: string]: unknown }>({})
 const writingTags = ref<Set<string>>(new Set())
 
+// WebView 模式下接收的点位变化事件数据类型
+interface TagValueChangedData {
+  tagName: string
+  address: string
+  dataType: string
+  oldValue: unknown
+  newValue: unknown
+}
+
 // 编辑点位状态
 const editDialogVisible = ref(false)
 const editingTagId = ref('')
@@ -165,16 +174,23 @@ watch(() => props.groupId, () => {
 }, { immediate: true })
 
 onMounted(() => {
-  // WebView 模式下订阅后端事件自动刷新
+  // WebView 模式下订阅后端点位变化事件，精确更新对应点位值
   if (window.ui && typeof window.ui.on === 'function') {
-    window.ui.on('TagValuesUpdated', loadTags)
+    window.ui.on<TagValueChangedData>('TagValueChanged', (data) => {
+      // 使用 for 循环避免 WebView 下 Array.find 兼容性问题
+      for (let i = 0; i < tags.value.length; i++) {
+        if (tags.value[i].name === data.tagName) {
+          tags.value[i].value = data.newValue
+          break
+        }
+      }
+    })
   }
 })
 
 onUnmounted(() => {
-  // 取消事件订阅
   if (window.ui && typeof window.ui.off === 'function') {
-    window.ui.off('TagValuesUpdated')
+    window.ui.off('TagValueChanged')
   }
 })
 
