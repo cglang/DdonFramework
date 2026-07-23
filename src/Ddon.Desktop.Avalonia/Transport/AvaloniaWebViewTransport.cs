@@ -65,7 +65,7 @@ public class AvaloniaWebViewTransport : ITransport
         var root = doc.RootElement;
         var type = root.GetProperty("type").GetString();
 
-        Console.WriteLine(message);
+        _logger.LogDebug("收到来自WebView的消息: {Message}", message);
 
         switch (type)
         {

@@ -2,6 +2,8 @@ using Ddon.Desktop.Avalonia;
 using Ddon.VitrinPLC;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using VitrinRuntime.Services;
 
 namespace VitrinRuntime;
@@ -10,6 +12,12 @@ public partial class App : DesktopApplication
 {
     protected override void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
+        // 配置 Serilog 日志
+        services.AddLogging(builder =>
+        {
+            builder.ClearProviders();
+            builder.AddSerilog(dispose: true);
+        });
         // 注册 PLC 统一内存镜像框架（初始无预配置PLC，后续通过 Bridge 动态添加）
         services.AddVitrinPlc(builder => { });
 

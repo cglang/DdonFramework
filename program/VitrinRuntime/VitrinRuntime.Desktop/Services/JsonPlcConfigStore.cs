@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace VitrinRuntime.Services;
@@ -61,7 +62,11 @@ public sealed class JsonPlcConfigStore : IPlcConfigStore
                 };
             }
 
-            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
             File.WriteAllText(_filePath, json);
         }
         catch (Exception ex)

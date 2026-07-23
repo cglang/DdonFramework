@@ -16,8 +16,15 @@
 
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\src\Ddon.Desktop.Avalonia\Ddon.Desktop.Avalonia.csproj" />
-	  <ProjectReference Include="..\..\..\src\Ddon.VitrinPLC\Ddon.VitrinPLC.csproj" />
+		<PackageReference Include="Serilog.Extensions.Logging" />
+		<PackageReference Include="Serilog.Sinks.Console" />
+		<PackageReference Include="Serilog.Sinks.File" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\Ddon.Desktop.Avalonia\Ddon.Desktop.Avalonia.csproj" />
+		<ProjectReference Include="..\..\..\src\Ddon.VitrinPLC\Ddon.VitrinPLC.csproj" />
 	</ItemGroup>
 
 	<Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('frontend\node_modules')">
