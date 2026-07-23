@@ -55,16 +55,18 @@ jobs:
 
             PROJECT_FILE="src/$project/$project.csproj"
 
-            if [ ! -f "$PROJECT_FILE" ]; then
-              echo "Project not found: $PROJECT_FILE"
-              exit 1
-            fi
+            echo "Building $project"
+
+            dotnet build "$PROJECT_FILE" \
+              -c Release \
+              --no-logo \
+              -p:ContinuousIntegrationBuild=true
 
             echo "Packing $project"
 
             dotnet pack "$PROJECT_FILE" \
               -c Release \
-              -p:ContinuousIntegrationBuild=true \
+              --no-build \
               --no-logo \
               -o artifacts
 
