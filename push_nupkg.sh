@@ -3,57 +3,31 @@
 set -e
 
 apikey="${nupkg_api_key}"
-
-# Paths
 rootFolder="$(pwd)"
 
-# List of projects
-projects=(
-    "Ddon.Common"
-    "Ddon.DependencyInjection"
-    "Ddon.Pipeline"
-    "Ddon.Workflow"
-    "Ddon.Cache"
-    "Ddon.Cache.Redis"
-    "Ddon.Cache.Memory"
-    "Ddon.Serial"
-    "Ddon.Socket"
-    "Ddon.EventBus"
-    "Ddon.EventBus.Memory"
-    "Ddon.VitrinPLC"
-    "Ddon.Hosting"
-    "Ddon.Desktop.Core"
-    "Ddon.Desktop.Avalonia"
-)
+mkdir -p artifacts
 
-# Read version from version.props
-version=$(grep -oP '(?<=<Version>).*?(?=</Version>)' "$rootFolder/version.props")
+while read -r project
+do
+    [ -z "$project" ] && continue
 
-if [ -z "$version" ]; then
-    echo "version.props 文件中找不到版本：Version"
-    exit 1
-fi
-
-for project in "${projects[@]}"; do
-
-    releasePath="$rootFolder/src/$project/bin/Release"
     projectFile="$rootFolder/src/$project/$project.csproj"
 
-    echo "构建 $project..."
+    echo "Packing $project..."
 
-    dotnet build "$projectFile" -c Release
+    dotnet pack "$projectFile" \
+        -c Release \
+        --no-restore \
+        -o "$rootFolder/artifacts"
 
-    package="$releasePath/$project.$version.nupkg"
+done < publish-projects.txt
 
-    if [ -f "$package" ]; then
-         echo "上传 $package 中..."
+for package in "$rootFolder"/artifacts/*.nupkg
+do
+    echo "Publishing $(basename "$package")"
 
-         dotnet nuget push "$package" \
-             --api-key "$apikey" \
-             --source "https://api.nuget.org/v3/index.json" \
-             --skip-duplicate
-    else
-        echo "警告: 找不到: $package"
-    fi
-
+    dotnet nuget push "$package" \
+        --api-key "$apikey" \
+        --source https://api.nuget.org/v3/index.json \
+        --skip-duplicate
 done
