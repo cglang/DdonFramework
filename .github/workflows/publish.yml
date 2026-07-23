@@ -3,7 +3,7 @@ name: Publish NuGet
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: read
@@ -16,16 +16,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Verify tag matches version.props
+      - name: Verify version
         shell: bash
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
@@ -34,14 +33,58 @@ jobs:
           echo "Tag Version : $TAG_VERSION"
           echo "File Version: $FILE_VERSION"
 
-          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
-            echo "❌ Tag 与 version.props 不一致"
+          if [ -z "$FILE_VERSION" ]; then
+            echo "Cannot read version.props"
             exit 1
           fi
 
-      - name: Publish NuGet Packages
-        env:
-          nupkg_api_key: ${{ secrets.NUGET_API_KEY }}
+          if [ "$TAG_VERSION" != "$FILE_VERSION" ]; then
+            echo "Tag version does not match version.props"
+            exit 1
+          fi
+
+      - name: Pack NuGet Packages
+        shell: bash
         run: |
-          chmod +x scripts/publish.sh
-          ./scripts/publish.sh
+          mkdir -p artifacts
+
+          while read -r project
+          do
+            [[ -z "$project" ]] && continue
+            [[ "$project" =~ ^# ]] && continue
+
+            PROJECT_FILE="src/$project/$project.csproj"
+
+            if [ ! -f "$PROJECT_FILE" ]; then
+              echo "Project not found: $PROJECT_FILE"
+              exit 1
+            fi
+
+            echo "Packing $project"
+
+            dotnet pack "$PROJECT_FILE" \
+              -c Release \
+              -p:ContinuousIntegrationBuild=true \
+              --no-logo \
+              -o artifacts
+
+          done < publish-projects.txt
+
+      - name: Publish NuGet
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          shopt -s nullglob
+
+          for package in artifacts/*.nupkg
+          do
+            [[ "$package" == *.snupkg ]] && continue
+
+            echo "Publishing $(basename "$package")"
+
+            dotnet nuget push "$package" \
+              --api-key "$NUGET_API_KEY" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
