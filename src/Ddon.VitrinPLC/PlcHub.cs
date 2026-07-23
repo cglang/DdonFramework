@@ -1,47 +1,82 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.VitrinPLC.Abstractions;
-using Ddon.VitrinPLC.SyncEngine;
 
 namespace Ddon.VitrinPLC
 {
-    /// <summary>
-    /// <see cref="IPlcHub"/> 实现。持有所有 PLC 的 PlcSession 与 SyncEngine，
-    /// 生命周期由 <see cref="VitrinPlcHostedService"/> 管理。
-    /// </summary>
     public sealed class PlcHub : IPlcHub
     {
-        private readonly IReadOnlyDictionary<string, IPlcSession> _services;
-        private readonly IReadOnlyList<PlcSyncEngine> _engines;
+        private readonly ConcurrentDictionary<string, IPlcSession> _sessions = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, IPlcSyncEngine> _engines = new(StringComparer.OrdinalIgnoreCase);
+        private readonly IServiceProvider _serviceProvider;
 
-        internal PlcHub(Dictionary<string, IPlcSession> services, List<PlcSyncEngine> engines)
+        internal PlcHub(
+            Dictionary<string, IPlcSession> sessions,
+            Dictionary<string, IPlcSyncEngine> engines,
+            IServiceProvider serviceProvider)
         {
-            _services = services;
-            _engines = engines;
+            foreach (var kvp in sessions)
+                _sessions.TryAdd(kvp.Key, kvp.Value);
+            foreach (var kvp in engines)
+                _engines.TryAdd(kvp.Key, kvp.Value);
+            _serviceProvider = serviceProvider;
         }
 
-        /// <inheritdoc/>
         public IPlcSession For(string plcName)
         {
-            if (!_services.TryGetValue(plcName, out var svc))
-                throw new KeyNotFoundException($"PLC '{plcName}' 未注册，请检查 AddVitrinPlc 配置。");
+            if (!_sessions.TryGetValue(plcName, out var svc))
+                throw new KeyNotFoundException($"PLC '{plcName}' 未注册。");
             return svc;
         }
 
-        /// <inheritdoc/>
-        public IEnumerable<string> Names => _services.Keys;
+        public IEnumerable<string> Names => _sessions.Keys;
+
+        public async Task AddPlcAsync(string name, IPlcClient client, Action<PlcHostOptions> configure, CancellationToken ct = default)
+        {
+            var options = new PlcHostOptions();
+            configure(options);
+
+            var group = PlcServiceFactory.Build(client, options, _serviceProvider);
+
+            if (!_sessions.TryAdd(name, group.Session))
+                throw new InvalidOperationException($"PLC '{name}' 已存在。");
+
+            _engines.TryAdd(name, group.Engine);
+            try
+            {
+                await group.Engine.StartAsync(ct);
+            }
+            catch
+            {
+                _engines.TryRemove(name, out _);
+                _sessions.TryRemove(name, out _);
+                throw;
+            }
+        }
+
+        public async Task RemovePlcAsync(string name, CancellationToken ct = default)
+        {
+            if (!_engines.TryRemove(name, out var engine))
+                throw new KeyNotFoundException($"PLC '{name}' 不存在。");
+
+            await engine.StopAsync(ct);
+            _sessions.TryRemove(name, out _);
+        }
 
         internal async Task StartAllAsync(CancellationToken ct)
         {
-            foreach (var engine in _engines)
+            foreach (var engine in _engines.Values)
                 await engine.StartAsync(ct);
         }
 
         internal async Task StopAllAsync(CancellationToken ct)
         {
-            foreach (var engine in _engines)
+            foreach (var engine in _engines.Values)
                 await engine.StopAsync(ct);
         }
     }
 }
+

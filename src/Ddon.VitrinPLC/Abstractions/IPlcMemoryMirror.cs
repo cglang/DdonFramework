@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Ddon.VitrinPLC.Models;
 
 namespace Ddon.VitrinPLC.Abstractions
@@ -10,5 +11,8 @@ namespace Ddon.VitrinPLC.Abstractions
         EndianFormat Endian { get; }
         byte[] GetRegion(string region);
         T Read<T>(TagDefinition tag);
+        byte[] ApplySnapshot(string regionKey, byte[] newData);
+        IReadOnlyDictionary<string, MemoryRegionInfo> GetRegionInfo();
+        void RegisterRegion(string regionKey, string area, int startOffset, int length);
     }
 }

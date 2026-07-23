@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ddon.VitrinPLC.Abstractions
 {
@@ -12,5 +15,11 @@ namespace Ddon.VitrinPLC.Abstractions
 
         /// <summary>所有已注册的 PLC 名称。</summary>
         IEnumerable<string> Names { get; }
+
+        /// <summary>运行时动态添加 PLC。</summary>
+        Task AddPlcAsync(string name, IPlcClient client, Action<PlcHostOptions> configure, CancellationToken ct = default);
+
+        /// <summary>运行时动态移除 PLC，会先停止同步引擎。</summary>
+        Task RemovePlcAsync(string name, CancellationToken ct = default);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,24 +11,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Ddon.VitrinPLC.SyncEngine
 {
-    /// <summary>
-    /// 核心同步引擎：周期扫描 PLC → 刷新镜像 → 检测变化 → 发布事件
-    ///
-    /// 流程（每周期）：
-    ///   1. 按区域批量读取 PLC 原始字节（合并读取，减少请求次数）
-    ///   2. 原子替换 MemoryMirror 中对应区域
-    ///   3. 逐 Tag 比较新旧值，收集变化列表
-    ///   4. 通过 IChangeNotifier 发布变化
-    ///   5. 触发 ScanCompleted 事件
-    /// </summary>
     public sealed class PlcSyncEngine : IPlcSyncEngine, IAsyncDisposable
     {
         private readonly IPlcClient _client;
-        private readonly PlcMemoryMirror _mirror;
+        private readonly IPlcMemoryMirror _mirror;
         private readonly ITagRegistry _registry;
         private readonly IChangeNotifier _notifier;
         private readonly int _scanInterval;
-        private readonly IReadOnlyDictionary<string, int> _regionLengths;
+        private readonly ConcurrentDictionary<string, int> _regionLengths;
         private readonly ILogger<PlcSyncEngine> _logger;
 
         private CancellationTokenSource _cts;
@@ -38,7 +29,7 @@ namespace Ddon.VitrinPLC.SyncEngine
 
         public PlcSyncEngine(
             IPlcClient client,
-            PlcMemoryMirror mirror,
+            IPlcMemoryMirror mirror,
             ITagRegistry registry,
             IChangeNotifier notifier,
             int scanInterval,
@@ -49,9 +40,17 @@ namespace Ddon.VitrinPLC.SyncEngine
             _registry = registry;
             _notifier = notifier;
             _scanInterval = scanInterval;
-            _regionLengths = mirror.GetRegionInfo()
-                .ToDictionary(x => x.Key, x => x.Value.Length, StringComparer.OrdinalIgnoreCase);
+            _regionLengths = new ConcurrentDictionary<string, int>(
+                mirror.GetRegionInfo().ToDictionary(x => x.Key, x => x.Value.Length, StringComparer.OrdinalIgnoreCase));
             _logger = logger;
+
+            _registry.TagRegistered += OnTagRegistered;
+        }
+
+        private void OnTagRegistered(object sender, TagDefinition tag)
+        {
+            var addr = AddressParser.Parse(tag.Address, tag.Type);
+            _regionLengths.TryAdd(addr.RegionKey, 4096);
         }
 
         public async Task StartAsync(CancellationToken ct = default)
@@ -205,6 +204,7 @@ namespace Ddon.VitrinPLC.SyncEngine
 
         public async ValueTask DisposeAsync()
         {
+            _registry.TagRegistered -= OnTagRegistered;
             await StopAsync();
         }
     }

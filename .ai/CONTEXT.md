@@ -47,6 +47,22 @@
     5. 自定义 MID 不便捷 → `RegisterCustomMid<T>()` 类型驱动
   - 构建成功（netstandard2.0 + net8.0，0 警告 0 错误）
 
+- **生成 Ddon.VitrinPLC 上下文文档**: 读取全部 34 源文件，生成 `.ai/doc/DDON_VITRINPLC.md`（2026-07）
+  - 四层架构、数据流、使用示例、地址格式、已知问题
+
+- **Ddon.VitrinPLC 依赖解耦**: PlcSyncEngine 改为依赖接口（2026-07）
+  - `IPlcMemoryMirror` 接口新增 `ApplySnapshot` / `GetRegionInfo` 方法
+  - `PlcSyncEngine` 字段和构造函数参数 `PlcMemoryMirror` → `IPlcMemoryMirror`
+  - 构建成功（0 警告 0 错误）
+
+- **Ddon.VitrinPLC 运行时 Tag/PLC 动态管理**: 提升 Tag 和 PLC 为运行时对象（2026-07）
+  - Tag 运行时化：`ITagRegistry` 新增 `Unregister` / `TagRegistered` / `TagUnregistered`；`IPlcSession` 新增 `AddTag` / `RemoveTag` / `Tags`
+  - PLC 运行时化：`IPlcHub` 新增 `AddPlcAsync` / `RemovePlcAsync`；`PlcHub` 改为 `ConcurrentDictionary`
+  - `PlcSyncEngine` 监听 `TagRegistered` 事件动态扩展区域
+  - 提取 `PlcServiceFactory`（`ActivatorUtilities.CreateInstance`），解决 DI 手动构造问题
+  - 修复 `PlcHub.AddPlcAsync` 连接失败时回滚注册
+  - 构建成功（0 警告 0 错误），测试项目运行验证通过
+
 ### Ddon.Serial 关键设计决策
 1. Pipeline 使用 Ddon.Pipeline（设计文档明确要求）
 2. 每个 Endpoint 完全独立（Worker/Pipeline/Dispatcher/Protocol/Handler）
@@ -59,6 +75,7 @@
 
 ### 已知问题/待办
 - Ddon.OpenProtocol 已重构完成（0 警告 0 错误），无待办
+- Ddon.VitrinPLC 架构审查问题 #1、#2、#3 已修复，剩余 3 项待处理
 
 ## 代码库约定速查
 | 约定 | 说明 |

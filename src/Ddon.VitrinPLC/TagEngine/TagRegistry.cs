@@ -10,11 +10,23 @@ namespace Ddon.VitrinPLC.TagEngine
     {
         private readonly ConcurrentDictionary<string, TagDefinition> _tags = new(StringComparer.OrdinalIgnoreCase);
 
+        public event EventHandler<TagDefinition> TagRegistered;
+        public event EventHandler<string> TagUnregistered;
+
         public void Register(TagDefinition tag)
         {
             ArgumentNullException.ThrowIfNull(tag);
             if (!_tags.TryAdd(tag.Name, tag))
                 throw new InvalidOperationException($"Tag '{tag.Name}' 已注册，请检查是否重复定义。");
+            TagRegistered?.Invoke(this, tag);
+        }
+
+        public bool Unregister(string tagName)
+        {
+            if (!_tags.TryRemove(tagName, out _))
+                return false;
+            TagUnregistered?.Invoke(this, tagName);
+            return true;
         }
 
         public TagDefinition Resolve(string tagName)

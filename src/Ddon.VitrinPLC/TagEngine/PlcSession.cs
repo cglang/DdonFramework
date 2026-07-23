@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -7,12 +8,6 @@ using Ddon.VitrinPLC.Models;
 
 namespace Ddon.VitrinPLC.TagEngine
 {
-    /// <summary>
-    /// 业务层入口。
-    /// Get<T>  → 只读内存镜像（极快，无 IO）
-    /// SetAsync → 直接写 PLC，镜像不变，等待下次扫描确认
-    /// Subscribe → 注册值变化回调
-    /// </summary>
     public sealed class PlcSession : IPlcSession
     {
         private readonly ITagRegistry _registry;
@@ -36,15 +31,14 @@ namespace Ddon.VitrinPLC.TagEngine
         }
 
         public IPlcMemoryMirror Mirror => _mirror;
+        public IReadOnlyList<TagDefinition> Tags => _registry.GetAll();
 
-        /// <summary>从镜像读取 Tag 值（同步，极低延迟）</summary>
         public T Get<T>(string tagName)
         {
             var tag = _registry.Resolve(tagName);
             return _mirror.Read<T>(tag);
         }
 
-        /// <summary>将值直接写入 PLC，本地镜像不变（设计原则2/3）</summary>
         public async Task<WriteResult> SetAsync<T>(string tagName, T value, CancellationToken ct = default)
         {
             var tag = _registry.Resolve(tagName);
@@ -52,7 +46,6 @@ namespace Ddon.VitrinPLC.TagEngine
             return await _writer.ExecuteAsync(tagName, value, ct);
         }
 
-        /// <summary>订阅 Tag 值变化（扫描后触发）</summary>
         public IDisposable Subscribe<T>(string tagName, Action<T> handler)
         {
             _ = _registry.Resolve(tagName);
@@ -63,6 +56,19 @@ namespace Ddon.VitrinPLC.TagEngine
         {
             _ = _registry.Resolve(tagName);
             return _notifier.Subscribe(tagName, onChanged);
+        }
+
+        public void AddTag(TagDefinition tag)
+        {
+            _registry.Register(tag);
+            var addr = AddressParser.Parse(tag.Address, tag.Type);
+            try { _mirror.RegisterRegion(addr.RegionKey, addr.Area, 0, 4096); }
+            catch { }
+        }
+
+        public bool RemoveTag(string tagName)
+        {
+            return _registry.Unregister(tagName);
         }
     }
 }
