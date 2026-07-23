@@ -29,12 +29,12 @@
 		<ProjectReference Include="..\..\..\src\Ddon.EventBus.Memory\Ddon.EventBus.Memory.csproj" />
 	</ItemGroup>
 
-	<Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('frontend\node_modules')">
-		<Exec Command="npm install" WorkingDirectory="frontend" />
+	<Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('Frontend\node_modules')">
+		<Exec Command="npm install" WorkingDirectory="Frontend" />
 	</Target>
 
 	<Target Name="NpmBuild" BeforeTargets="Build" Condition="'$(Configuration)'=='Release'">
-		<Exec Command="npm run build" WorkingDirectory="frontend" />
+		<Exec Command="npm run build" WorkingDirectory="Frontend" />
 	</Target>
 
 </Project>
