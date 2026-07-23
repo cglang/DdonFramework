@@ -2,7 +2,7 @@
 
 set -e
 
-ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VERSION_FILE="$ROOT_DIR/version.props"
 
 cd "$ROOT_DIR"
