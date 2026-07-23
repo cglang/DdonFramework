@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir -p artifacts
 
-          while read -r project
+          while IFS= read -r project || [[ -n "$project" ]]
           do
             [[ -z "$project" ]] && continue
             [[ "$project" =~ ^# ]] && continue
