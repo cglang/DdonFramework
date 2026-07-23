@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ddon.Desktop.Hosting\Ddon.Desktop.Hosting.csproj"/>
+    <ProjectReference Include="..\Ddon.Desktop.Core\Ddon.Desktop.Core.csproj"/>
   </ItemGroup>
 
 </Project>

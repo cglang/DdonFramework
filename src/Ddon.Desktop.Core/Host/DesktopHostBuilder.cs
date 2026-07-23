@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Ddon.Desktop.Hosting;
+namespace Ddon.Desktop.Core.Host;
 
 public class DesktopHostBuilder
 {

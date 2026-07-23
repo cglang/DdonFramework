@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Ddon.Desktop.Platform;
+using Ddon.Desktop.Core.Platform;
 
 namespace Ddon.Desktop.Avalonia.Platform;
 

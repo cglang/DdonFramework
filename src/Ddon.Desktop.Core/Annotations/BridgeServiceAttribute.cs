@@ -1,4 +1,4 @@
-namespace Ddon.Desktop.Annotations;
+namespace Ddon.Desktop.Core.Annotations;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class BridgeServiceAttribute : Attribute

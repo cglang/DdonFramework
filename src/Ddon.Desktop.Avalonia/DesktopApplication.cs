@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Ddon.Desktop.Hosting;
-using Ddon.Desktop.Transport;
+using Ddon.Desktop.Avalonia.Transport;
+using Ddon.Desktop.Core.Host;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +11,7 @@ public abstract class DesktopApplication : Application
 {
     private DesktopHost? _desktopHost;
 
-    protected IConfiguration Configuration { get; private set; } = null!;
+    private IConfiguration Configuration { get; set; } = null!;
 
     protected abstract void ConfigureServices(IServiceCollection services, IConfiguration configuration);
 
@@ -38,10 +38,10 @@ public abstract class DesktopApplication : Application
         Configuration = CreateConfigurationBuilder().Build();
 
         var backendUrls = Configuration.GetValue<string>("HostUrls:BackendUrl")
-            ?? throw new Exception("未配置 HostUrls:BackendUrl");
+                          ?? throw new Exception("未配置 HostUrls:BackendUrl");
 
         var navigateUrl = Configuration.GetValue<string>("HostUrls:FrontendUrl")
-            ?? throw new Exception("未配置 HostUrls:FrontendUrl");
+                          ?? throw new Exception("未配置 HostUrls:FrontendUrl");
 
         var windowTitle = Configuration.GetValue<string>("Window:Title") ?? "Ddon Desktop";
         var loadingTitle = Configuration.GetValue<string>("Window:LoadingTitle") ?? "Ddon Desktop";
@@ -52,19 +52,21 @@ public abstract class DesktopApplication : Application
         var windowWidth = Configuration.GetValue<int>("Window:Width");
         var windowHeight = Configuration.GetValue<int>("Window:Height");
 
-        var _mainWindow = new MainWindow();
+        var mainWindow = new MainWindow();
 
         // 这里需要启动一个桌面窗口 用来加载WebView
-        _mainWindow.ApplyConfig(windowTitle, loadingTitle, loadingText,
-            Enum.TryParse<global::Avalonia.Controls.WindowState>(windowState, true, out var ws) ? ws : global::Avalonia.Controls.WindowState.Maximized,
+        mainWindow.ApplyConfig(windowTitle, loadingTitle, loadingText,
+            Enum.TryParse<global::Avalonia.Controls.WindowState>(windowState, true, out var ws)
+                ? ws
+                : global::Avalonia.Controls.WindowState.Maximized,
             windowWidth > 0 ? windowWidth : 800,
             windowHeight > 0 ? windowHeight : 500);
-        _mainWindow.SetOnClosing(() => _desktopHost?.StopAsync() ?? Task.CompletedTask);
-        _mainWindow.Show();
+        mainWindow.SetOnClosing(() => _desktopHost?.StopAsync() ?? Task.CompletedTask);
+        mainWindow.Show();
 
         // 窗体启动后，启动桌面服务
         _desktopHost = new DesktopHost();
-        var app = await _desktopHost.StartAsync(e.Args ?? [], builder =>
+        await _desktopHost.StartAsync(e.Args, builder =>
         {
             builder.UseUrls(backendUrls);
             builder.ConfigureServices(services =>
@@ -77,20 +79,20 @@ public abstract class DesktopApplication : Application
             });
             builder.OnInitialized(async services =>
             {
-                var _transport = services.GetRequiredService<AvaloniaWebViewTransport>();
-                await _mainWindow.InitializeWebViewAsync(navigateUrl, _transport);
+                var transport = services.GetRequiredService<AvaloniaWebViewTransport>();
+                await mainWindow.InitializeWebViewAsync(navigateUrl, transport);
 
                 // 在这里设置一个延时, 这个无关紧要, 如果 WebView 加载慢了就显示这个
                 // WebView 加载快了这个就无效
                 await Task.Delay(500);
-                _mainWindow.SetLoadingText("正在准备浏览器引擎...");
+                mainWindow.SetLoadingText("正在准备浏览器引擎...");
             });
         });
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
         {
-            lifetime.MainWindow = _mainWindow;
-            lifetime.ShutdownRequested += async (s, args) =>
+            lifetime.MainWindow = mainWindow;
+            lifetime.ShutdownRequested += async (_, _) =>
             {
                 if (_desktopHost is not null)
                     await _desktopHost.StopAsync();

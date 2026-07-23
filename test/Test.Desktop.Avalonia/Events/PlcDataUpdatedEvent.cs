@@ -1,4 +1,4 @@
-using Ddon.Desktop.Annotations;
+using Ddon.Desktop.Core.Annotations;
 
 namespace Test.Desktop.Avalonia.Events;
 

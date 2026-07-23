@@ -1,8 +1,7 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using Ddon.Desktop.Platform;
+using Ddon.Desktop.Core.Platform;
 
 namespace Ddon.Desktop.Avalonia.Platform;
 

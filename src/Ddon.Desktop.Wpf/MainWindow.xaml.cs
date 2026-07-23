@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
-using Ddon.Desktop.Bridge;
-using Ddon.Desktop.Transport;
+using Ddon.Desktop.Core.Bridge;
+using Ddon.Desktop.Core.Transport;
 
 namespace Ddon.Desktop.Wpf;
 

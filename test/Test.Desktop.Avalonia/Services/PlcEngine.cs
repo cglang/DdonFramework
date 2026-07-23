@@ -1,4 +1,4 @@
-using Ddon.Desktop.Bridge;
+using Ddon.Desktop.Core.Bridge;
 using Test.Desktop.Avalonia.Events;
 
 namespace Test.Desktop.Avalonia.Services;

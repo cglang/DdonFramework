@@ -1,11 +1,11 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
-using Ddon.Desktop.Platform;
+using IClipboard = Ddon.Desktop.Core.Platform.IClipboard;
 
 namespace Ddon.Desktop.Avalonia.Platform;
 
-public class AvaloniaClipboard : Ddon.Desktop.Platform.IClipboard
+public class AvaloniaClipboard : IClipboard
 {
     public async Task<string> GetTextAsync()
     {

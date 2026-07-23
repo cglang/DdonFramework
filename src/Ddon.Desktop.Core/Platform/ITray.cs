@@ -1,4 +1,4 @@
-namespace Ddon.Desktop.Platform;
+namespace Ddon.Desktop.Core.Platform;
 
 public interface ITray
 {

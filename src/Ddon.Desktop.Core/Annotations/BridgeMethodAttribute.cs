@@ -1,4 +1,4 @@
-namespace Ddon.Desktop.Annotations;
+namespace Ddon.Desktop.Core.Annotations;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class BridgeMethodAttribute : Attribute

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Ddon.Desktop.Hosting;
+namespace Ddon.Desktop.Core.Host;
 
 public class DesktopHost
 {
