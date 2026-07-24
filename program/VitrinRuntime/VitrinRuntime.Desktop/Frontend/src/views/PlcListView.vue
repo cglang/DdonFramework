@@ -6,6 +6,16 @@
   import { plcManager, type PlcConfig } from '../api/plcApi';
   import type { HeaderAction } from '../App.vue';
 
+  const cpuTypeOptions = [
+    { value: 0, label: 'S7-200' },
+    { value: 1, label: 'Logo 0BA8' },
+    { value: 2, label: 'S7-200 Smart' },
+    { value: 10, label: 'S7-300' },
+    { value: 20, label: 'S7-400' },
+    { value: 30, label: 'S7-1200' },
+    { value: 40, label: 'S7-1500' },
+  ];
+
   const router = useRouter();
   const headerActions = inject<Ref<HeaderAction[]>>('headerActions')!;
   const plcs = ref<PlcConfig[]>([]);
@@ -18,6 +28,7 @@
     port: 102,
     rack: 0,
     slot: 1,
+    cpuType: 40,
     scanInterval: 200,
     autoConnect: false,
   });
@@ -32,6 +43,7 @@
     port: 102,
     rack: 0,
     slot: 1,
+    cpuType: 40,
     scanInterval: 200,
     autoConnect: false,
   });
@@ -53,10 +65,10 @@
       return;
     }
     try {
-      await plcManager.addPlc(form.name, form.ip, form.port, form.rack, form.slot, form.scanInterval, form.autoConnect);
+      await plcManager.addPlc(form.name, form.ip, form.port, form.rack, form.slot, form.cpuType, form.scanInterval, form.autoConnect);
       ElMessage.success('PLC 添加成功');
       dialogVisible.value = false;
-      Object.assign(form, { name: '', ip: '192.168.1.10', port: 102, rack: 0, slot: 1, scanInterval: 200, autoConnect: false });
+      Object.assign(form, { name: '', ip: '192.168.1.10', port: 102, rack: 0, slot: 1, cpuType: 40, scanInterval: 200, autoConnect: false });
       await loadPlcs();
     } catch (e: any) {
       ElMessage.error('添加失败: ' + (e.message || e));
@@ -105,6 +117,7 @@
     editForm.port = plc.port;
     editForm.rack = plc.rack;
     editForm.slot = plc.slot;
+    editForm.cpuType = plc.cpuType;
     editForm.scanInterval = plc.scanInterval;
     editForm.autoConnect = plc.autoConnect;
     editDialogVisible.value = true;
@@ -116,7 +129,7 @@
       return;
     }
     try {
-      await plcManager.updatePlc(editForm.oldName, editForm.name, editForm.ip, editForm.port, editForm.rack, editForm.slot, editForm.scanInterval, editForm.autoConnect);
+      await plcManager.updatePlc(editForm.oldName, editForm.name, editForm.ip, editForm.port, editForm.rack, editForm.slot, editForm.cpuType, editForm.scanInterval, editForm.autoConnect);
       ElMessage.success('PLC 已更新');
       editDialogVisible.value = false;
       await loadPlcs();
@@ -135,6 +148,11 @@
 
   function getStatusText(plc: PlcConfig) {
     return plc.isConnected ? '已连接' : '未连接';
+  }
+
+  function getCpuTypeLabel(value: number): string {
+    const opt = cpuTypeOptions.find((o) => o.value === value);
+    return opt ? opt.label : `S7-${value}`;
   }
 
   onMounted(() => {
@@ -163,8 +181,8 @@
             </template>
 
             <el-descriptions :column="1" size="small" border>
-              <el-descriptions-item label="IP">{{ plc.ip }}</el-descriptions-item>
-              <el-descriptions-item label="端口">{{ plc.port }}</el-descriptions-item>
+              <el-descriptions-item label="IP:端口">{{ plc.ip }}:{{ plc.port }}</el-descriptions-item>
+              <el-descriptions-item label="CPU 类型">{{ getCpuTypeLabel(plc.cpuType) }}</el-descriptions-item>
               <el-descriptions-item label="机架/槽位">{{ plc.rack }}/{{ plc.slot }}</el-descriptions-item>
               <el-descriptions-item label="扫描频率">{{ plc.scanInterval }}ms</el-descriptions-item>
             </el-descriptions>
@@ -201,6 +219,11 @@
         <el-form-item label="槽位 (Slot)">
           <el-input-number v-model="form.slot" :min="0" :max="7" />
         </el-form-item>
+        <el-form-item label="CPU 类型">
+          <el-select v-model="form.cpuType" style="width: 100%">
+            <el-option v-for="opt in cpuTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="扫描频率 (ms)">
           <el-input-number v-model="form.scanInterval" :min="50" :max="10000" :step="50" />
           <el-text type="info" size="small" style="margin-top: 4px; display: block">PLC 数据轮询间隔，越小刷新越快</el-text>
@@ -232,6 +255,11 @@
         </el-form-item>
         <el-form-item label="槽位 (Slot)">
           <el-input-number v-model="editForm.slot" :min="0" :max="7" />
+        </el-form-item>
+        <el-form-item label="CPU 类型">
+          <el-select v-model="editForm.cpuType" style="width: 100%">
+            <el-option v-for="opt in cpuTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="扫描频率 (ms)">
           <el-input-number v-model="editForm.scanInterval" :min="50" :max="10000" :step="50" />

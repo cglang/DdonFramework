@@ -13,6 +13,7 @@ export interface PlcConfig {
   port: number
   rack: number
   slot: number
+  cpuType: number
   scanInterval: number
   autoConnect: boolean
   isConnected: boolean
@@ -86,8 +87,8 @@ export interface CreateGroupResult {
 export const plcManager = {
   listPlcs: () => invoke<PlcConfig[]>('PlcManager.ListPlcs'),
 
-  addPlc: (name: string, ip: string, port = 102, rack = 0, slot = 1, scanInterval = 200, autoConnect = false) =>
-    invoke<PlcConfig>('PlcManager.AddPlc', { name, ip, port, rack, slot, scanInterval, autoConnect }),
+  addPlc: (name: string, ip: string, port = 102, rack = 0, slot = 1, cpuType = 40, scanInterval = 200, autoConnect = false) =>
+    invoke<PlcConfig>('PlcManager.AddPlc', { name, ip, port, rack, slot, cpuType, scanInterval, autoConnect }),
 
   removePlc: (name: string) =>
     invoke<void>('PlcManager.RemovePlc', { name }),
@@ -101,8 +102,8 @@ export const plcManager = {
   getPlcStatus: (name: string) =>
     invoke<PlcStatus | null>('PlcManager.GetPlcStatus', { name }),
 
-  updatePlc: (oldName: string, name: string, ip: string, port = 102, rack = 0, slot = 1, scanInterval = 200, autoConnect = false) =>
-    invoke<PlcConfig>('PlcManager.UpdatePlc', { oldName, name, ip, port, rack, slot, scanInterval, autoConnect }),
+  updatePlc: (oldName: string, name: string, ip: string, port = 102, rack = 0, slot = 1, cpuType = 40, scanInterval = 200, autoConnect = false) =>
+    invoke<PlcConfig>('PlcManager.UpdatePlc', { oldName, name, ip, port, rack, slot, cpuType, scanInterval, autoConnect }),
 }
 
 // ── PlcData API ────────────────────────────────

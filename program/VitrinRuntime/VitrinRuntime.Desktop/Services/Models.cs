@@ -11,6 +11,7 @@ public sealed class PlcConfig
     public int Port { get; set; } = 102;
     public int Rack { get; set; } = 0;
     public int Slot { get; set; } = 1;
+    public int CpuType { get; set; } = 40;
     public int ScanInterval { get; set; } = 200;
     public bool AutoConnect { get; set; }
     public bool IsConnected { get; set; }
@@ -51,6 +52,7 @@ public sealed class AddPlcRequest
     public int Port { get; set; } = 102;
     public int Rack { get; set; } = 0;
     public int Slot { get; set; } = 1;
+    public int CpuType { get; set; } = 40;
     public int ScanInterval { get; set; } = 200;
     public bool AutoConnect { get; set; }
 }
@@ -68,6 +70,7 @@ public sealed class UpdatePlcRequest
     public int Port { get; set; } = 102;
     public int Rack { get; set; } = 0;
     public int Slot { get; set; } = 1;
+    public int CpuType { get; set; } = 40;
     public int ScanInterval { get; set; } = 200;
     public bool AutoConnect { get; set; }
 }

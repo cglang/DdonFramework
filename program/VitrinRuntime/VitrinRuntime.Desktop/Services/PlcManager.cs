@@ -4,6 +4,7 @@ using Ddon.VitrinPLC.Clients;
 using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using S7.Net;
 using VitrinRuntime.Desktop.Stores;
 
 namespace VitrinRuntime.Desktop.Services;
@@ -64,6 +65,7 @@ public sealed class PlcManager
             Port = req.Port,
             Rack = req.Rack,
             Slot = req.Slot,
+            CpuType = req.CpuType,
             ScanInterval = req.ScanInterval,
             AutoConnect = req.AutoConnect,
             CreatedAt = DateTime.UtcNow
@@ -79,7 +81,8 @@ public sealed class PlcManager
                 Ip = req.Ip,
                 Port = req.Port,
                 Rack = req.Rack,
-                Slot = req.Slot
+                Slot = req.Slot,
+                CpuType = (CpuType)req.CpuType
             };
 
             var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
@@ -137,7 +140,8 @@ public sealed class PlcManager
                 Ip = config.Ip,
                 Port = config.Port,
                 Rack = config.Rack,
-                Slot = config.Slot
+                Slot = config.Slot,
+                CpuType = (CpuType)config.CpuType
             };
 
             var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
@@ -214,6 +218,7 @@ public sealed class PlcManager
             Port = req.Port,
             Rack = req.Rack,
             Slot = req.Slot,
+            CpuType = req.CpuType,
             ScanInterval = req.ScanInterval,
             AutoConnect = req.AutoConnect,
             IsConnected = oldConfig.IsConnected,
@@ -238,7 +243,8 @@ public sealed class PlcManager
                     Ip = req.Ip,
                     Port = req.Port,
                     Rack = req.Rack,
-                    Slot = req.Slot
+                    Slot = req.Slot,
+                    CpuType = (CpuType)req.CpuType
                 };
 
                 var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();

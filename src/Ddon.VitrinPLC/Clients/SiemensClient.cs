@@ -30,7 +30,7 @@ namespace Ddon.VitrinPLC.Clients
 
         public async Task ConnectAsync(CancellationToken ct = default)
         {
-            _plc = new S7.Net.Plc(S7.Net.CpuType.S71500, _options.Ip, _options.Port, (short)_options.Rack, (short)_options.Slot);
+            _plc = new S7.Net.Plc(_options.CpuType, _options.Ip, _options.Port, (short)_options.Rack, (short)_options.Slot);
 
             if (!_plc.IsConnected)
                 await _plc.OpenAsync();
@@ -116,5 +116,6 @@ namespace Ddon.VitrinPLC.Clients
         public int Port { get; set; } = 102;
         public int Rack { get; set; } = 0;
         public int Slot { get; set; } = 1;
+        public CpuType CpuType { get; set; } = CpuType.S71500;
     }
 }
