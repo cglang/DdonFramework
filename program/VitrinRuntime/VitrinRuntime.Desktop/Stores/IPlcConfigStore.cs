@@ -1,4 +1,4 @@
-using VitrinRuntime.Services;
+using VitrinRuntime.Desktop.Services;
 
 namespace VitrinRuntime.Desktop.Stores;
 

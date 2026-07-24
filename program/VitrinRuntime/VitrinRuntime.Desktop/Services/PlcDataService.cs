@@ -5,7 +5,7 @@ using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.Logging;
 using VitrinRuntime.Desktop.Stores;
 
-namespace VitrinRuntime.Services;
+namespace VitrinRuntime.Desktop.Services;
 
 [BridgeService(Name = "PlcData")]
 public sealed class PlcDataService

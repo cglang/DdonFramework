@@ -1,13 +1,13 @@
 using Ddon.VitrinPLC.Models;
 
-namespace VitrinRuntime.Services;
+namespace VitrinRuntime.Desktop.Services;
 
 /// <summary>PLC 连接配置</summary>
 public sealed class PlcConfig
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = string.Empty;
-    public string Ip { get; set; } = "192.168.1.10";
+    public string Ip { get; set; } = "192.168.0.0";
     public int Port { get; set; } = 102;
     public int Rack { get; set; } = 0;
     public int Slot { get; set; } = 1;

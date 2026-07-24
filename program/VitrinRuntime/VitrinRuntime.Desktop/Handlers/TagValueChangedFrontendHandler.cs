@@ -2,7 +2,6 @@ using Avalonia.Threading;
 using Ddon.Desktop.Core.Bridge;
 using Ddon.EventBus.Contracts;
 using Microsoft.Extensions.Logging;
-using VitrinRuntime.Services;
 
 namespace VitrinRuntime.Desktop.Handlers;
 
@@ -41,4 +40,14 @@ public sealed class TagValueChangedFrontendHandler : IEventHandler<TagValueChang
             }
         });
     }
+}
+
+/// <summary>点位值变化事件，通过 IUiBridge 推送到前端</summary>
+public sealed class TagValueChanged
+{
+    public string TagName { get; init; } = string.Empty;
+    public string Address { get; init; } = string.Empty;
+    public string DataType { get; init; } = string.Empty;
+    public object? OldValue { get; init; }
+    public object? NewValue { get; init; }
 }

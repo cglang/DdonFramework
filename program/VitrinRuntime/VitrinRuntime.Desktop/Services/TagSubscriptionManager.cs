@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using VitrinRuntime.Desktop.Handlers;
 
-namespace VitrinRuntime.Services;
+namespace VitrinRuntime.Desktop.Services;
 
 /// <summary>
 /// 集中管理所有 PLC 点位的变化订阅。
@@ -130,14 +130,4 @@ public sealed class TagSubscriptionManager : IDisposable
         }
         _subscriptions.Clear();
     }
-}
-
-/// <summary>点位值变化事件，通过 IUiBridge 推送到前端</summary>
-public sealed class TagValueChanged
-{
-    public string TagName { get; init; } = string.Empty;
-    public string Address { get; init; } = string.Empty;
-    public string DataType { get; init; } = string.Empty;
-    public object? OldValue { get; init; }
-    public object? NewValue { get; init; }
 }

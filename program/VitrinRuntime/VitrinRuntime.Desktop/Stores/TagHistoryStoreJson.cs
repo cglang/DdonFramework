@@ -1,6 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using VitrinRuntime.Services;
+using VitrinRuntime.Desktop.Services;
 
 namespace VitrinRuntime.Desktop.Stores;
 

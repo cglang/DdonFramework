@@ -6,8 +6,8 @@ import PlcDetailView from '../views/PlcDetailView.vue'
 const routes = [
   { path: '/', redirect: '/main' },
   { path: '/main', name: 'Main', component: MainView },
-  { path: '/plc/list', name: 'PlcList', component: PlcListView },
-  { path: '/plc/detail/:name', name: 'PlcDetail', component: PlcDetailView, props: true },
+  { path: '/plc/list', name: 'PlcList', component: PlcListView, meta: { location: 'PLC管理' } },
+  { path: '/plc/detail/:name', name: 'PlcDetail', component: PlcDetailView, props: true, meta: { location: 'PLC详情' } },
 ]
 
 const router = createRouter({

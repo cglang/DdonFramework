@@ -4,11 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using VitrinRuntime.Services;
+using VitrinRuntime.Desktop.HostedServices;
+using VitrinRuntime.Desktop.Services;
 using VitrinRuntime.Desktop.Stores;
-using System.Reflection;
+using VitrinRuntime.Services;
 
-namespace VitrinRuntime;
+namespace VitrinRuntime.Desktop;
 
 public partial class App : DesktopApplication
 {
@@ -31,7 +32,7 @@ public partial class App : DesktopApplication
         services.AddEventBus(typeof(App).Assembly);
 
         // 注册 Bridge Services（通过 [BridgeService] 自动发现）
-        services.AddSingleton<PlcManagerService>();
+        services.AddSingleton<PlcManager>();
         services.AddSingleton<PlcDataService>();
 
         // 注册点位历史记录存储（JSON 文件持久化）
@@ -39,5 +40,7 @@ public partial class App : DesktopApplication
 
         // 注册点位变化订阅管理器（替代原来的 TagChangeMonitorService 轮询机制）
         services.AddSingleton<TagSubscriptionManager>();
+
+        services.AddHostedService<AutoConnectHostedService>();
     }
 }

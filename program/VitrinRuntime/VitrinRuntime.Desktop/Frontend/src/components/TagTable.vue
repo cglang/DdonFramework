@@ -3,13 +3,9 @@
   import { ElMessage, ElMessageBox } from 'element-plus';
   import { plcData, type TagInfo, type TagHistoryRecord } from '../api/plcApi';
 
-  const props = defineProps<{
-    groupId: string;
-  }>();
+  const props = defineProps<{ groupId: string }>();
 
-  const emit = defineEmits<{
-    refresh: [];
-  }>();
+  const emit = defineEmits<{ refresh: [] }>();
 
   const tags = ref<TagInfo[]>([]);
   const loading = ref(false);
@@ -246,7 +242,7 @@
     <el-table v-loading="loading" :data="tags" border stripe size="small" max-height="500" style="width: 100%">
       <el-table-column prop="name" label="名称" min-width="120" show-overflow-tooltip />
       <el-table-column prop="address" label="地址" min-width="120" />
-      <el-table-column prop="dataType" label="类型" width="110" />
+      <el-table-column prop="dataType" label="类型" width="80" />
       <el-table-column label="当前值" width="180">
         <template #default="{ row }: { row: TagInfo }">
           <el-tag v-if="row.dataType === 'Bool'" :type="row.value ? 'success' : 'info'" size="small">

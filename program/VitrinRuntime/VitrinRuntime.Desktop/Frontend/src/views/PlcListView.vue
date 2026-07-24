@@ -1,155 +1,154 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { plcManager, type PlcConfig } from '../api/plcApi'
+  import { ref, onMounted, reactive, inject, onUnmounted } from 'vue';
+  import type { Ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { ElMessage, ElMessageBox } from 'element-plus';
+  import { plcManager, type PlcConfig } from '../api/plcApi';
+  import type { HeaderAction } from '../App.vue';
 
-const router = useRouter()
-const plcs = ref<PlcConfig[]>([])
-const loading = ref(false)
-const dialogVisible = ref(false)
+  const router = useRouter();
+  const headerActions = inject<Ref<HeaderAction[]>>('headerActions')!;
+  const plcs = ref<PlcConfig[]>([]);
+  const loading = ref(false);
+  const dialogVisible = ref(false);
 
-const form = reactive({
-  name: '',
-  ip: '127.0.0.1',
-  port: 102,
-  rack: 0,
-  slot: 1,
-  scanInterval: 200,
-  autoConnect: false,
-})
+  const form = reactive({
+    name: '',
+    ip: '127.0.0.1',
+    port: 102,
+    rack: 0,
+    slot: 1,
+    scanInterval: 200,
+    autoConnect: false,
+  });
 
-// 编辑对话框状态
-const editDialogVisible = ref(false)
-const editingPlc = ref<PlcConfig | null>(null)
-const editForm = reactive({
-  oldName: '',
-  name: '',
-  ip: '',
-  port: 102,
-  rack: 0,
-  slot: 1,
-  scanInterval: 200,
-  autoConnect: false,
-})
+  // 编辑对话框状态
+  const editDialogVisible = ref(false);
+  const editingPlc = ref<PlcConfig | null>(null);
+  const editForm = reactive({
+    oldName: '',
+    name: '',
+    ip: '',
+    port: 102,
+    rack: 0,
+    slot: 1,
+    scanInterval: 200,
+    autoConnect: false,
+  });
 
-async function loadPlcs() {
-  loading.value = true
-  try {
-    plcs.value = await plcManager.listPlcs()
-  } catch (e: any) {
-    ElMessage.error('获取 PLC 列表失败: ' + (e.message || e))
-  } finally {
-    loading.value = false
+  async function loadPlcs() {
+    loading.value = true;
+    try {
+      plcs.value = await plcManager.listPlcs();
+    } catch (e: any) {
+      ElMessage.error('获取 PLC 列表失败: ' + (e.message || e));
+    } finally {
+      loading.value = false;
+    }
   }
-}
 
-async function handleAddPlc() {
-  if (!form.name || !form.ip) {
-    ElMessage.warning('请填写 PLC 名称和 IP 地址')
-    return
+  async function handleAddPlc() {
+    if (!form.name || !form.ip) {
+      ElMessage.warning('请填写 PLC 名称和 IP 地址');
+      return;
+    }
+    try {
+      await plcManager.addPlc(form.name, form.ip, form.port, form.rack, form.slot, form.scanInterval, form.autoConnect);
+      ElMessage.success('PLC 添加成功');
+      dialogVisible.value = false;
+      Object.assign(form, { name: '', ip: '192.168.1.10', port: 102, rack: 0, slot: 1, scanInterval: 200, autoConnect: false });
+      await loadPlcs();
+    } catch (e: any) {
+      ElMessage.error('添加失败: ' + (e.message || e));
+    }
   }
-  try {
-    await plcManager.addPlc(form.name, form.ip, form.port, form.rack, form.slot, form.scanInterval, form.autoConnect)
-    ElMessage.success('PLC 添加成功')
-    dialogVisible.value = false
-    Object.assign(form, { name: '', ip: '192.168.1.10', port: 102, rack: 0, slot: 1, scanInterval: 200, autoConnect: false })
-    await loadPlcs()
-  } catch (e: any) {
-    ElMessage.error('添加失败: ' + (e.message || e))
+
+  async function handleConnect(plc: PlcConfig) {
+    try {
+      await plcManager.connectPlc(plc.name);
+      ElMessage.success(`PLC "${plc.name}" 已连接`);
+      await loadPlcs();
+    } catch (e: any) {
+      ElMessage.error('连接失败: ' + (e.message || e));
+    }
   }
-}
 
-async function handleConnect(plc: PlcConfig) {
-  try {
-    await plcManager.connectPlc(plc.name)
-    ElMessage.success(`PLC "${plc.name}" 已连接`)
-    await loadPlcs()
-  } catch (e: any) {
-    ElMessage.error('连接失败: ' + (e.message || e))
+  async function handleDisconnect(plc: PlcConfig) {
+    try {
+      await plcManager.disconnectPlc(plc.name);
+      ElMessage.success(`PLC "${plc.name}" 已断开`);
+      await loadPlcs();
+    } catch (e: any) {
+      ElMessage.error('断开失败: ' + (e.message || e));
+    }
   }
-}
 
-async function handleDisconnect(plc: PlcConfig) {
-  try {
-    await plcManager.disconnectPlc(plc.name)
-    ElMessage.success(`PLC "${plc.name}" 已断开`)
-    await loadPlcs()
-  } catch (e: any) {
-    ElMessage.error('断开失败: ' + (e.message || e))
+  async function handleRemove(plc: PlcConfig) {
+    try {
+      await ElMessageBox.confirm(`确定移除 PLC "${plc.name}" 吗？`, '确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      });
+      await plcManager.removePlc(plc.name);
+      ElMessage.success(`PLC "${plc.name}" 已移除`);
+      await loadPlcs();
+    } catch (e: any) {
+      if (e !== 'cancel') ElMessage.error('移除失败: ' + (e.message || e));
+    }
   }
-}
 
-async function handleRemove(plc: PlcConfig) {
-  try {
-    await ElMessageBox.confirm(`确定移除 PLC "${plc.name}" 吗？`, '确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-    await plcManager.removePlc(plc.name)
-    ElMessage.success(`PLC "${plc.name}" 已移除`)
-    await loadPlcs()
-  } catch (e: any) {
-    if (e !== 'cancel') ElMessage.error('移除失败: ' + (e.message || e))
+  async function handleEditPlc(plc: PlcConfig) {
+    editForm.oldName = plc.name;
+    editForm.name = plc.name;
+    editForm.ip = plc.ip;
+    editForm.port = plc.port;
+    editForm.rack = plc.rack;
+    editForm.slot = plc.slot;
+    editForm.scanInterval = plc.scanInterval;
+    editForm.autoConnect = plc.autoConnect;
+    editDialogVisible.value = true;
   }
-}
 
-async function handleEditPlc(plc: PlcConfig) {
-  editForm.oldName = plc.name
-  editForm.name = plc.name
-  editForm.ip = plc.ip
-  editForm.port = plc.port
-  editForm.rack = plc.rack
-  editForm.slot = plc.slot
-  editForm.scanInterval = plc.scanInterval
-  editForm.autoConnect = plc.autoConnect
-  editDialogVisible.value = true
-}
-
-async function handleUpdatePlc() {
-  if (!editForm.name || !editForm.ip) {
-    ElMessage.warning('请填写 PLC 名称和 IP 地址')
-    return
+  async function handleUpdatePlc() {
+    if (!editForm.name || !editForm.ip) {
+      ElMessage.warning('请填写 PLC 名称和 IP 地址');
+      return;
+    }
+    try {
+      await plcManager.updatePlc(editForm.oldName, editForm.name, editForm.ip, editForm.port, editForm.rack, editForm.slot, editForm.scanInterval, editForm.autoConnect);
+      ElMessage.success('PLC 已更新');
+      editDialogVisible.value = false;
+      await loadPlcs();
+    } catch (e: any) {
+      ElMessage.error('更新失败: ' + (e.message || e));
+    }
   }
-  try {
-    await plcManager.updatePlc(
-      editForm.oldName, editForm.name, editForm.ip,
-      editForm.port, editForm.rack, editForm.slot,
-      editForm.scanInterval, editForm.autoConnect,
-    )
-    ElMessage.success('PLC 已更新')
-    editDialogVisible.value = false
-    await loadPlcs()
-  } catch (e: any) {
-    ElMessage.error('更新失败: ' + (e.message || e))
+
+  function goToDetail(name: string) {
+    router.push({ name: 'PlcDetail', params: { name } });
   }
-}
 
-function goToDetail(name: string) {
-  router.push({ name: 'PlcDetail', params: { name } })
-}
+  function getStatusType(plc: PlcConfig) {
+    return plc.isConnected ? 'success' : 'danger';
+  }
 
-function getStatusType(plc: PlcConfig) {
-  return plc.isConnected ? 'success' : 'danger'
-}
+  function getStatusText(plc: PlcConfig) {
+    return plc.isConnected ? '已连接' : '未连接';
+  }
 
-function getStatusText(plc: PlcConfig) {
-  return plc.isConnected ? '已连接' : '未连接'
-}
+  onMounted(() => {
+    loadPlcs();
+    headerActions.value = [{ label: '添加 PLC', icon: 'Plus', type: 'primary', onClick: () => (dialogVisible.value = true) }];
+  });
 
-onMounted(loadPlcs)
+  onUnmounted(() => {
+    headerActions.value = [];
+  });
 </script>
 
 <template>
   <div style="padding: 20px; height: 100%; box-sizing: border-box; overflow-y: auto">
-    <el-row justify="space-between" align="middle" style="margin-bottom: 20px">
-      <span style="font-size: 22px; font-weight: 600; color: #303133">PLC 管理</span>
-      <el-button type="primary" @click="dialogVisible = true">
-        <el-icon><Plus /></el-icon> 添加 PLC
-      </el-button>
-    </el-row>
-
     <div v-loading="loading" style="min-height: 300px">
       <el-row :gutter="20">
         <el-col v-for="plc in plcs" :key="plc.name" :xs="24" :sm="12" :md="8" :lg="6">
@@ -170,29 +169,11 @@ onMounted(loadPlcs)
               <el-descriptions-item label="扫描频率">{{ plc.scanInterval }}ms</el-descriptions-item>
             </el-descriptions>
 
-            <el-alert
-              v-if="plc.errorMessage"
-              :title="plc.errorMessage"
-              type="error"
-              show-icon
-              :closable="false"
-              size="small"
-              style="margin-top: 8px"
-            />
+            <el-alert v-if="plc.errorMessage" :title="plc.errorMessage" type="error" show-icon :closable="false" size="small" style="margin-top: 8px" />
 
             <el-row justify="end" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--el-border-color-light)" @click.stop>
-              <el-button
-                v-if="!plc.isConnected"
-                type="success"
-                size="small"
-                @click="handleConnect(plc)"
-              >连接</el-button>
-              <el-button
-                v-if="plc.isConnected"
-                type="warning"
-                size="small"
-                @click="handleDisconnect(plc)"
-              >断开</el-button>
+              <el-button v-if="!plc.isConnected" type="success" size="small" @click="handleConnect(plc)">连接</el-button>
+              <el-button v-if="plc.isConnected" type="warning" size="small" @click="handleDisconnect(plc)">断开</el-button>
               <el-button type="danger" size="small" @click="handleRemove(plc)">移除</el-button>
               <el-button size="small" @click="handleEditPlc(plc)">编辑</el-button>
             </el-row>

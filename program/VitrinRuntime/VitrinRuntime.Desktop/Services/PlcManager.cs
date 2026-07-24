@@ -1,5 +1,4 @@
 using Ddon.Desktop.Core.Annotations;
-using Ddon.VitrinPLC;
 using Ddon.VitrinPLC.Abstractions;
 using Ddon.VitrinPLC.Clients;
 using Ddon.VitrinPLC.Models;
@@ -7,23 +6,23 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using VitrinRuntime.Desktop.Stores;
 
-namespace VitrinRuntime.Services;
+namespace VitrinRuntime.Desktop.Services;
 
 [BridgeService(Name = "PlcManager")]
-public sealed class PlcManagerService
+public sealed class PlcManager
 {
     private readonly IPlcHub _hub;
     private readonly IPlcConfigStore _store;
     private readonly TagSubscriptionManager _subscriptionManager;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<PlcManagerService> _logger;
+    private readonly ILogger<PlcManager> _logger;
 
-    public PlcManagerService(
+    public PlcManager(
         IPlcHub hub,
         IPlcConfigStore store,
         TagSubscriptionManager subscriptionManager,
         IServiceProvider serviceProvider,
-        ILogger<PlcManagerService> logger)
+        ILogger<PlcManager> logger)
     {
         _hub = hub;
         _store = store;

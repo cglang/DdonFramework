@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using VitrinRuntime.Services;
+using VitrinRuntime.Desktop.Services;
 
 namespace VitrinRuntime.Desktop.Stores;
 

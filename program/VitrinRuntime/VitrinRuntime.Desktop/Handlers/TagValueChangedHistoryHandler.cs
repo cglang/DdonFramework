@@ -1,6 +1,6 @@
 ﻿using Ddon.EventBus.Contracts;
+using VitrinRuntime.Desktop.Services;
 using VitrinRuntime.Desktop.Stores;
-using VitrinRuntime.Services;
 
 namespace VitrinRuntime.Desktop.Handlers
 {
