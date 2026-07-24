@@ -111,14 +111,7 @@ public sealed class TagSubscriptionManager : IDisposable
             var session = _hub.For(plcName);
             foreach (var tag in session.Tags)
             {
-                TagConfig tagConfig = new TagConfig
-                {
-                    Name = tag.Name,
-                    Address = tag.Address,
-                    DataType = tag.Type
-                };
-
-                SubscribeTag(plcName, tagConfig);
+                SubscribeTag(plcName, new TagDefinition(tag.Name, tag.Address, tag.Type));
             }
             _logger.LogDebug("PLC '{Plc}' 的所有点位订阅完成，共 {Count} 个", plcName, session.Tags.Count);
         }

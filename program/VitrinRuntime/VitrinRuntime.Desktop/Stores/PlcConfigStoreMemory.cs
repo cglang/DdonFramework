@@ -46,6 +46,31 @@ public sealed class PlcConfigStoreMemory : IPlcConfigStore
         }
     }
 
+    public void UpdatePlc(string oldName, PlcConfig config)
+    {
+        if (!_plcs.ContainsKey(oldName))
+            throw new KeyNotFoundException($"PLC '{oldName}' 未找到。");
+
+        // 如果改名了，检查新名称是否冲突
+        if (!string.Equals(oldName, config.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            if (!_plcs.TryAdd(config.Name, config))
+                throw new InvalidOperationException($"PLC '{config.Name}' 已存在。");
+            _plcs.TryRemove(oldName, out _);
+        }
+        else
+        {
+            _plcs[oldName] = config;
+        }
+
+        // 同步更新分组中的 PlcName
+        foreach (var g in _groups.Values.Where(g =>
+            g.PlcName.Equals(oldName, StringComparison.OrdinalIgnoreCase)))
+        {
+            g.PlcName = config.Name;
+        }
+    }
+
     public List<TagConfig> GetAllTagsForPlc(string plcName)
     {
         var groupIds = _groups.Values

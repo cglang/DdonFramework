@@ -7,11 +7,14 @@ function invoke<T>(method: string, payload?: unknown): Promise<T> {
 // ── 类型定义 ──────────────────────────────────
 
 export interface PlcConfig {
+  id: string
   name: string
   ip: string
   port: number
   rack: number
   slot: number
+  scanInterval: number
+  autoConnect: boolean
   isConnected: boolean
   createdAt: string
   lastConnectedAt?: string
@@ -61,6 +64,16 @@ export interface WriteTagResult {
   needConfirmByScan: boolean
 }
 
+export interface TagHistoryRecord {
+  id: string
+  tagName: string
+  address: string
+  dataType: string
+  oldValue: unknown
+  newValue: unknown
+  timestamp: string
+}
+
 export interface CreateGroupResult {
   id: string
   name: string
@@ -73,8 +86,8 @@ export interface CreateGroupResult {
 export const plcManager = {
   listPlcs: () => invoke<PlcConfig[]>('PlcManager.ListPlcs'),
 
-  addPlc: (name: string, ip: string, port = 102, rack = 0, slot = 1) =>
-    invoke<PlcConfig>('PlcManager.AddPlc', { name, ip, port, rack, slot }),
+  addPlc: (name: string, ip: string, port = 102, rack = 0, slot = 1, scanInterval = 200, autoConnect = false) =>
+    invoke<PlcConfig>('PlcManager.AddPlc', { name, ip, port, rack, slot, scanInterval, autoConnect }),
 
   removePlc: (name: string) =>
     invoke<void>('PlcManager.RemovePlc', { name }),
@@ -87,6 +100,9 @@ export const plcManager = {
 
   getPlcStatus: (name: string) =>
     invoke<PlcStatus | null>('PlcManager.GetPlcStatus', { name }),
+
+  updatePlc: (oldName: string, name: string, ip: string, port = 102, rack = 0, slot = 1, scanInterval = 200, autoConnect = false) =>
+    invoke<PlcConfig>('PlcManager.UpdatePlc', { oldName, name, ip, port, rack, slot, scanInterval, autoConnect }),
 }
 
 // ── PlcData API ────────────────────────────────
@@ -121,4 +137,7 @@ export const plcData = {
 
   writeTag: (tagId: string, value: unknown) =>
     invoke<WriteTagResult>('PlcData.WriteTag', { tagId, value }),
+
+  getTagHistory: (tagName: string) =>
+    invoke<TagHistoryRecord[]>('PlcData.GetTagHistory', { tagName }),
 }

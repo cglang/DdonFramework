@@ -3,6 +3,7 @@ using Ddon.Desktop.Core.Annotations;
 using Ddon.VitrinPLC.Abstractions;
 using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.Logging;
+using VitrinRuntime.Desktop.Stores;
 
 namespace VitrinRuntime.Services;
 
@@ -12,13 +13,15 @@ public sealed class PlcDataService
     private readonly IPlcHub _hub;
     private readonly IPlcConfigStore _store;
     private readonly TagSubscriptionManager _subscriptionManager;
+    private readonly ITagHistoryStore _historyStore;
     private readonly ILogger<PlcDataService> _logger;
 
-    public PlcDataService(IPlcHub hub, IPlcConfigStore store, TagSubscriptionManager subscriptionManager, ILogger<PlcDataService> logger)
+    public PlcDataService(IPlcHub hub, IPlcConfigStore store, TagSubscriptionManager subscriptionManager, ITagHistoryStore historyStore, ILogger<PlcDataService> logger)
     {
         _hub = hub;
         _store = store;
         _subscriptionManager = subscriptionManager;
+        _historyStore = historyStore;
         _logger = logger;
     }
 
@@ -106,6 +109,11 @@ public sealed class PlcDataService
         var group = _store.GetGroup(req.GroupId)
             ?? throw new KeyNotFoundException($"分组 '{req.GroupId}' 未找到。");
 
+        // 检查当前分组内是否存在同名点位
+        var existingTags = _store.GetTagsByGroup(req.GroupId);
+        if (existingTags.Any(t => t.Name.Equals(req.TagName, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"分组中已存在同名点位 '{req.TagName}'。");
+
         var tag = new TagConfig
         {
             GroupId = req.GroupId,
@@ -168,6 +176,14 @@ public sealed class PlcDataService
         if (!Enum.TryParse<PlcDataType>(req.DataType, true, out var plcType))
             throw new ArgumentException($"不支持的数据类型: {req.DataType}");
 
+        // 如果名称变更，检查同一分组内是否存在同名点位（排除自身）
+        if (!string.Equals(oldTag.Name, req.TagName, StringComparison.OrdinalIgnoreCase))
+        {
+            var existingTags = _store.GetTagsByGroup(oldTag.GroupId);
+            if (existingTags.Any(t => t.Name.Equals(req.TagName, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"分组中已存在同名点位 '{req.TagName}'。");
+        }
+
         // 更新存储
         var updatedTag = new TagConfig
         {
@@ -189,14 +205,10 @@ public sealed class PlcDataService
             {
                 var session = _hub.For(group.PlcName);
 
-                // 取消旧订阅
+                // 取消旧订阅并移除旧标签（无论名称是否变更，确保会话中的定义更新）
                 _subscriptionManager.UnsubscribeTag(group.PlcName, oldTag.Name);
+                session.RemoveTag(oldTag.Name);
 
-                // 如果名称变了，需要移除旧标签再添加新标签
-                if (!string.Equals(oldTag.Name, req.TagName, StringComparison.Ordinal))
-                {
-                    session.RemoveTag(oldTag.Name);
-                }
                 var tagDefinition = new TagDefinition(req.TagName, req.Address, plcType, req.StringLength);
                 session.AddTag(tagDefinition);
 
@@ -259,6 +271,22 @@ public sealed class PlcDataService
             _logger.LogError(ex, "写入点位 '{TagName}' 失败。", tag.Name);
             return new { success = false, error = ex.Message };
         }
+    }
+
+    [BridgeMethod(Name = "GetTagHistory")]
+    public List<object> GetTagHistory(TagHistoryRequest req)
+    {
+        var records = _historyStore.GetRecords(req.TagName);
+        return records.Select(r => new
+        {
+            id = r.Id,
+            tagName = r.TagName,
+            address = r.Address,
+            dataType = r.DataType,
+            oldValue = r.OldValue,
+            newValue = r.NewValue,
+            timestamp = r.Timestamp
+        } as object).ToList();
     }
 
     // ── Helper Methods ───────────────────────────────

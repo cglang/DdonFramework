@@ -15,6 +15,22 @@ const form = reactive({
   port: 102,
   rack: 0,
   slot: 1,
+  scanInterval: 200,
+  autoConnect: false,
+})
+
+// 编辑对话框状态
+const editDialogVisible = ref(false)
+const editingPlc = ref<PlcConfig | null>(null)
+const editForm = reactive({
+  oldName: '',
+  name: '',
+  ip: '',
+  port: 102,
+  rack: 0,
+  slot: 1,
+  scanInterval: 200,
+  autoConnect: false,
 })
 
 async function loadPlcs() {
@@ -34,10 +50,10 @@ async function handleAddPlc() {
     return
   }
   try {
-    await plcManager.addPlc(form.name, form.ip, form.port, form.rack, form.slot)
+    await plcManager.addPlc(form.name, form.ip, form.port, form.rack, form.slot, form.scanInterval, form.autoConnect)
     ElMessage.success('PLC 添加成功')
     dialogVisible.value = false
-    Object.assign(form, { name: '', ip: '192.168.1.10', port: 102, rack: 0, slot: 1 })
+    Object.assign(form, { name: '', ip: '192.168.1.10', port: 102, rack: 0, slot: 1, scanInterval: 200, autoConnect: false })
     await loadPlcs()
   } catch (e: any) {
     ElMessage.error('添加失败: ' + (e.message || e))
@@ -76,6 +92,37 @@ async function handleRemove(plc: PlcConfig) {
     await loadPlcs()
   } catch (e: any) {
     if (e !== 'cancel') ElMessage.error('移除失败: ' + (e.message || e))
+  }
+}
+
+async function handleEditPlc(plc: PlcConfig) {
+  editForm.oldName = plc.name
+  editForm.name = plc.name
+  editForm.ip = plc.ip
+  editForm.port = plc.port
+  editForm.rack = plc.rack
+  editForm.slot = plc.slot
+  editForm.scanInterval = plc.scanInterval
+  editForm.autoConnect = plc.autoConnect
+  editDialogVisible.value = true
+}
+
+async function handleUpdatePlc() {
+  if (!editForm.name || !editForm.ip) {
+    ElMessage.warning('请填写 PLC 名称和 IP 地址')
+    return
+  }
+  try {
+    await plcManager.updatePlc(
+      editForm.oldName, editForm.name, editForm.ip,
+      editForm.port, editForm.rack, editForm.slot,
+      editForm.scanInterval, editForm.autoConnect,
+    )
+    ElMessage.success('PLC 已更新')
+    editDialogVisible.value = false
+    await loadPlcs()
+  } catch (e: any) {
+    ElMessage.error('更新失败: ' + (e.message || e))
   }
 }
 
@@ -120,6 +167,7 @@ onMounted(loadPlcs)
               <el-descriptions-item label="IP">{{ plc.ip }}</el-descriptions-item>
               <el-descriptions-item label="端口">{{ plc.port }}</el-descriptions-item>
               <el-descriptions-item label="机架/槽位">{{ plc.rack }}/{{ plc.slot }}</el-descriptions-item>
+              <el-descriptions-item label="扫描频率">{{ plc.scanInterval }}ms</el-descriptions-item>
             </el-descriptions>
 
             <el-alert
@@ -146,6 +194,7 @@ onMounted(loadPlcs)
                 @click="handleDisconnect(plc)"
               >断开</el-button>
               <el-button type="danger" size="small" @click="handleRemove(plc)">移除</el-button>
+              <el-button size="small" @click="handleEditPlc(plc)">编辑</el-button>
             </el-row>
           </el-card>
         </el-col>
@@ -171,10 +220,49 @@ onMounted(loadPlcs)
         <el-form-item label="槽位 (Slot)">
           <el-input-number v-model="form.slot" :min="0" :max="7" />
         </el-form-item>
+        <el-form-item label="扫描频率 (ms)">
+          <el-input-number v-model="form.scanInterval" :min="50" :max="10000" :step="50" />
+          <el-text type="info" size="small" style="margin-top: 4px; display: block">PLC 数据轮询间隔，越小刷新越快</el-text>
+        </el-form-item>
+        <el-form-item label="自动连接">
+          <el-switch v-model="form.autoConnect" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleAddPlc">确定添加</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑 PLC 对话框 -->
+    <el-dialog v-model="editDialogVisible" title="编辑 PLC" width="450px">
+      <el-form :model="editForm" label-width="100px">
+        <el-form-item label="名称" required>
+          <el-input v-model="editForm.name" placeholder="如: MainPLC" />
+        </el-form-item>
+        <el-form-item label="IP 地址" required>
+          <el-input v-model="editForm.ip" placeholder="192.168.1.10" />
+        </el-form-item>
+        <el-form-item label="端口">
+          <el-input-number v-model="editForm.port" :min="1" :max="65535" />
+        </el-form-item>
+        <el-form-item label="机架 (Rack)">
+          <el-input-number v-model="editForm.rack" :min="0" :max="7" />
+        </el-form-item>
+        <el-form-item label="槽位 (Slot)">
+          <el-input-number v-model="editForm.slot" :min="0" :max="7" />
+        </el-form-item>
+        <el-form-item label="扫描频率 (ms)">
+          <el-input-number v-model="editForm.scanInterval" :min="50" :max="10000" :step="50" />
+          <el-text type="info" size="small" style="margin-top: 4px; display: block">PLC 数据轮询间隔，越小刷新越快</el-text>
+        </el-form-item>
+        <el-form-item label="自动连接">
+          <el-switch v-model="editForm.autoConnect" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleUpdatePlc">保存修改</el-button>
       </template>
     </el-dialog>
   </div>

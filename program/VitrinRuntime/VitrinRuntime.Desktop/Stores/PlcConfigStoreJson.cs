@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using VitrinRuntime.Desktop.Stores;
 
 namespace VitrinRuntime.Services;
 
@@ -140,6 +141,32 @@ public sealed class JsonPlcConfigStore : IPlcConfigStore
             plc.IsConnected = connected;
             plc.ErrorMessage = error;
             if (connected) plc.LastConnectedAt = DateTime.UtcNow;
+        }
+        SaveToFile();
+    }
+
+    public void UpdatePlc(string oldName, PlcConfig config)
+    {
+        lock (_lock)
+        {
+            var idx = _plcs.FindIndex(p =>
+                p.Name.Equals(oldName, StringComparison.OrdinalIgnoreCase));
+            if (idx < 0)
+                throw new KeyNotFoundException($"PLC '{oldName}' 未找到。");
+
+            // 如果改名了，检查新名称是否冲突
+            if (!string.Equals(oldName, config.Name, StringComparison.OrdinalIgnoreCase)
+                && _plcs.Any(p => p.Name.Equals(config.Name, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"PLC '{config.Name}' 已存在。");
+
+            _plcs[idx] = config;
+
+            // 同步更新分组中的 PlcName
+            foreach (var g in _groups.Where(g =>
+                g.PlcName.Equals(oldName, StringComparison.OrdinalIgnoreCase)))
+            {
+                g.PlcName = config.Name;
+            }
         }
         SaveToFile();
     }

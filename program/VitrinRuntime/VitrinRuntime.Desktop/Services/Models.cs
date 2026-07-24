@@ -5,11 +5,14 @@ namespace VitrinRuntime.Services;
 /// <summary>PLC 连接配置</summary>
 public sealed class PlcConfig
 {
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = string.Empty;
     public string Ip { get; set; } = "192.168.1.10";
     public int Port { get; set; } = 102;
     public int Rack { get; set; } = 0;
     public int Slot { get; set; } = 1;
+    public int ScanInterval { get; set; } = 200;
+    public bool AutoConnect { get; set; }
     public bool IsConnected { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastConnectedAt { get; set; }
@@ -48,11 +51,25 @@ public sealed class AddPlcRequest
     public int Port { get; set; } = 102;
     public int Rack { get; set; } = 0;
     public int Slot { get; set; } = 1;
+    public int ScanInterval { get; set; } = 200;
+    public bool AutoConnect { get; set; }
 }
 
 public sealed class PlcNameRequest
 {
     public string Name { get; set; } = string.Empty;
+}
+
+public sealed class UpdatePlcRequest
+{
+    public string OldName { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Ip { get; set; } = "192.168.1.10";
+    public int Port { get; set; } = 102;
+    public int Rack { get; set; } = 0;
+    public int Slot { get; set; } = 1;
+    public int ScanInterval { get; set; } = 200;
+    public bool AutoConnect { get; set; }
 }
 
 public sealed class ListDbGroupsRequest
@@ -111,4 +128,21 @@ public sealed class WriteTagRequest
 {
     public string TagId { get; set; } = string.Empty;
     public object? Value { get; set; }
+}
+
+/// <summary>点位值变化历史记录</summary>
+public sealed class TagHistoryRecord
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string TagName { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string DataType { get; set; } = string.Empty;
+    public object? OldValue { get; set; }
+    public object? NewValue { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+}
+
+public sealed class TagHistoryRequest
+{
+    public string TagName { get; set; } = string.Empty;
 }

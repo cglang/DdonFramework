@@ -16,6 +16,9 @@ public interface IPlcConfigStore
 
     void UpdatePlcConnection(string name, bool connected, string? error = null);
 
+    /// <summary>更新 PLC 配置（支持改名，oldName 用于查找原记录）</summary>
+    void UpdatePlc(string oldName, PlcConfig config);
+
     List<TagConfig> GetAllTagsForPlc(string plcName);
 
     // ── DB Group ─────────────────────────────────────

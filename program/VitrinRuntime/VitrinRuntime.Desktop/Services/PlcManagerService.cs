@@ -5,6 +5,7 @@ using Ddon.VitrinPLC.Clients;
 using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using VitrinRuntime.Desktop.Stores;
 
 namespace VitrinRuntime.Services;
 
@@ -64,6 +65,8 @@ public sealed class PlcManagerService
             Port = req.Port,
             Rack = req.Rack,
             Slot = req.Slot,
+            ScanInterval = req.ScanInterval,
+            AutoConnect = req.AutoConnect,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -85,7 +88,7 @@ public sealed class PlcManagerService
 
             await _hub.AddPlcAsync(req.Name, client, host =>
             {
-                host.ScanInterval = 200;
+                host.ScanInterval = req.ScanInterval;
                 host.Endian = EndianFormat.ABCD;
             });
 
@@ -145,7 +148,7 @@ public sealed class PlcManagerService
 
             await _hub.AddPlcAsync(req.Name, client, host =>
             {
-                host.ScanInterval = 200;
+                host.ScanInterval = config.ScanInterval;
                 host.Endian = EndianFormat.ABCD;
 
                 var tags = _store.GetAllTagsForPlc(req.Name);
@@ -193,6 +196,85 @@ public sealed class PlcManagerService
             _logger.LogError(ex, "断开 PLC '{Name}' 失败。", req.Name);
             throw;
         }
+    }
+
+    [BridgeMethod(Name = "UpdatePlc")]
+    public async Task<PlcConfig> UpdatePlc(UpdatePlcRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Name))
+            throw new ArgumentException("PLC 名称不能为空。");
+
+        var oldConfig = _store.GetPlc(req.OldName)
+            ?? throw new KeyNotFoundException($"PLC '{req.OldName}' 未找到。");
+
+        var newConfig = new PlcConfig
+        {
+            Id = oldConfig.Id,
+            Name = req.Name,
+            Ip = req.Ip,
+            Port = req.Port,
+            Rack = req.Rack,
+            Slot = req.Slot,
+            ScanInterval = req.ScanInterval,
+            AutoConnect = req.AutoConnect,
+            IsConnected = oldConfig.IsConnected,
+            CreatedAt = oldConfig.CreatedAt,
+            LastConnectedAt = oldConfig.LastConnectedAt,
+            ErrorMessage = oldConfig.ErrorMessage
+        };
+
+        _store.UpdatePlc(req.OldName, newConfig);
+
+        // 如果当前已连接，重新连接以应用新配置
+        if (oldConfig.IsConnected)
+        {
+            try
+            {
+                _subscriptionManager.UnsubscribePlc(req.OldName);
+                await _hub.RemovePlcAsync(req.OldName);
+
+                var connOpts = new SiemensOptions
+                {
+                    Name = req.Name,
+                    Ip = req.Ip,
+                    Port = req.Port,
+                    Rack = req.Rack,
+                    Slot = req.Slot
+                };
+
+                var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+                var client = new SiemensClient(connOpts, loggerFactory.CreateLogger<SiemensClient>());
+
+                await _hub.AddPlcAsync(req.Name, client, host =>
+                {
+                    host.ScanInterval = req.ScanInterval;
+                    host.Endian = EndianFormat.ABCD;
+
+                    var tags = _store.GetAllTagsForPlc(req.Name);
+                    foreach (var tag in tags)
+                        host.MapTag(tag.Name, tag.Address, tag.DataType, tag.StringLength);
+
+                    var groups = _store.GetGroupsByPlc(req.Name);
+                    foreach (var group in groups)
+                    {
+                        var regionKey = $"DB{group.DbNumber}";
+                        var area = $"DB{group.DbNumber}";
+                        host.MapRegion(regionKey, area, 0, group.DbSize);
+                    }
+                });
+
+                _subscriptionManager.SubscribeAllTags(req.Name);
+                newConfig.IsConnected = true;
+                _logger.LogInformation("PLC '{OldName}' 配置已更新并重新连接。", req.OldName);
+            }
+            catch (Exception ex)
+            {
+                newConfig.IsConnected = false;
+                _logger.LogWarning(ex, "PLC '{OldName}' 配置已更新但重新连接失败。", req.OldName);
+            }
+        }
+
+        return newConfig;
     }
 
     [BridgeMethod(Name = "GetPlcStatus")]
