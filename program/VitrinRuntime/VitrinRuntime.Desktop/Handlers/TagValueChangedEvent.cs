@@ -1,6 +1,6 @@
 using Ddon.EventBus.Contracts;
 
-namespace VitrinRuntime.Services;
+namespace VitrinRuntime.Desktop.Handlers;
 
 /// <summary>
 /// 点位值变化事件，通过 Ddon.EventBus 在进程内发布。
@@ -9,8 +9,12 @@ namespace VitrinRuntime.Services;
 public sealed class TagValueChangedEvent : IEventData
 {
     public string TagName { get; init; } = string.Empty;
+
     public string Address { get; init; } = string.Empty;
+
     public string DataType { get; init; } = string.Empty;
+
     public object? OldValue { get; init; }
+
     public object? NewValue { get; init; }
 }

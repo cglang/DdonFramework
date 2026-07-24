@@ -1,4 +1,6 @@
-namespace VitrinRuntime.Services;
+using VitrinRuntime.Services;
+
+namespace VitrinRuntime.Desktop.Stores;
 
 public interface IPlcConfigStore
 {

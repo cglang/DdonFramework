@@ -1,7 +1,9 @@
-using System.Collections.Concurrent;
 using Ddon.EventBus.Contracts;
 using Ddon.VitrinPLC.Abstractions;
+using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
+using VitrinRuntime.Desktop.Handlers;
 
 namespace VitrinRuntime.Services;
 
@@ -33,16 +35,16 @@ public sealed class TagSubscriptionManager : IDisposable
     }
 
     /// <summary>订阅一个点位的变化，值变化时通过 <see cref="IEventBus"/> 发布 <see cref="TagValueChangedEvent"/></summary>
-    public void SubscribeTag(string plcName, string tagName, string address, string dataType)
+    public void SubscribeTag(string plcName, TagDefinition tag)
     {
         try
         {
             var session = _hub.For(plcName);
 
             // 先解除旧的同名订阅（如果存在），避免重复订阅
-            UnsubscribeTag(plcName, tagName);
+            UnsubscribeTag(plcName, tag.Name);
 
-            var sub = session.Subscribe<object>(tagName, (oldVal, newVal) =>
+            var sub = session.Subscribe<object>(tag.Name, (oldVal, newVal) =>
             {
                 // 值变化 → 通过 EventBus 发布事件，Handler 负责推送到前端
                 Task.Run(async () =>
@@ -51,29 +53,29 @@ public sealed class TagSubscriptionManager : IDisposable
                     {
                         await _eventBus.PublishAsync(new TagValueChangedEvent
                         {
-                            TagName = tagName,
-                            Address = address,
-                            DataType = dataType,
+                            TagName = tag.Name,
+                            Address = tag.Address,
+                            DataType = tag.Type.ToString(),
                             OldValue = oldVal,
                             NewValue = newVal
                         });
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogTrace(ex, "发布点位 '{Tag}' 变化事件失败", tagName);
+                        _logger.LogTrace(ex, "发布点位 '{Tag}' 变化事件失败", tag.Name);
                     }
                 });
             });
 
             var plcSubs = _subscriptions.GetOrAdd(plcName,
                 _ => new ConcurrentDictionary<string, IDisposable>(StringComparer.OrdinalIgnoreCase));
-            plcSubs[tagName] = sub;
+            plcSubs[tag.Name] = sub;
 
-            _logger.LogDebug("已订阅点位 '{Plc}.{Tag}' 的变化", plcName, tagName);
+            _logger.LogDebug("已订阅点位 '{Plc}.{Tag}' 的变化", plcName, tag.Name);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "订阅点位 '{Plc}.{Tag}' 失败", plcName, tagName);
+            _logger.LogWarning(ex, "订阅点位 '{Plc}.{Tag}' 失败", plcName, tag.Name);
         }
     }
 
@@ -109,7 +111,14 @@ public sealed class TagSubscriptionManager : IDisposable
             var session = _hub.For(plcName);
             foreach (var tag in session.Tags)
             {
-                SubscribeTag(plcName, tag.Name, tag.Address, tag.Type.ToString());
+                TagConfig tagConfig = new TagConfig
+                {
+                    Name = tag.Name,
+                    Address = tag.Address,
+                    DataType = tag.Type
+                };
+
+                SubscribeTag(plcName, tagConfig);
             }
             _logger.LogDebug("PLC '{Plc}' 的所有点位订阅完成，共 {Count} 个", plcName, session.Tags.Count);
         }

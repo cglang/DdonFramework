@@ -2,8 +2,9 @@ using Avalonia.Threading;
 using Ddon.Desktop.Core.Bridge;
 using Ddon.EventBus.Contracts;
 using Microsoft.Extensions.Logging;
+using VitrinRuntime.Services;
 
-namespace VitrinRuntime.Services;
+namespace VitrinRuntime.Desktop.Handlers;
 
 /// <summary>
 /// 处理 <see cref="TagValueChangedEvent"/>，将点位变化推送到前端。

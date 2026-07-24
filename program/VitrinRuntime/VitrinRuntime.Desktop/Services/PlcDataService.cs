@@ -119,8 +119,9 @@ public sealed class PlcDataService
         try
         {
             var session = _hub.For(group.PlcName);
-            session.AddTag(new TagDefinition(tag.Name, tag.Address, tag.DataType, tag.StringLength));
-            _subscriptionManager.SubscribeTag(group.PlcName, tag.Name, tag.Address, plcType.ToString());
+            var tagDefinition = new TagDefinition(tag.Name, tag.Address, tag.DataType, tag.StringLength);
+            session.AddTag(tagDefinition);
+            _subscriptionManager.SubscribeTag(group.PlcName, tagDefinition);
         }
         catch (Exception ex)
         {
@@ -196,10 +197,11 @@ public sealed class PlcDataService
                 {
                     session.RemoveTag(oldTag.Name);
                 }
-                session.AddTag(new TagDefinition(req.TagName, req.Address, plcType, req.StringLength));
+                var tagDefinition = new TagDefinition(req.TagName, req.Address, plcType, req.StringLength);
+                session.AddTag(tagDefinition);
 
                 // 建立新订阅
-                _subscriptionManager.SubscribeTag(group.PlcName, req.TagName, req.Address, plcType.ToString());
+                _subscriptionManager.SubscribeTag(group.PlcName, tagDefinition);
             }
             catch (Exception ex)
             {

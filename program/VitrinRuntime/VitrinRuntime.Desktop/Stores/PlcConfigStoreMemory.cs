@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
+using VitrinRuntime.Services;
 
-namespace VitrinRuntime.Services;
+namespace VitrinRuntime.Desktop.Stores;
 
 /// <summary>PLC 配置、DB分组、点位定义的内存存储</summary>
-public sealed class MemoryPlcConfigStore : IPlcConfigStore
+public sealed class PlcConfigStoreMemory : IPlcConfigStore
 {
     private readonly ConcurrentDictionary<string, PlcConfig> _plcs = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, DbGroup> _groups = new(StringComparer.Ordinal);
