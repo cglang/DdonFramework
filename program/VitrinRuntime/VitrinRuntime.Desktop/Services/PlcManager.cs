@@ -157,15 +157,6 @@ public sealed class PlcManager
                 var tags = _store.GetAllTagsForPlc(req.Name);
                 foreach (var tag in tags)
                     host.MapTag(tag.Name, tag.Address, tag.DataType, tag.StringLength);
-
-                // 预注册各 DB 块的镜像区域（使用自定义大小，替代默认的 4096）
-                var groups = _store.GetGroupsByPlc(req.Name);
-                foreach (var group in groups)
-                {
-                    var regionKey = $"DB{group.DbNumber}";
-                    var area = $"DB{group.DbNumber}";
-                    host.MapRegion(regionKey, area, 0, group.DbSize);
-                }
             });
 
             // 为所有已注册点位建立变化订阅
@@ -258,14 +249,6 @@ public sealed class PlcManager
                     var tags = _store.GetAllTagsForPlc(req.Name);
                     foreach (var tag in tags)
                         host.MapTag(tag.Name, tag.Address, tag.DataType, tag.StringLength);
-
-                    var groups = _store.GetGroupsByPlc(req.Name);
-                    foreach (var group in groups)
-                    {
-                        var regionKey = $"DB{group.DbNumber}";
-                        var area = $"DB{group.DbNumber}";
-                        host.MapRegion(regionKey, area, 0, group.DbSize);
-                    }
                 });
 
                 _subscriptionManager.SubscribeAllTags(req.Name);

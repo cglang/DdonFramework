@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
 using Ddon.VitrinPLC.Abstractions;
-using Ddon.VitrinPLC.Models;
-using Ddon.VitrinPLC.TagEngine;
 using Ddon.VitrinPLC.SyncEngine;
+using Ddon.VitrinPLC.TagEngine;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Ddon.VitrinPLC
 {
@@ -31,20 +29,17 @@ namespace Ddon.VitrinPLC
 
             var notifier = new ChangeNotifier();
 
-            var writeService = ActivatorUtilities.CreateInstance<WriteCommandService>(sp, client, registry, options.Endian);
-
             var engine = ActivatorUtilities.CreateInstance<PlcSyncEngine>(sp, client, mirror, registry, notifier, options.ScanInterval);
 
-            var session = ActivatorUtilities.CreateInstance<PlcSession>(sp, registry, mirror, writeService, notifier);
+            var session = ActivatorUtilities.CreateInstance<PlcSession>(sp, registry, mirror, notifier, client, options.Endian);
 
-            return new PlcServiceGroup(registry, mirror, notifier, writeService, engine, session);
+            return new PlcServiceGroup(registry, mirror, notifier, engine, session);
         }
 
         internal sealed record PlcServiceGroup(
             TagRegistry Registry,
             PlcMemoryMirror Mirror,
             ChangeNotifier Notifier,
-            WriteCommandService WriteService,
             PlcSyncEngine Engine,
             PlcSession Session);
     }

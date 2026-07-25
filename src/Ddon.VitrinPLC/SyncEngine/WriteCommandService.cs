@@ -30,36 +30,29 @@ namespace Ddon.VitrinPLC.SyncEngine
             _logger = logger;
         }
 
-        public async Task<WriteResult> ExecuteAsync<T>(string tagName, T value, CancellationToken ct = default)
+        public async Task<WriteResult> ExecuteAsync<T>(TagDefinition tag, T value, CancellationToken ct = default)
         {
-            TagDefinition tag;
-            try { tag = _registry.Resolve(tagName); }
-            catch (Exception ex)
-            {
-                return WriteResult.Fail(tagName, $"Tag 未找到: {ex.Message}", ex);
-            }
-
             try
             {
                 var addr = AddressParser.Parse(tag.Address, tag.Type);
                 var bytes = PlcCodec.Encode(value, tag.Type, _endian, addr.ByteOffset, addr.BitIndex, tag.StringLength);
 
                 _logger.LogDebug("写入 PLC: {Tag}={Value} @ {Address} ({Bytes} bytes)",
-                    tagName, value, tag.Address, bytes.Length);
+                    tag.Name, value, tag.Address, bytes.Length);
 
                 await _client.WriteBytesAsync(tag.Address, bytes, ct);
 
-                _logger.LogInformation("写入成功: {Tag}={Value} (等待扫描确认)", tagName, value);
-                return WriteResult.Ok(tagName, value);
+                _logger.LogInformation("写入成功: {Tag}={Value} (等待扫描确认)", tag.Name, value);
+                return WriteResult.Ok(tag.Name, value);
             }
             catch (OperationCanceledException)
             {
-                return WriteResult.Fail(tagName, "操作已取消");
+                return WriteResult.Fail(tag.Name, "操作已取消");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "写入失败: {Tag}", tagName);
-                return WriteResult.Fail(tagName, ex.Message, ex);
+                _logger.LogError(ex, "写入失败: {Tag}", tag.Name);
+                return WriteResult.Fail(tag.Name, ex.Message, ex);
             }
         }
     }
