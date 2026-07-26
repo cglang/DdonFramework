@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.VitrinPLC.Abstractions;
@@ -8,6 +9,8 @@ namespace Ddon.VitrinPLC.Clients.Mitsubishi;
 
 public sealed class McProtocolClient : IPlcClient
 {
+    private const int MaxWords = 900;
+
     private readonly McProtocol _protocol;
 
     public string Name { get; }
@@ -44,7 +47,24 @@ public sealed class McProtocolClient : IPlcClient
             return await _protocol.ReadDeviceBlock(deviceType, deviceAddress, devicePoints);
         }
 
-        return await _protocol.ReadDeviceBlock(deviceType, start / 2, length);
+        var wordAddress = start / 2;
+        var wordCount = length / 2;
+
+        if (wordCount <= MaxWords)
+            return await _protocol.ReadDeviceBlock(deviceType, wordAddress, wordCount);
+
+        var result = new byte[wordCount * 2];
+        var offset = 0;
+        while (wordCount > 0)
+        {
+            var chunk = Math.Min(wordCount, MaxWords);
+            var chunkData = await _protocol.ReadDeviceBlock(deviceType, wordAddress, chunk);
+            Buffer.BlockCopy(chunkData, 0, result, offset, chunkData.Length);
+            wordAddress += chunk;
+            wordCount -= chunk;
+            offset += chunkData.Length;
+        }
+        return result;
     }
 
     public async Task WriteBytesAsync(string address, byte[] data, CancellationToken ct = default)
