@@ -1,6 +1,7 @@
 using Ddon.Desktop.Core.Annotations;
 using Ddon.VitrinPLC.Abstractions;
 using Ddon.VitrinPLC.Clients;
+using Ddon.VitrinPLC.Clients.Mitsubishi;
 using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,7 +37,6 @@ public sealed class PlcManager
     public List<PlcConfig> ListPlcs()
     {
         var plcs = _store.GetAllPlcs();
-        // 同步连接状态
         foreach (var plc in plcs)
         {
             try
@@ -61,13 +61,12 @@ public sealed class PlcManager
         var config = new PlcConfig
         {
             Name = req.Name,
+            PlcType = req.PlcType,
             Ip = req.Ip,
             Port = req.Port,
-            Rack = req.Rack,
-            Slot = req.Slot,
-            CpuType = req.CpuType,
             ScanInterval = req.ScanInterval,
             AutoConnect = req.AutoConnect,
+            ConnectionOptions = req.ConnectionOptions,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -75,23 +74,13 @@ public sealed class PlcManager
 
         try
         {
-            var connOpts = new SiemensOptions
-            {
-                Name = req.Name,
-                Ip = req.Ip,
-                Port = req.Port,
-                Rack = req.Rack,
-                Slot = req.Slot,
-                CpuType = (CpuType)req.CpuType
-            };
-
-            var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
-            var client = new SiemensClient(connOpts, loggerFactory.CreateLogger<SiemensClient>());
+            var client = CreateClient(req.Name, req.PlcType, req.Ip, req.Port, req.ConnectionOptions);
+            var endian = req.PlcType == "Siemens" ? EndianFormat.ABCD : EndianFormat.DCBA;
 
             await _hub.AddPlcAsync(req.Name, client, host =>
             {
                 host.ScanInterval = req.ScanInterval;
-                host.Endian = EndianFormat.ABCD;
+                host.Endian = endian;
             });
 
             _store.UpdatePlcConnection(req.Name, true);
@@ -134,25 +123,15 @@ public sealed class PlcManager
 
         try
         {
-            var connOpts = new SiemensOptions
-            {
-                Name = req.Name,
-                Ip = config.Ip,
-                Port = config.Port,
-                Rack = config.Rack,
-                Slot = config.Slot,
-                CpuType = (CpuType)config.CpuType
-            };
-
-            var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
-            var client = new SiemensClient(connOpts, loggerFactory.CreateLogger<SiemensClient>());
+            var client = CreateClient(req.Name, config.PlcType, config.Ip, config.Port, config.ConnectionOptions);
+            var endian = config.PlcType == "Siemens" ? EndianFormat.ABCD : EndianFormat.DCBA;
 
             try { await _hub.RemovePlcAsync(req.Name); } catch { }
 
             await _hub.AddPlcAsync(req.Name, client, host =>
             {
                 host.ScanInterval = config.ScanInterval;
-                host.Endian = EndianFormat.ABCD;
+                host.Endian = endian;
 
                 var tags = _store.GetAllTagsForPlc(req.Name);
                 foreach (var tag in tags)
@@ -163,7 +142,6 @@ public sealed class PlcManager
                 }
             });
 
-            // 为所有已注册点位建立变化订阅
             _subscriptionManager.SubscribeAllTags(req.Name);
 
             _store.UpdatePlcConnection(req.Name, true);
@@ -180,7 +158,6 @@ public sealed class PlcManager
     [BridgeMethod(Name = "DisconnectPlc")]
     public async Task DisconnectPlc(PlcNameRequest req)
     {
-        // 先取消所有点位订阅
         _subscriptionManager.UnsubscribePlc(req.Name);
 
         try
@@ -209,22 +186,20 @@ public sealed class PlcManager
         {
             Id = oldConfig.Id,
             Name = req.Name,
+            PlcType = oldConfig.PlcType,
             Ip = req.Ip,
             Port = req.Port,
-            Rack = req.Rack,
-            Slot = req.Slot,
-            CpuType = req.CpuType,
             ScanInterval = req.ScanInterval,
             AutoConnect = req.AutoConnect,
             IsConnected = oldConfig.IsConnected,
             CreatedAt = oldConfig.CreatedAt,
             LastConnectedAt = oldConfig.LastConnectedAt,
-            ErrorMessage = oldConfig.ErrorMessage
+            ErrorMessage = oldConfig.ErrorMessage,
+            ConnectionOptions = req.ConnectionOptions
         };
 
         _store.UpdatePlc(req.OldName, newConfig);
 
-        // 如果当前已连接，重新连接以应用新配置
         if (oldConfig.IsConnected)
         {
             try
@@ -232,23 +207,13 @@ public sealed class PlcManager
                 _subscriptionManager.UnsubscribePlc(req.OldName);
                 await _hub.RemovePlcAsync(req.OldName);
 
-                var connOpts = new SiemensOptions
-                {
-                    Name = req.Name,
-                    Ip = req.Ip,
-                    Port = req.Port,
-                    Rack = req.Rack,
-                    Slot = req.Slot,
-                    CpuType = (CpuType)req.CpuType
-                };
-
-                var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
-                var client = new SiemensClient(connOpts, loggerFactory.CreateLogger<SiemensClient>());
+                var client = CreateClient(req.Name, oldConfig.PlcType, req.Ip, req.Port, req.ConnectionOptions);
+                var endian = oldConfig.PlcType == "Siemens" ? EndianFormat.ABCD : EndianFormat.DCBA;
 
                 await _hub.AddPlcAsync(req.Name, client, host =>
                 {
                     host.ScanInterval = req.ScanInterval;
-                    host.Endian = EndianFormat.ABCD;
+                    host.Endian = endian;
 
                     var tags = _store.GetAllTagsForPlc(req.Name);
                     foreach (var tag in tags)
@@ -304,5 +269,26 @@ public sealed class PlcManager
                 errorMessage = config.ErrorMessage
             };
         }
+    }
+
+    private IPlcClient CreateClient(string name, string plcType, string ip, int port, Dictionary<string, string> opts)
+    {
+        var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+
+        return plcType switch
+        {
+            "Mitsubishi" => new McProtocolClient(
+                name, ip, port,
+                (McProtocolFrame)int.Parse(opts.GetValueOrDefault("mcProtocolFrame", "11"))),
+            _ => new SiemensClient(new SiemensOptions
+            {
+                Name = name,
+                Ip = ip,
+                Port = port,
+                Rack = int.Parse(opts.GetValueOrDefault("rack", "0")),
+                Slot = int.Parse(opts.GetValueOrDefault("slot", "1")),
+                CpuType = (CpuType)int.Parse(opts.GetValueOrDefault("cpuType", "40"))
+            }, loggerFactory.CreateLogger<SiemensClient>())
+        };
     }
 }

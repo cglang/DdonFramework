@@ -6,6 +6,17 @@
   import { plcManager, type PlcConfig } from '../api/plcApi';
   import type { HeaderAction } from '../App.vue';
 
+  const plcTypeOptions = [
+    { value: 'Siemens', label: '西门子' },
+    { value: 'Mitsubishi', label: '三菱' },
+  ];
+
+  const mcFrameOptions = [
+    { value: 11, label: '3E 帧' },
+    { value: 15, label: '4E 帧' },
+    { value: 4, label: '1E 帧' },
+  ];
+
   const cpuTypeOptions = [
     { value: 0, label: 'S7-200' },
     { value: 1, label: 'Logo 0BA8' },
@@ -24,28 +35,30 @@
 
   const form = reactive({
     name: '',
+    plcType: 'Siemens' as string,
     ip: '127.0.0.1',
     port: 102,
+    scanInterval: 200,
+    autoConnect: false,
     rack: 0,
     slot: 1,
     cpuType: 40,
-    scanInterval: 200,
-    autoConnect: false,
+    mcProtocolFrame: 11,
   });
 
-  // 编辑对话框状态
   const editDialogVisible = ref(false);
-  const editingPlc = ref<PlcConfig | null>(null);
   const editForm = reactive({
     oldName: '',
     name: '',
+    plcType: 'Siemens' as string,
     ip: '',
     port: 102,
+    scanInterval: 200,
+    autoConnect: false,
     rack: 0,
     slot: 1,
     cpuType: 40,
-    scanInterval: 200,
-    autoConnect: false,
+    mcProtocolFrame: 11,
   });
 
   async function loadPlcs() {
@@ -59,16 +72,23 @@
     }
   }
 
+  function buildConnectionOptions(plcType: string, data: any): Record<string, string> {
+    if (plcType === 'Mitsubishi') {
+      return { mcProtocolFrame: String(data.mcProtocolFrame) };
+    }
+    return { rack: String(data.rack), slot: String(data.slot), cpuType: String(data.cpuType) };
+  }
+
   async function handleAddPlc() {
     if (!form.name || !form.ip) {
       ElMessage.warning('请填写 PLC 名称和 IP 地址');
       return;
     }
     try {
-      await plcManager.addPlc(form.name, form.ip, form.port, form.rack, form.slot, form.cpuType, form.scanInterval, form.autoConnect);
+      await plcManager.addPlc(form.name, form.plcType, form.ip, form.port, form.scanInterval, form.autoConnect, buildConnectionOptions(form.plcType, form));
       ElMessage.success('PLC 添加成功');
       dialogVisible.value = false;
-      Object.assign(form, { name: '', ip: '192.168.1.10', port: 102, rack: 0, slot: 1, cpuType: 40, scanInterval: 200, autoConnect: false });
+      Object.assign(form, { name: '', plcType: 'Siemens', ip: '192.168.1.10', port: 102, scanInterval: 200, autoConnect: false, rack: 0, slot: 1, cpuType: 40, mcProtocolFrame: 11 });
       await loadPlcs();
     } catch (e: any) {
       ElMessage.error('添加失败: ' + (e.message || e));
@@ -113,13 +133,18 @@
   async function handleEditPlc(plc: PlcConfig) {
     editForm.oldName = plc.name;
     editForm.name = plc.name;
+    editForm.plcType = plc.plcType;
     editForm.ip = plc.ip;
     editForm.port = plc.port;
-    editForm.rack = plc.rack;
-    editForm.slot = plc.slot;
-    editForm.cpuType = plc.cpuType;
     editForm.scanInterval = plc.scanInterval;
     editForm.autoConnect = plc.autoConnect;
+    if (plc.plcType === 'Mitsubishi') {
+      editForm.mcProtocolFrame = Number(plc.connectionOptions.mcProtocolFrame) || 11;
+    } else {
+      editForm.rack = Number(plc.connectionOptions.rack) || 0;
+      editForm.slot = Number(plc.connectionOptions.slot) || 1;
+      editForm.cpuType = Number(plc.connectionOptions.cpuType) || 40;
+    }
     editDialogVisible.value = true;
   }
 
@@ -129,7 +154,7 @@
       return;
     }
     try {
-      await plcManager.updatePlc(editForm.oldName, editForm.name, editForm.ip, editForm.port, editForm.rack, editForm.slot, editForm.cpuType, editForm.scanInterval, editForm.autoConnect);
+      await plcManager.updatePlc(editForm.oldName, editForm.name, editForm.ip, editForm.port, editForm.scanInterval, editForm.autoConnect, buildConnectionOptions(editForm.plcType, editForm));
       ElMessage.success('PLC 已更新');
       editDialogVisible.value = false;
       await loadPlcs();
@@ -181,9 +206,15 @@
             </template>
 
             <el-descriptions :column="1" size="small" border>
+              <el-descriptions-item label="类型">{{ plc.plcType === 'Mitsubishi' ? '三菱' : '西门子' }}</el-descriptions-item>
               <el-descriptions-item label="IP:端口">{{ plc.ip }}:{{ plc.port }}</el-descriptions-item>
-              <el-descriptions-item label="CPU 类型">{{ getCpuTypeLabel(plc.cpuType) }}</el-descriptions-item>
-              <el-descriptions-item label="机架/槽位">{{ plc.rack }}/{{ plc.slot }}</el-descriptions-item>
+              <template v-if="plc.plcType === 'Mitsubishi'">
+                <el-descriptions-item label="协议帧">{{ plc.connectionOptions.mcProtocolFrame || 11 }}E 帧</el-descriptions-item>
+              </template>
+              <template v-else>
+                <el-descriptions-item label="CPU 类型">{{ getCpuTypeLabel(Number(plc.connectionOptions.cpuType) || 40) }}</el-descriptions-item>
+                <el-descriptions-item label="机架/槽位">{{ plc.connectionOptions.rack || 0 }}/{{ plc.connectionOptions.slot || 1 }}</el-descriptions-item>
+              </template>
               <el-descriptions-item label="扫描频率">{{ plc.scanInterval }}ms</el-descriptions-item>
             </el-descriptions>
 
@@ -202,10 +233,15 @@
       <el-empty v-if="!loading && plcs.length === 0" description="暂无 PLC，请点击上方按钮添加" />
     </div>
 
-    <el-dialog v-model="dialogVisible" title="添加西门子 PLC" width="450px">
+    <el-dialog v-model="dialogVisible" title="添加 PLC" width="450px">
       <el-form :model="form" label-width="100px">
         <el-form-item label="名称" required>
           <el-input v-model="form.name" placeholder="如: MainPLC" />
+        </el-form-item>
+        <el-form-item label="PLC 类型" required>
+          <el-select v-model="form.plcType" style="width: 100%">
+            <el-option v-for="opt in plcTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="IP 地址" required>
           <el-input v-model="form.ip" placeholder="192.168.1.10" />
@@ -213,17 +249,26 @@
         <el-form-item label="端口">
           <el-input-number v-model="form.port" :min="1" :max="65535" />
         </el-form-item>
-        <el-form-item label="机架 (Rack)">
-          <el-input-number v-model="form.rack" :min="0" :max="7" />
-        </el-form-item>
-        <el-form-item label="槽位 (Slot)">
-          <el-input-number v-model="form.slot" :min="0" :max="7" />
-        </el-form-item>
-        <el-form-item label="CPU 类型">
-          <el-select v-model="form.cpuType" style="width: 100%">
-            <el-option v-for="opt in cpuTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-          </el-select>
-        </el-form-item>
+        <template v-if="form.plcType === 'Siemens'">
+          <el-form-item label="机架 (Rack)">
+            <el-input-number v-model="form.rack" :min="0" :max="7" />
+          </el-form-item>
+          <el-form-item label="槽位 (Slot)">
+            <el-input-number v-model="form.slot" :min="0" :max="7" />
+          </el-form-item>
+          <el-form-item label="CPU 类型">
+            <el-select v-model="form.cpuType" style="width: 100%">
+              <el-option v-for="opt in cpuTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            </el-select>
+          </el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item label="协议帧">
+            <el-select v-model="form.mcProtocolFrame" style="width: 100%">
+              <el-option v-for="opt in mcFrameOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            </el-select>
+          </el-form-item>
+        </template>
         <el-form-item label="扫描频率 (ms)">
           <el-input-number v-model="form.scanInterval" :min="50" :max="10000" :step="50" />
           <el-text type="info" size="small" style="margin-top: 4px; display: block">PLC 数据轮询间隔，越小刷新越快</el-text>
@@ -250,17 +295,26 @@
         <el-form-item label="端口">
           <el-input-number v-model="editForm.port" :min="1" :max="65535" />
         </el-form-item>
-        <el-form-item label="机架 (Rack)">
-          <el-input-number v-model="editForm.rack" :min="0" :max="7" />
-        </el-form-item>
-        <el-form-item label="槽位 (Slot)">
-          <el-input-number v-model="editForm.slot" :min="0" :max="7" />
-        </el-form-item>
-        <el-form-item label="CPU 类型">
-          <el-select v-model="editForm.cpuType" style="width: 100%">
-            <el-option v-for="opt in cpuTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-          </el-select>
-        </el-form-item>
+        <template v-if="editForm.plcType === 'Siemens'">
+          <el-form-item label="机架 (Rack)">
+            <el-input-number v-model="editForm.rack" :min="0" :max="7" />
+          </el-form-item>
+          <el-form-item label="槽位 (Slot)">
+            <el-input-number v-model="editForm.slot" :min="0" :max="7" />
+          </el-form-item>
+          <el-form-item label="CPU 类型">
+            <el-select v-model="editForm.cpuType" style="width: 100%">
+              <el-option v-for="opt in cpuTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            </el-select>
+          </el-form-item>
+        </template>
+        <template v-else>
+          <el-form-item label="协议帧">
+            <el-select v-model="editForm.mcProtocolFrame" style="width: 100%">
+              <el-option v-for="opt in mcFrameOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            </el-select>
+          </el-form-item>
+        </template>
         <el-form-item label="扫描频率 (ms)">
           <el-input-number v-model="editForm.scanInterval" :min="50" :max="10000" :step="50" />
           <el-text type="info" size="small" style="margin-top: 4px; display: block">PLC 数据轮询间隔，越小刷新越快</el-text>

@@ -12,17 +12,16 @@ public sealed class PlcConfig
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = string.Empty;
+    public string PlcType { get; set; } = "Siemens";
     public string Ip { get; set; } = "192.168.0.0";
     public int Port { get; set; } = 102;
-    public int Rack { get; set; } = 0;
-    public int Slot { get; set; } = 1;
-    public int CpuType { get; set; } = 40;
     public int ScanInterval { get; set; } = 200;
     public bool AutoConnect { get; set; }
     public bool IsConnected { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastConnectedAt { get; set; }
     public string? ErrorMessage { get; set; }
+    public Dictionary<string, string> ConnectionOptions { get; set; } = new();
 }
 
 /// <summary>DB 块分组</summary>
@@ -51,13 +50,12 @@ public sealed class TagConfig
 public sealed class AddPlcRequest
 {
     public string Name { get; set; } = string.Empty;
+    public string PlcType { get; set; } = "Siemens";
     public string Ip { get; set; } = "192.168.1.10";
     public int Port { get; set; } = 102;
-    public int Rack { get; set; } = 0;
-    public int Slot { get; set; } = 1;
-    public int CpuType { get; set; } = 40;
     public int ScanInterval { get; set; } = 200;
     public bool AutoConnect { get; set; }
+    public Dictionary<string, string> ConnectionOptions { get; set; } = new();
 }
 
 public sealed class PlcNameRequest
@@ -69,13 +67,12 @@ public sealed class UpdatePlcRequest
 {
     public string OldName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string PlcType { get; set; } = "Siemens";
     public string Ip { get; set; } = "192.168.1.10";
     public int Port { get; set; } = 102;
-    public int Rack { get; set; } = 0;
-    public int Slot { get; set; } = 1;
-    public int CpuType { get; set; } = 40;
     public int ScanInterval { get; set; } = 200;
     public bool AutoConnect { get; set; }
+    public Dictionary<string, string> ConnectionOptions { get; set; } = new();
 }
 
 public sealed class ListDbGroupsRequest

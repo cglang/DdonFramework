@@ -169,7 +169,8 @@ onMounted(() => {
           {{ plc.isConnected ? '已连接' : '未连接' }}
         </el-tag>
         <span style="font-size: 13px; color: #606266; margin-left: 12px">{{ plc.ip }}:{{ plc.port }}</span>
-        <span style="font-size: 13px; color: #909399; margin-left: 8px">Rack {{ plc.rack }} / Slot {{ plc.slot }}</span>
+        <span style="font-size: 13px; color: #909399; margin-left: 8px">{{ plc.plcType === 'Mitsubishi' ? (plc.connectionOptions.mcProtocolFrame || '3E') + ' 帧' : 'Rack ' + (plc.connectionOptions.rack || 0) + ' / Slot ' + (plc.connectionOptions.slot || 1) }}</span>
+        <el-tag size="small" type="info" effect="plain" style="margin-left: 8px">{{ plc.plcType === 'Mitsubishi' ? '三菱' : '西门子' }}</el-tag>
         <div style="margin-left: auto">
           <el-button v-if="!plc.isConnected" type="success" size="small" @click="handleConnect">连接</el-button>
           <el-button v-if="plc.isConnected" type="warning" size="small" @click="handleDisconnect">断开</el-button>
