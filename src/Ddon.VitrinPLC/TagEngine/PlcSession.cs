@@ -16,6 +16,7 @@ namespace Ddon.VitrinPLC.TagEngine
         private readonly ILogger<PlcSession> _logger;
         private readonly IPlcClient _client;
         private readonly EndianFormat _endian;
+        private readonly IPlcAddressParser _parser;
 
         public PlcSession(
             ITagRegistry registry,
@@ -23,7 +24,8 @@ namespace Ddon.VitrinPLC.TagEngine
             IChangeNotifier notifier,
             ILogger<PlcSession> logger,
             IPlcClient client,
-            EndianFormat endian)
+            EndianFormat endian,
+            IPlcAddressParser parser)
         {
             _registry = registry;
             _mirror = mirror;
@@ -31,6 +33,7 @@ namespace Ddon.VitrinPLC.TagEngine
             _logger = logger;
             this._client = client;
             this._endian = endian;
+            _parser = parser;
         }
 
         public IPlcMemoryMirror Mirror => _mirror;
@@ -48,7 +51,7 @@ namespace Ddon.VitrinPLC.TagEngine
             _logger.LogDebug("SetAsync: {Tag} = {Value}", tagName, value);
             try
             {
-                var addr = AddressParser.Parse(tag.Address, tag.Type);
+                var addr = _parser.Parse(tag.Address, tag.Type);
 
                 byte[] bytes;
                 if (tag.Type == PlcDataType.Bool)
@@ -113,7 +116,7 @@ namespace Ddon.VitrinPLC.TagEngine
         public void AddTag(TagDefinition tag)
         {
             _registry.Register(tag);
-            var addr = AddressParser.Parse(tag.Address, tag.Type);
+            var addr = _parser.Parse(tag.Address, tag.Type);
             try { _mirror.RegisterRegion(addr.RegionKey, addr.Area, 0, 4096); }
             catch { }
         }

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Ddon.VitrinPLC.Abstractions;
+using Ddon.VitrinPLC.AddressParsers;
 using Ddon.VitrinPLC.Models;
 using S7.Net;
 
@@ -21,6 +22,7 @@ namespace Ddon.VitrinPLC.Clients
 
         public string Name => _options.Name;
         public bool IsConnected => _plc?.IsConnected ?? false;
+        public IPlcAddressParser Parser { get; } = new SiemensAddressParser();
 
         public SiemensClient(SiemensOptions options, ILogger<SiemensClient> logger)
         {
@@ -95,9 +97,9 @@ namespace Ddon.VitrinPLC.Clients
             };
         }
 
-        private static (byte areaCode, int dbNum, int offset) ParseWriteAddress(string address)
+        private (byte areaCode, int dbNum, int offset) ParseWriteAddress(string address)
         {
-            var addr = AddressParser.Parse(address, PlcDataType.Byte);
+            var addr = Parser.Parse(address, PlcDataType.Byte);
             var (code, db) = ParseArea(addr.Area);
             return (code, db, addr.ByteOffset);
         }

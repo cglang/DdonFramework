@@ -11,6 +11,7 @@ namespace Ddon.VitrinPLC.Abstractions
     {
         string Name { get; }
         bool IsConnected { get; }
+        IPlcAddressParser Parser { get; }
         Task ConnectAsync(CancellationToken ct = default);
         Task DisconnectAsync(CancellationToken ct = default);
         Task<byte[]> ReadBytesAsync(string area, int start, int length, CancellationToken ct = default);

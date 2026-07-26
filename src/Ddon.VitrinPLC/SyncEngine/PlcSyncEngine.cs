@@ -18,6 +18,7 @@ namespace Ddon.VitrinPLC.SyncEngine
         private readonly ITagRegistry _registry;
         private readonly IChangeNotifier _notifier;
         private readonly int _scanInterval;
+        private readonly IPlcAddressParser _parser;
         private readonly ConcurrentDictionary<string, int> _regionLengths;
         private readonly ILogger<PlcSyncEngine> _logger;
 
@@ -33,13 +34,15 @@ namespace Ddon.VitrinPLC.SyncEngine
             ITagRegistry registry,
             IChangeNotifier notifier,
             int scanInterval,
-            ILogger<PlcSyncEngine> logger)
+            ILogger<PlcSyncEngine> logger,
+            IPlcAddressParser parser)
         {
             _client = client;
             _mirror = mirror;
             _registry = registry;
             _notifier = notifier;
             _scanInterval = scanInterval;
+            _parser = parser;
             _regionLengths = new ConcurrentDictionary<string, int>(
                 mirror.GetRegionInfo().ToDictionary(x => x.Key, x => x.Value.Length, StringComparer.OrdinalIgnoreCase));
             _logger = logger;
@@ -49,7 +52,7 @@ namespace Ddon.VitrinPLC.SyncEngine
 
         private void OnTagRegistered(object sender, TagDefinition tag)
         {
-            var addr = AddressParser.Parse(tag.Address, tag.Type);
+            var addr = _parser.Parse(tag.Address, tag.Type);
             _regionLengths.TryAdd(addr.RegionKey, 4096);
         }
 
@@ -112,14 +115,14 @@ namespace Ddon.VitrinPLC.SyncEngine
                 int minOff = int.MaxValue, maxOff = 0;
                 foreach (var tag in regionTags)
                 {
-                    var addr = AddressParser.Parse(tag.Address, tag.Type);
-                    int size = AddressParser.GetByteSize(tag.Type, tag.StringLength);
+                    var addr = _parser.Parse(tag.Address, tag.Type);
+                    int size = PlcByteSize.Get(tag.Type, tag.StringLength);
                     minOff = Math.Min(minOff, addr.ByteOffset);
                     maxOff = Math.Max(maxOff, addr.ByteOffset + size);
                 }
 
                 int length = maxOff - minOff;
-                var area = AddressParser.Parse(regionTags[0].Address, regionTags[0].Type).Area;
+                var area = _parser.Parse(regionTags[0].Address, regionTags[0].Type).Area;
 
                 // ── Step 2：批量读取原始字节 ─────────────────
                 byte[] rawSegment = await _client.ReadBytesAsync(area, minOff, length, ct);
@@ -137,7 +140,7 @@ namespace Ddon.VitrinPLC.SyncEngine
                 {
                     try
                     {
-                        var addr = AddressParser.Parse(tag.Address, tag.Type);
+                        var addr = _parser.Parse(tag.Address, tag.Type);
                         object oldV = ReadFromBuffer(oldFullData, addr, tag);
                         object newV = ReadFromBuffer(newFullData, addr, tag);
 
@@ -168,13 +171,13 @@ namespace Ddon.VitrinPLC.SyncEngine
         }
 
         // ── 辅助：按区域分组 ────────────────────────────────
-        private static Dictionary<string, List<TagDefinition>> GroupTagsByRegion(
+        private Dictionary<string, List<TagDefinition>> GroupTagsByRegion(
             IReadOnlyList<TagDefinition> tags)
         {
             var dict = new Dictionary<string, List<TagDefinition>>(StringComparer.OrdinalIgnoreCase);
             foreach (var tag in tags)
             {
-                var key = AddressParser.Parse(tag.Address, tag.Type).RegionKey;
+                var key = _parser.Parse(tag.Address, tag.Type).RegionKey;
                 if (!dict.TryGetValue(key, out var list))
                     dict[key] = list = new List<TagDefinition>();
                 list.Add(tag);

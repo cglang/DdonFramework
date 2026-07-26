@@ -13,25 +13,26 @@ namespace Ddon.VitrinPLC
             PlcHostOptions options,
             IServiceProvider sp)
         {
+            var parser = client.Parser;
             var registry = new TagRegistry();
             foreach (var tag in options.Tags)
                 registry.Register(tag);
 
-            var mirror = new PlcMemoryMirror(options.Endian);
+            var mirror = new PlcMemoryMirror(options.Endian, parser);
             foreach (var r in options.Regions)
                 mirror.RegisterRegion(r.Key, r.Area, r.Start, r.Length);
             foreach (var tag in registry.GetAll())
             {
-                var addr = AddressParser.Parse(tag.Address, tag.Type);
+                var addr = parser.Parse(tag.Address, tag.Type);
                 try { mirror.RegisterRegion(addr.RegionKey, addr.Area, 0, 4096); }
                 catch { }
             }
 
             var notifier = new ChangeNotifier();
 
-            var engine = ActivatorUtilities.CreateInstance<PlcSyncEngine>(sp, client, mirror, registry, notifier, options.ScanInterval);
+            var engine = ActivatorUtilities.CreateInstance<PlcSyncEngine>(sp, client, mirror, registry, notifier, options.ScanInterval, parser);
 
-            var session = ActivatorUtilities.CreateInstance<PlcSession>(sp, registry, mirror, notifier, client, options.Endian);
+            var session = ActivatorUtilities.CreateInstance<PlcSession>(sp, registry, mirror, notifier, client, options.Endian, parser);
 
             return new PlcServiceGroup(registry, mirror, notifier, engine, session);
         }

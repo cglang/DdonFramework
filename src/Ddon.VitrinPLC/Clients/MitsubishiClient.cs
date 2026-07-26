@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Ddon.VitrinPLC.Abstractions;
+using Ddon.VitrinPLC.AddressParsers;
 using Ddon.VitrinPLC.Models;
 
 namespace Ddon.VitrinPLC.Clients
@@ -22,6 +23,7 @@ namespace Ddon.VitrinPLC.Clients
 
         public string Name => _options.Name;
         public bool IsConnected => _tcp?.Connected ?? false;
+        public IPlcAddressParser Parser { get; } = new MitsubishiAddressParser();
 
         public MitsubishiClient(MitsubishiOptions options, ILogger<MitsubishiClient> logger)
         {
@@ -64,7 +66,7 @@ namespace Ddon.VitrinPLC.Clients
             await _semaphore.WaitAsync(ct);
             try
             {
-                var addr = AddressParser.Parse(address, PlcDataType.Int16);
+                var addr = Parser.Parse(address, PlcDataType.Int16);
                 var request = Build3EWriteFrame(addr.Area, addr.ByteOffset / 2, data);
                 await _stream.WriteAsync(request, ct);
                 await _stream.FlushAsync(ct);

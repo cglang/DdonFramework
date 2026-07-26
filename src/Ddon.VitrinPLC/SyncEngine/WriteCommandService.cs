@@ -16,17 +16,20 @@ namespace Ddon.VitrinPLC.SyncEngine
         private readonly IPlcClient _client;
         private readonly ITagRegistry _registry;
         private readonly EndianFormat _endian;
+        private readonly IPlcAddressParser _parser;
         private readonly ILogger<WriteCommandService> _logger;
 
         public WriteCommandService(
             IPlcClient client,
             ITagRegistry registry,
             EndianFormat endian,
-            ILogger<WriteCommandService> logger)
+            ILogger<WriteCommandService> logger,
+            IPlcAddressParser parser)
         {
             _client = client;
             _registry = registry;
             _endian = endian;
+            _parser = parser;
             _logger = logger;
         }
 
@@ -34,7 +37,7 @@ namespace Ddon.VitrinPLC.SyncEngine
         {
             try
             {
-                var addr = AddressParser.Parse(tag.Address, tag.Type);
+                var addr = _parser.Parse(tag.Address, tag.Type);
                 var bytes = PlcCodec.Encode(value, tag.Type, _endian, addr.ByteOffset, addr.BitIndex, tag.StringLength);
 
                 _logger.LogDebug("写入 PLC: {Tag}={Value} @ {Address} ({Bytes} bytes)",

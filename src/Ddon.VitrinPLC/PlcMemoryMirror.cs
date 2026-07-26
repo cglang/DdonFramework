@@ -3,12 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Ddon.VitrinPLC.Abstractions;
+using Ddon.VitrinPLC.AddressParsers;
 using Ddon.VitrinPLC.Models;
 
 namespace Ddon.VitrinPLC
 {
     public sealed class PlcMemoryMirror : IPlcMemoryMirror
     {
+        private readonly IPlcAddressParser _parser;
         private readonly ConcurrentDictionary<string, MemoryRegion> _regions = new();
         private long _version;
 
@@ -16,9 +18,10 @@ namespace Ddon.VitrinPLC
         public DateTime LastUpdateTime { get; private set; } = DateTime.MinValue;
         public EndianFormat Endian { get; }
 
-        public PlcMemoryMirror(EndianFormat endian = EndianFormat.ABCD)
+        public PlcMemoryMirror(EndianFormat endian, IPlcAddressParser parser)
         {
             Endian = endian;
+            _parser = parser;
         }
 
         public void RegisterRegion(string regionKey, string area, int startOffset, int length)
@@ -52,7 +55,7 @@ namespace Ddon.VitrinPLC
 
         public T Read<T>(TagDefinition tag)
         {
-            var addr = AddressParser.Parse(tag.Address, tag.Type);
+            var addr = _parser.Parse(tag.Address, tag.Type);
             var snap = GetRegion(addr.RegionKey);
             return PlcCodec.Read<T>(snap, addr, tag.StringLength, Endian);
         }
