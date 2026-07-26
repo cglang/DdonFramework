@@ -57,8 +57,8 @@ namespace Ddon.VitrinPLC.TagEngine
                 if (tag.Type == PlcDataType.Bool)
                 {
                     bytes = PlcCodec.Encode(value, tag.Type, _endian, addr.ByteOffset, addr.BitIndex, tag.StringLength);
-                    var snap = _mirror.GetRegion(addr.RegionKey);
-                    bytes[0] = SetBit(snap[addr.ByteOffset], addr.BitIndex, Convert.ToBoolean(value));
+                    var region = _mirror.GetRegion(addr.RegionKey);
+                    bytes[0] = SetBit(region.ReadByte(addr.ByteOffset), addr.BitIndex, Convert.ToBoolean(value));
                 }
                 else
                 {
@@ -117,7 +117,7 @@ namespace Ddon.VitrinPLC.TagEngine
         {
             _registry.Register(tag);
             var addr = _parser.Parse(tag.Address, tag.Type);
-            try { _mirror.RegisterRegion(addr.RegionKey, addr.Area, 0, 4096); }
+            try { _mirror.RegisterRegion(addr.RegionKey, addr.Area); }
             catch { }
         }
 

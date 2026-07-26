@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,7 +18,6 @@ namespace Ddon.VitrinPLC.SyncEngine
         private readonly IChangeNotifier _notifier;
         private readonly int _scanInterval;
         private readonly IPlcAddressParser _parser;
-        private readonly ConcurrentDictionary<string, int> _regionLengths;
         private readonly ILogger<PlcSyncEngine> _logger;
 
         private CancellationTokenSource _cts;
@@ -43,17 +41,7 @@ namespace Ddon.VitrinPLC.SyncEngine
             _notifier = notifier;
             _scanInterval = scanInterval;
             _parser = parser;
-            _regionLengths = new ConcurrentDictionary<string, int>(
-                mirror.GetRegionInfo().ToDictionary(x => x.Key, x => x.Value.Length, StringComparer.OrdinalIgnoreCase));
             _logger = logger;
-
-            _registry.TagRegistered += OnTagRegistered;
-        }
-
-        private void OnTagRegistered(object sender, TagDefinition tag)
-        {
-            var addr = _parser.Parse(tag.Address, tag.Type);
-            _regionLengths.TryAdd(addr.RegionKey, 4096);
         }
 
         public async Task StartAsync(CancellationToken ct = default)
@@ -73,7 +61,7 @@ namespace Ddon.VitrinPLC.SyncEngine
             _logger.LogInformation("正在停止同步引擎...");
             await _cts.CancelAsync();
             try { await _runTask; }
-            catch (OperationCanceledException) { /* 正常退出 */ }
+            catch (OperationCanceledException) { }
             await _client.DisconnectAsync(ct);
             _logger.LogInformation("同步引擎已停止。");
         }
@@ -106,12 +94,10 @@ namespace Ddon.VitrinPLC.SyncEngine
             var changes = new List<TagChange>();
             var tags = _registry.GetAll();
 
-            // ── Step 1：按区域分组，合并批量读取 ──────────────
             var regionGroups = GroupTagsByRegion(tags);
 
             foreach (var (regionKey, regionTags) in regionGroups)
             {
-                // 计算区域范围（min offset ~ max offset+size）
                 int minOff = int.MaxValue, maxOff = 0;
                 foreach (var tag in regionTags)
                 {
@@ -124,25 +110,18 @@ namespace Ddon.VitrinPLC.SyncEngine
                 int length = maxOff - minOff;
                 var area = _parser.Parse(regionTags[0].Address, regionTags[0].Type).Area;
 
-                // ── Step 2：批量读取原始字节 ─────────────────
                 byte[] rawSegment = await _client.ReadBytesAsync(area, minOff, length, ct);
 
-                // 将原始 PLC 数据填入全尺寸 buffer 的正确偏移位置
-                int regionLength = GetRegisteredLength(regionKey);
-                var newFullData = new byte[regionLength];
-                Buffer.BlockCopy(rawSegment, 0, newFullData, minOff,
-                    Math.Min(rawSegment.Length, regionLength - minOff));
+                var newData = new BufferSlice(rawSegment, minOff);
+                var oldData = _mirror.ApplySnapshot(regionKey, newData);
 
-                var oldFullData = _mirror.ApplySnapshot(regionKey, newFullData);
-
-                // ── Step 3：变化检测（双方都在全尺寸 buffer 的同偏移位置读取）─
                 foreach (var tag in regionTags)
                 {
                     try
                     {
                         var addr = _parser.Parse(tag.Address, tag.Type);
-                        object oldV = ReadFromBuffer(oldFullData, addr, tag);
-                        object newV = ReadFromBuffer(newFullData, addr, tag);
+                        object oldV = ReadFromData(oldData, addr, tag);
+                        object newV = ReadFromData(newData, addr, tag);
 
                         if (!Equals(oldV, newV))
                         {
@@ -157,7 +136,6 @@ namespace Ddon.VitrinPLC.SyncEngine
                 }
             }
 
-            // ── Step 4/5：发布事件 ────────────────────────────
             if (changes.Count > 0)
                 _notifier.NotifyChanges(changes);
 
@@ -170,7 +148,6 @@ namespace Ddon.VitrinPLC.SyncEngine
             });
         }
 
-        // ── 辅助：按区域分组 ────────────────────────────────
         private Dictionary<string, List<TagDefinition>> GroupTagsByRegion(
             IReadOnlyList<TagDefinition> tags)
         {
@@ -185,29 +162,25 @@ namespace Ddon.VitrinPLC.SyncEngine
             return dict;
         }
 
-        private object ReadFromBuffer(byte[] buf, ParsedAddress addr, TagDefinition tag)
+        private object ReadFromData(BufferSlice data, ParsedAddress addr, TagDefinition tag)
         {
             return tag.Type switch
             {
-                PlcDataType.Bool => PlcCodec.Read<bool>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.Byte => PlcCodec.Read<byte>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.Int16 => PlcCodec.Read<short>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.UInt16 => PlcCodec.Read<ushort>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.Int32 => PlcCodec.Read<int>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.UInt32 => PlcCodec.Read<uint>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.Float => PlcCodec.Read<float>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.Double => PlcCodec.Read<double>(buf, addr, endian: _mirror.Endian),
-                PlcDataType.String => PlcCodec.Read<string>(buf, addr, tag.StringLength, _mirror.Endian),
+                PlcDataType.Bool => PlcCodec.Read<bool>(data, addr, endian: _mirror.Endian),
+                PlcDataType.Byte => PlcCodec.Read<byte>(data, addr, endian: _mirror.Endian),
+                PlcDataType.Int16 => PlcCodec.Read<short>(data, addr, endian: _mirror.Endian),
+                PlcDataType.UInt16 => PlcCodec.Read<ushort>(data, addr, endian: _mirror.Endian),
+                PlcDataType.Int32 => PlcCodec.Read<int>(data, addr, endian: _mirror.Endian),
+                PlcDataType.UInt32 => PlcCodec.Read<uint>(data, addr, endian: _mirror.Endian),
+                PlcDataType.Float => PlcCodec.Read<float>(data, addr, endian: _mirror.Endian),
+                PlcDataType.Double => PlcCodec.Read<double>(data, addr, endian: _mirror.Endian),
+                PlcDataType.String => PlcCodec.Read<string>(data, addr, tag.StringLength, _mirror.Endian),
                 _ => throw new NotSupportedException()
             };
         }
 
-        private int GetRegisteredLength(string regionKey) =>
-            _regionLengths.TryGetValue(regionKey, out var len) ? len : 4096;
-
         public async ValueTask DisposeAsync()
         {
-            _registry.TagRegistered -= OnTagRegistered;
             await StopAsync();
         }
     }

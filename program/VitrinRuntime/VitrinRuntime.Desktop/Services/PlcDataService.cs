@@ -85,17 +85,22 @@ public sealed class PlcDataService
 
         if (group is null) return results;
 
+        var plc = _store.GetPlc(group.PlcName);
+        var session = plc is not null && plc.IsConnected ? _hub.For(group.PlcName) : null;
+
         foreach (var tag in tags)
         {
             object? value = null;
-            try
+            if (session is not null)
             {
-                var session = _hub.For(group.PlcName);
-                value = ReadTagValue(session, group, tag);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "读取Tag：{TagName} 发生错误！", tag.Name);
+                try
+                {
+                    value = ReadTagValue(session, group, tag);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "读取Tag：{TagName} 发生错误！", tag.Name);
+                }
             }
 
             results.Add(new

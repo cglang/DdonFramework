@@ -20,11 +20,11 @@ namespace Ddon.VitrinPLC
 
             var mirror = new PlcMemoryMirror(options.Endian, parser);
             foreach (var r in options.Regions)
-                mirror.RegisterRegion(r.Key, r.Area, r.Start, r.Length);
+                mirror.RegisterRegion(r.Key, r.Area);
             foreach (var tag in registry.GetAll())
             {
                 var addr = parser.Parse(tag.Address, tag.Type);
-                try { mirror.RegisterRegion(addr.RegionKey, addr.Area, 0, 4096); }
+                try { mirror.RegisterRegion(addr.RegionKey, addr.Area); }
                 catch { }
             }
 

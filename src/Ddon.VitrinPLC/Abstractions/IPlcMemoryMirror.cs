@@ -9,10 +9,10 @@ namespace Ddon.VitrinPLC.Abstractions
         long Version { get; }
         DateTime LastUpdateTime { get; }
         EndianFormat Endian { get; }
-        byte[] GetRegion(string region);
+        BufferSlice GetRegion(string region);
         T Read<T>(TagDefinition tag);
-        byte[] ApplySnapshot(string regionKey, byte[] newData);
+        BufferSlice ApplySnapshot(string regionKey, BufferSlice newData);
         IReadOnlyDictionary<string, MemoryRegionInfo> GetRegionInfo();
-        void RegisterRegion(string regionKey, string area, int startOffset, int length);
+        void RegisterRegion(string regionKey, string area);
     }
 }

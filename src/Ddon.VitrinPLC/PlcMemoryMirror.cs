@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Ddon.VitrinPLC.Abstractions;
-using Ddon.VitrinPLC.AddressParsers;
 using Ddon.VitrinPLC.Models;
 
 namespace Ddon.VitrinPLC
@@ -24,16 +23,14 @@ namespace Ddon.VitrinPLC
             _parser = parser;
         }
 
-        public void RegisterRegion(string regionKey, string area, int startOffset, int length)
+        public void RegisterRegion(string regionKey, string area)
         {
-            var region = new MemoryRegion(regionKey, area, startOffset, length);
+            var region = new MemoryRegion(regionKey, area, new BufferSlice([], 0));
             if (!_regions.TryAdd(regionKey, region))
                 throw new InvalidOperationException($"Region '{regionKey}' 已注册。");
         }
 
-        // ── 供 SyncEngine 整块替换 ────────────────────────
-        /// <returns>旧 buffer（用于变化检测）</returns>
-        public byte[] ApplySnapshot(string regionKey, byte[] newData)
+        public BufferSlice ApplySnapshot(string regionKey, BufferSlice newData)
         {
             if (!_regions.TryGetValue(regionKey, out var region))
                 throw new KeyNotFoundException($"Region '{regionKey}' 未注册。");
@@ -44,20 +41,18 @@ namespace Ddon.VitrinPLC
             return old;
         }
 
-        // ── 对外只读接口 ──────────────────────────────────
-
-        public byte[] GetRegion(string region)
+        public BufferSlice GetRegion(string region)
         {
             if (!_regions.TryGetValue(region, out var r))
                 throw new KeyNotFoundException($"Region '{region}' 未注册。");
-            return r.GetSnapshot();
+            return r.Data;
         }
 
         public T Read<T>(TagDefinition tag)
         {
             var addr = _parser.Parse(tag.Address, tag.Type);
-            var snap = GetRegion(addr.RegionKey);
-            return PlcCodec.Read<T>(snap, addr, tag.StringLength, Endian);
+            var data = GetRegion(addr.RegionKey);
+            return PlcCodec.Read<T>(data, addr, tag.StringLength, Endian);
         }
 
         public IReadOnlyDictionary<string, MemoryRegionInfo> GetRegionInfo()
@@ -69,7 +64,6 @@ namespace Ddon.VitrinPLC
                 {
                     RegionKey = kvp.Value.RegionKey,
                     Area = kvp.Value.Area,
-                    StartOffset = kvp.Value.StartOffset,
                     Length = kvp.Value.Length
                 };
             }
