@@ -33,15 +33,16 @@ public sealed class MitsubishiAddressParser : IPlcAddressParser
         if (!WordAreas.Contains(area) && !BitAreas.Contains(area))
             throw new NotSupportedException($"不支持的三菱软元件区域: '{area}'");
 
+        var isBit = BitAreas.Contains(area);
         return new ParsedAddress
         {
             Original = address,
             RegionKey = area,
             Area = area,
-            ByteOffset = offset * 2,
-            BitIndex = 0,
+            ByteOffset = isBit ? offset / 8 : offset * 2,
+            BitIndex = isBit ? offset % 8 : 0,
             DataType = type,
-            IsBit = BitAreas.Contains(area)
+            IsBit = isBit
         };
     }
 }
