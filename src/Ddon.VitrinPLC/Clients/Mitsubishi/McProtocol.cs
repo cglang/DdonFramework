@@ -50,7 +50,7 @@ public class McProtocol : McProtocolBase
             var sz = TcpClientStream.Read(buff, 0, buff.Length);
             if (sz == 0)
             {
-                throw new Exception("流被切断");
+                throw new Exception("TcpClientStream 被切断");
             }
 
             ms.Write(buff, 0, sz);
