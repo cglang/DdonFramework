@@ -26,7 +26,16 @@ public class BridgeDispatcher : IBridgeDispatcher
             ?? throw new InvalidOperationException($"Service '{entry.ServiceType.Name}' not registered");
 
         var args = DeserializeArgs(entry.Method, payload);
-        var result = entry.Method.Invoke(service, args);
+
+        object? result;
+        try
+        {
+            result = entry.Method.Invoke(service, args);
+        }
+        catch (TargetInvocationException tie)
+        {
+            throw tie.InnerException ?? tie;
+        }
 
         if (result is not Task task) 
             return result;
