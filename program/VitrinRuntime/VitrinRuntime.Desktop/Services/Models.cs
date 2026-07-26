@@ -2,6 +2,11 @@ using Ddon.VitrinPLC.Models;
 
 namespace VitrinRuntime.Desktop.Services;
 
+public sealed class UserFriendlyException : Exception
+{
+    public UserFriendlyException(string message) : base(message) { }
+}
+
 /// <summary>PLC 连接配置</summary>
 public sealed class PlcConfig
 {
@@ -26,8 +31,6 @@ public sealed class DbGroup
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string PlcName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public int DbNumber { get; set; }
-    public int DbSize { get; set; } = 4096;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -84,8 +87,6 @@ public sealed class CreateDbGroupRequest
 {
     public string PlcName { get; set; } = string.Empty;
     public string GroupName { get; set; } = string.Empty;
-    public int DbNumber { get; set; }
-    public int DbSize { get; set; } = 4096;
 }
 
 public sealed class GroupIdRequest
@@ -147,5 +148,6 @@ public sealed class TagHistoryRecord
 
 public sealed class TagHistoryRequest
 {
+    public string GroupId { get; set; } = string.Empty;
     public string TagName { get; set; } = string.Empty;
 }

@@ -37,7 +37,6 @@ export interface DbGroupInfo {
   id: string
   plcName: string
   name: string
-  dbNumber: number
   tagCount: number
   createdAt: string
 }
@@ -78,8 +77,6 @@ export interface TagHistoryRecord {
 export interface CreateGroupResult {
   id: string
   name: string
-  dbNumber: number
-  dbSize: number
 }
 
 // ── PlcManager API ─────────────────────────────
@@ -112,8 +109,8 @@ export const plcData = {
   listDbGroups: (plcName: string) =>
     invoke<DbGroupInfo[]>('PlcData.ListDbGroups', { plcName }),
 
-  createDbGroup: (plcName: string, groupName: string, dbNumber: number, dbSize = 4096) =>
-    invoke<CreateGroupResult>('PlcData.CreateDbGroup', { plcName, groupName, dbNumber, dbSize }),
+  createDbGroup: (plcName: string, groupName: string) =>
+    invoke<CreateGroupResult>('PlcData.CreateDbGroup', { plcName, groupName }),
 
   deleteDbGroup: (groupId: string) =>
     invoke<boolean>('PlcData.DeleteDbGroup', { groupId }),
@@ -139,6 +136,6 @@ export const plcData = {
   writeTag: (tagId: string, value: unknown) =>
     invoke<WriteTagResult>('PlcData.WriteTag', { tagId, value }),
 
-  getTagHistory: (tagName: string) =>
-    invoke<TagHistoryRecord[]>('PlcData.GetTagHistory', { tagName }),
+  getTagHistory: (groupId: string, tagName: string) =>
+    invoke<TagHistoryRecord[]>('PlcData.GetTagHistory', { groupId, tagName }),
 }

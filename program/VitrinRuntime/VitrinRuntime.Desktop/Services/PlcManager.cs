@@ -56,7 +56,7 @@ public sealed class PlcManager
     public async Task<PlcConfig> AddPlc(AddPlcRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Name))
-            throw new ArgumentException("PLC 名称不能为空。");
+            throw new UserFriendlyException("PLC 名称不能为空。");
 
         var config = new PlcConfig
         {
@@ -130,7 +130,7 @@ public sealed class PlcManager
     public async Task ConnectPlc(PlcNameRequest req)
     {
         var config = _store.GetPlc(req.Name)
-            ?? throw new KeyNotFoundException($"PLC '{req.Name}' 未找到。");
+            ?? throw new UserFriendlyException($"PLC '{req.Name}' 未找到。");
 
         try
         {
@@ -156,7 +156,11 @@ public sealed class PlcManager
 
                 var tags = _store.GetAllTagsForPlc(req.Name);
                 foreach (var tag in tags)
-                    host.MapTag(tag.Name, tag.Address, tag.DataType, tag.StringLength);
+                {
+                    var group = _store.GetGroup(tag.GroupId);
+                    var fullName = group is not null ? $"{req.Name}.{group.Name}.{tag.Name}" : tag.Name;
+                    host.MapTag(fullName, tag.Address, tag.DataType, tag.StringLength);
+                }
             });
 
             // 为所有已注册点位建立变化订阅
@@ -196,10 +200,10 @@ public sealed class PlcManager
     public async Task<PlcConfig> UpdatePlc(UpdatePlcRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Name))
-            throw new ArgumentException("PLC 名称不能为空。");
+            throw new UserFriendlyException("PLC 名称不能为空。");
 
         var oldConfig = _store.GetPlc(req.OldName)
-            ?? throw new KeyNotFoundException($"PLC '{req.OldName}' 未找到。");
+            ?? throw new UserFriendlyException($"PLC '{req.OldName}' 未找到。");
 
         var newConfig = new PlcConfig
         {
@@ -248,7 +252,11 @@ public sealed class PlcManager
 
                     var tags = _store.GetAllTagsForPlc(req.Name);
                     foreach (var tag in tags)
-                        host.MapTag(tag.Name, tag.Address, tag.DataType, tag.StringLength);
+                    {
+                        var group = _store.GetGroup(tag.GroupId);
+                        var fullName = group is not null ? $"{req.Name}.{group.Name}.{tag.Name}" : tag.Name;
+                        host.MapTag(fullName, tag.Address, tag.DataType, tag.StringLength);
+                    }
                 });
 
                 _subscriptionManager.SubscribeAllTags(req.Name);

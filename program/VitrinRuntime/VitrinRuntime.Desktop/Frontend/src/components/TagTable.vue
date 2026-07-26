@@ -49,7 +49,7 @@
     historyDialogVisible.value = true;
     historyLoading.value = true;
     try {
-      historyRecords.value = await plcData.getTagHistory(tagName);
+      historyRecords.value = await plcData.getTagHistory(props.groupId, tagName);
     } catch (e: any) {
       ElMessage.error('获取历史记录失败: ' + (e.message || e));
     } finally {

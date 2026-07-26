@@ -22,8 +22,6 @@ const renameTargetId = ref('')
 const renameTargetName = ref('')
 const groupForm = reactive({
   groupName: '',
-  dbNumber: 1,
-  dbSize: 4096,
 })
 
 const tagTableRef = ref<InstanceType<typeof TagTable> | null>(null)
@@ -65,15 +63,15 @@ async function loadGroups() {
 }
 
 async function handleCreateGroup() {
-  if (!groupForm.groupName || !groupForm.dbNumber) {
-    ElMessage.warning('请填写分组名称和 DB 块号')
+  if (!groupForm.groupName) {
+    ElMessage.warning('请填写分组名称')
     return
   }
   try {
-    await plcData.createDbGroup(plcName, groupForm.groupName, groupForm.dbNumber, groupForm.dbSize)
+    await plcData.createDbGroup(plcName, groupForm.groupName)
     ElMessage.success('分组创建成功')
     groupDialogVisible.value = false
-    Object.assign(groupForm, { groupName: '', dbNumber: 1, dbSize: 4096 })
+    groupForm.groupName = ''
     activeGroup.value = ''
     await loadGroups()
   } catch (e: any) {
@@ -183,7 +181,7 @@ onMounted(() => {
     <el-container style="flex: 1; overflow: hidden" v-loading="loading">
       <el-aside width="260px" style="border-right: 1px solid var(--el-border-color-light); background: var(--el-fill-color-light); display: flex; flex-direction: column">
         <el-row justify="space-between" align="middle" style="padding: 12px 16px; border-bottom: 1px solid var(--el-border-color-light); flex-shrink: 0">
-          <span style="font-size: 14px; font-weight: 600">DB 块分组</span>
+          <span style="font-size: 14px; font-weight: 600">分组</span>
           <el-button type="primary" size="small" @click="groupDialogVisible = true">
             <el-icon><Plus /></el-icon> 新建
           </el-button>
@@ -196,10 +194,7 @@ onMounted(() => {
             :class="{ active: activeGroup === group.id }"
             @click="handleGroupTabClick(group.id)"
           >
-            <div>
-              <div style="font-size: 14px; font-weight: 500; color: #303133">{{ group.name }}</div>
-              <div style="font-size: 12px; color: #909399">DB{{ group.dbNumber }}</div>
-            </div>
+            <div style="font-size: 14px; font-weight: 500; color: #303133">{{ group.name }}</div>
             <div style="display: flex; align-items: center; gap: 4px">
               <el-tag size="small" type="info" effect="plain">{{ group.tagCount }}</el-tag>
               <div class="item-actions" @click.stop>
@@ -228,19 +223,12 @@ onMounted(() => {
     </el-container>
 
     <!-- 新建分组对话框 -->
-    <el-dialog v-model="groupDialogVisible" title="新建 DB 分组" width="400px">
+    <el-dialog v-model="groupDialogVisible" title="新建分组" width="400px">
       <el-form :model="groupForm" label-width="100px">
         <el-form-item label="分组名称" required>
           <el-input v-model="groupForm.groupName" placeholder="如: 温度数据" />
         </el-form-item>
-        <el-form-item label="DB 块号" required>
-          <el-input-number v-model="groupForm.dbNumber" :min="1" :max="65535" style="width: 100%" />
-          <el-text type="info" size="small" style="margin-top: 4px; display: block">西门子 DB 数据块编号</el-text>
-        </el-form-item>
-        <el-form-item label="DB 大小">
-          <el-input-number v-model="groupForm.dbSize" :min="256" :max="65536" :step="256" style="width: 100%" />
-          <el-text type="info" size="small" style="margin-top: 4px; display: block">该 DB 块的字节数，默认 4096（4KB）</el-text>
-        </el-form-item>
+
       </el-form>
       <template #footer>
         <el-button @click="groupDialogVisible = false">取消</el-button>

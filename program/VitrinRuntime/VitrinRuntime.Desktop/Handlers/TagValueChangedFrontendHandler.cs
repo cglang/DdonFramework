@@ -25,9 +25,15 @@ public sealed class TagValueChangedFrontendHandler : IEventHandler<TagValueChang
         {
             try
             {
+                // 全名格式为"PLC名称.分组名称.点位名称"，前端按短名匹配
+                var shortName = eventData.TagName;
+                var lastDot = eventData.TagName.LastIndexOf('.');
+                if (lastDot >= 0)
+                    shortName = eventData.TagName.Substring(lastDot + 1);
+
                 _bridge.PublishAsync(new TagValueChanged
                 {
-                    TagName = eventData.TagName,
+                    TagName = shortName,
                     Address = eventData.Address,
                     DataType = eventData.DataType,
                     OldValue = eventData.OldValue,

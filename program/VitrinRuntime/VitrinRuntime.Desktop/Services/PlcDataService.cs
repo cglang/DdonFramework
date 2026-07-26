@@ -16,7 +16,8 @@ public sealed class PlcDataService
     private readonly ITagHistoryStore _historyStore;
     private readonly ILogger<PlcDataService> _logger;
 
-    public PlcDataService(IPlcHub hub, IPlcConfigStore store, TagSubscriptionManager subscriptionManager, ITagHistoryStore historyStore, ILogger<PlcDataService> logger)
+    public PlcDataService(IPlcHub hub, IPlcConfigStore store, TagSubscriptionManager subscriptionManager,
+        ITagHistoryStore historyStore, ILogger<PlcDataService> logger)
     {
         _hub = hub;
         _store = store;
@@ -36,7 +37,6 @@ public sealed class PlcDataService
             id = g.Id,
             plcName = g.PlcName,
             name = g.Name,
-            dbNumber = g.DbNumber,
             tagCount = _store.GetTagsByGroup(g.Id).Count,
             createdAt = g.CreatedAt
         } as object).ToList();
@@ -45,22 +45,34 @@ public sealed class PlcDataService
     [BridgeMethod(Name = "CreateDbGroup")]
     public object CreateDbGroup(CreateDbGroupRequest req)
     {
+        var existing = _store.GetGroupsByPlc(req.PlcName);
+        if (existing.Any(g => g.Name.Equals(req.GroupName, StringComparison.OrdinalIgnoreCase)))
+            throw new UserFriendlyException($"该 PLC 下已存在同名分组 '{req.GroupName}'。");
+
         var group = new DbGroup
         {
             PlcName = req.PlcName,
-            Name = req.GroupName,
-            DbNumber = req.DbNumber,
-            DbSize = req.DbSize
+            Name = req.GroupName
         };
         _store.AddGroup(group);
-        return new { id = group.Id, name = group.Name, dbNumber = group.DbNumber, dbSize = group.DbSize };
+        return new { id = group.Id, name = group.Name };
     }
 
     [BridgeMethod(Name = "DeleteDbGroup")]
     public bool DeleteDbGroup(GroupIdRequest req) => _store.RemoveGroup(req.GroupId) is not null;
 
     [BridgeMethod(Name = "RenameDbGroup")]
-    public bool RenameDbGroup(RenameDbGroupRequest req) => _store.RenameGroup(req.GroupId, req.NewName);
+    public bool RenameDbGroup(RenameDbGroupRequest req)
+    {
+        var group = _store.GetGroup(req.GroupId)
+                    ?? throw new UserFriendlyException($"分组 '{req.GroupId}' 未找到。");
+
+        var existing = _store.GetGroupsByPlc(group.PlcName);
+        if (existing.Any(g => g.Id != req.GroupId && g.Name.Equals(req.NewName, StringComparison.OrdinalIgnoreCase)))
+            throw new UserFriendlyException($"该 PLC 下已存在同名分组 '{req.NewName}'。");
+
+        return _store.RenameGroup(req.GroupId, req.NewName);
+    }
 
     // ── Tags ─────────────────────────────────────────
 
@@ -79,10 +91,11 @@ public sealed class PlcDataService
             try
             {
                 var session = _hub.For(group.PlcName);
-                value = ReadTagValue(session, tag);
+                value = ReadTagValue(session, group, tag);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "读取Tag：{TagName} 发生错误！", tag.Name);
             }
 
             results.Add(new
@@ -103,16 +116,17 @@ public sealed class PlcDataService
     [BridgeMethod(Name = "AddTag")]
     public async Task<object> AddTag(AddTagRequest req)
     {
+        await Task.CompletedTask;
+
         if (!Enum.TryParse<PlcDataType>(req.DataType, true, out var plcType))
-            throw new ArgumentException($"不支持的数据类型: {req.DataType}");
+            throw new UserFriendlyException($"不支持的数据类型: {req.DataType}");
 
         var group = _store.GetGroup(req.GroupId)
-            ?? throw new KeyNotFoundException($"分组 '{req.GroupId}' 未找到。");
+                    ?? throw new UserFriendlyException($"分组 '{req.GroupId}' 未找到。");
 
-        // 检查当前分组内是否存在同名点位
         var existingTags = _store.GetTagsByGroup(req.GroupId);
         if (existingTags.Any(t => t.Name.Equals(req.TagName, StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidOperationException($"分组中已存在同名点位 '{req.TagName}'。");
+            throw new UserFriendlyException($"分组中已存在同名点位 '{req.TagName}'。");
 
         var tag = new TagConfig
         {
@@ -127,7 +141,8 @@ public sealed class PlcDataService
         try
         {
             var session = _hub.For(group.PlcName);
-            var tagDefinition = new TagDefinition(tag.Name, tag.Address, tag.DataType, tag.StringLength);
+            var fullName = GetFullTagName(group, tag.Name);
+            var tagDefinition = new TagDefinition(fullName, tag.Address, tag.DataType, tag.StringLength);
             session.AddTag(tagDefinition);
             _subscriptionManager.SubscribeTag(group.PlcName, tagDefinition);
         }
@@ -157,10 +172,14 @@ public sealed class PlcDataService
             try
             {
                 var session = _hub.For(group.PlcName);
-                _subscriptionManager.UnsubscribeTag(group.PlcName, tag.Name);
-                session.RemoveTag(tag.Name);
+                var fullName = GetFullTagName(group, tag.Name);
+                _subscriptionManager.UnsubscribeTag(group.PlcName, fullName);
+                session.RemoveTag(fullName);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "移除Tag：{TagName}发生错误！", tag.Name);
+            }
         }
 
         _store.RemoveTag(req.TagId);
@@ -170,18 +189,20 @@ public sealed class PlcDataService
     [BridgeMethod(Name = "UpdateTag")]
     public async Task<object> UpdateTag(UpdateTagRequest req)
     {
+        await Task.CompletedTask;
+
         var oldTag = _store.GetTag(req.TagId)
-            ?? throw new KeyNotFoundException($"点位 '{req.TagId}' 未找到。");
+                     ?? throw new UserFriendlyException($"点位 '{req.TagId}' 未找到。");
 
         if (!Enum.TryParse<PlcDataType>(req.DataType, true, out var plcType))
-            throw new ArgumentException($"不支持的数据类型: {req.DataType}");
+            throw new UserFriendlyException($"不支持的数据类型: {req.DataType}");
 
         // 如果名称变更，检查同一分组内是否存在同名点位（排除自身）
         if (!string.Equals(oldTag.Name, req.TagName, StringComparison.OrdinalIgnoreCase))
         {
             var existingTags = _store.GetTagsByGroup(oldTag.GroupId);
             if (existingTags.Any(t => t.Name.Equals(req.TagName, StringComparison.OrdinalIgnoreCase)))
-                throw new InvalidOperationException($"分组中已存在同名点位 '{req.TagName}'。");
+                throw new UserFriendlyException($"分组中已存在同名点位 '{req.TagName}'。");
         }
 
         // 更新存储
@@ -205,14 +226,14 @@ public sealed class PlcDataService
             {
                 var session = _hub.For(group.PlcName);
 
-                // 取消旧订阅并移除旧标签（无论名称是否变更，确保会话中的定义更新）
-                _subscriptionManager.UnsubscribeTag(group.PlcName, oldTag.Name);
-                session.RemoveTag(oldTag.Name);
+                var oldFullName = GetFullTagName(group, oldTag.Name);
+                _subscriptionManager.UnsubscribeTag(group.PlcName, oldFullName);
+                session.RemoveTag(oldFullName);
 
-                var tagDefinition = new TagDefinition(req.TagName, req.Address, plcType, req.StringLength);
+                var newFullName = GetFullTagName(group, req.TagName);
+                var tagDefinition = new TagDefinition(newFullName, req.Address, plcType, req.StringLength);
                 session.AddTag(tagDefinition);
 
-                // 建立新订阅
                 _subscriptionManager.SubscribeTag(group.PlcName, tagDefinition);
             }
             catch (Exception ex)
@@ -234,31 +255,32 @@ public sealed class PlcDataService
     public object? ReadTag(TagIdRequest req)
     {
         var tag = _store.GetTag(req.TagId)
-            ?? throw new KeyNotFoundException($"点位 '{req.TagId}' 未找到。");
+                  ?? throw new UserFriendlyException($"点位 '{req.TagId}' 未找到。");
 
         var group = _store.GetGroup(tag.GroupId);
         if (group is null) return null;
 
         var session = _hub.For(group.PlcName);
-        return ReadTagValue(session, tag);
+        return ReadTagValue(session, group, tag);
     }
 
     [BridgeMethod(Name = "WriteTag")]
     public async Task<object> WriteTag(WriteTagRequest req)
     {
-        var tag = _store.GetTag(req.TagId!)
-            ?? throw new KeyNotFoundException($"点位 '{req.TagId}' 未找到。");
+        var tag = _store.GetTag(req.TagId)
+                  ?? throw new UserFriendlyException($"点位 '{req.TagId}' 未找到。");
 
         var group = _store.GetGroup(tag.GroupId)
-            ?? throw new KeyNotFoundException($"点位所属分组未找到。");
+                    ?? throw new UserFriendlyException($"点位所属分组未找到。");
 
         var session = _hub.For(group.PlcName);
+        var fullName = GetFullTagName(group, tag.Name);
 
         var typedValue = ConvertFromPayload(req.Value!, tag.DataType);
 
         try
         {
-            var result = await session.SetAsync(tag.Name, typedValue);
+            var result = await session.SetAsync(fullName, typedValue);
             return new
             {
                 success = result.Success,
@@ -276,7 +298,11 @@ public sealed class PlcDataService
     [BridgeMethod(Name = "GetTagHistory")]
     public List<object> GetTagHistory(TagHistoryRequest req)
     {
-        var records = _historyStore.GetRecords(req.TagName);
+        var group = _store.GetGroup(req.GroupId);
+        var fullName = group is not null
+            ? GetFullTagName(group, req.TagName)
+            : req.TagName;
+        var records = _historyStore.GetRecords(fullName);
         return records.Select(r => new
         {
             id = r.Id,
@@ -291,19 +317,22 @@ public sealed class PlcDataService
 
     // ── Helper Methods ───────────────────────────────
 
-    private static object ReadTagValue(IPlcSession session, TagConfig tag)
+    private static string GetFullTagName(DbGroup group, string tagName) => $"{group.PlcName}.{group.Name}.{tagName}";
+
+    private static object ReadTagValue(IPlcSession session, DbGroup group, TagConfig tag)
     {
+        var fullName = GetFullTagName(group, tag.Name);
         return tag.DataType switch
         {
-            PlcDataType.Bool => session.Get<bool>(tag.Name),
-            PlcDataType.Byte => session.Get<byte>(tag.Name),
-            PlcDataType.Int16 => session.Get<short>(tag.Name),
-            PlcDataType.UInt16 => session.Get<ushort>(tag.Name),
-            PlcDataType.Int32 => session.Get<int>(tag.Name),
-            PlcDataType.UInt32 => session.Get<uint>(tag.Name),
-            PlcDataType.Float => session.Get<float>(tag.Name),
-            PlcDataType.Double => session.Get<double>(tag.Name),
-            PlcDataType.String => session.Get<string>(tag.Name),
+            PlcDataType.Bool => session.Get<bool>(fullName),
+            PlcDataType.Byte => session.Get<byte>(fullName),
+            PlcDataType.Int16 => session.Get<short>(fullName),
+            PlcDataType.UInt16 => session.Get<ushort>(fullName),
+            PlcDataType.Int32 => session.Get<int>(fullName),
+            PlcDataType.UInt32 => session.Get<uint>(fullName),
+            PlcDataType.Float => session.Get<float>(fullName),
+            PlcDataType.Double => session.Get<double>(fullName),
+            PlcDataType.String => session.Get<string>(fullName),
             _ => throw new NotSupportedException($"不支持的数据类型: {tag.DataType}")
         };
     }
@@ -343,5 +372,3 @@ public sealed class PlcDataService
         };
     }
 }
-
-
