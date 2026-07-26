@@ -5,6 +5,11 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { plcManager, plcData, type PlcConfig, type DbGroupInfo } from '../api/plcApi'
 import TagTable from '../components/TagTable.vue'
 
+function getMcFrameLabel(value: string | number): string {
+  const map: Record<string, string> = { '4': '1E', '11': '3E', '15': '4E' }
+  return map[String(value)] || '3E'
+}
+
 const props = defineProps<{
   name: string
 }>()
@@ -123,7 +128,7 @@ async function handleConnect() {
   try {
     await plcManager.connectPlc(plc.value.name)
     ElMessage.success('PLC 已连接')
-    await loadPlc()
+    plc.value.isConnected = true;
   } catch (e: any) {
     ElMessage.error('连接失败: ' + (e.message || e))
   }
@@ -134,7 +139,7 @@ async function handleDisconnect() {
   try {
     await plcManager.disconnectPlc(plc.value.name)
     ElMessage.success('PLC 已断开')
-    await loadPlc()
+    plc.value.isConnected = false;
   } catch (e: any) {
     ElMessage.error('断开失败: ' + (e.message || e))
   }
@@ -169,7 +174,7 @@ onMounted(() => {
           {{ plc.isConnected ? '已连接' : '未连接' }}
         </el-tag>
         <span style="font-size: 13px; color: #606266; margin-left: 12px">{{ plc.ip }}:{{ plc.port }}</span>
-        <span style="font-size: 13px; color: #909399; margin-left: 8px">{{ plc.plcType === 'Mitsubishi' ? (plc.connectionOptions.mcProtocolFrame || '3E') + ' 帧' : 'Rack ' + (plc.connectionOptions.rack || 0) + ' / Slot ' + (plc.connectionOptions.slot || 1) }}</span>
+        <span style="font-size: 13px; color: #909399; margin-left: 8px">{{ plc.plcType === 'Mitsubishi' ? getMcFrameLabel(plc.connectionOptions.mcProtocolFrame) + ' 帧' : 'Rack ' + (plc.connectionOptions.rack || 0) + ' / Slot ' + (plc.connectionOptions.slot || 1) }}</span>
         <el-tag size="small" type="info" effect="plain" style="margin-left: 8px">{{ plc.plcType === 'Mitsubishi' ? '三菱' : '西门子' }}</el-tag>
         <div style="margin-left: auto">
           <el-button v-if="!plc.isConnected" type="success" size="small" @click="handleConnect">连接</el-button>

@@ -260,12 +260,12 @@
           <el-input-number v-else v-model="editingValue[row.id]" size="small" controls-position="right" />
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="250" fixed="right">
+      <el-table-column label="操作" width="300" fixed="right">
         <template #default="{ row }: { row: TagInfo }">
-          <el-button type="primary" size="small" :loading="writingTags.has(row.id)" @click="handleWriteTag(row)">写入</el-button>
-          <el-button size="small" @click="handleEditTag(row)">编辑</el-button>
-          <el-button size="small" @click="handleShowHistory(row.name)">历史</el-button>
-          <el-button type="danger" size="small" @click="handleRemoveTag(row.id, row.name)">移除</el-button>
+          <el-button type="primary" size="small" style="width: 60px" :loading="writingTags.has(row.id)" @click="handleWriteTag(row)">写入</el-button>
+          <el-button size="small" style="width: 60px" @click="handleEditTag(row)">编辑</el-button>
+          <el-button size="small" style="width: 60px" @click="handleShowHistory(row.name)">历史</el-button>
+          <el-button type="danger" size="small" style="width: 60px" @click="handleRemoveTag(row.id, row.name)">移除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -280,7 +280,7 @@
         </el-form-item>
         <el-form-item label="地址" required>
           <el-input v-model="editForm.address" placeholder="如: DB1.DBD0" />
-          <el-text type="info" size="small" style="margin-top: 4px; display: block">西门子格式: DB1.DBD0 / DB1.DBX10.5 / DB1.DBW4</el-text>
+          <el-text type="info" size="small" style="margin-top: 4px; display: block">DB1.DBD0 / D10 等</el-text>
         </el-form-item>
         <el-form-item label="数据类型">
           <el-select v-model="editForm.dataType" style="width: 100%">
@@ -305,7 +305,7 @@
         </el-form-item>
         <el-form-item label="地址" required>
           <el-input v-model="editFormState.address" placeholder="如: DB1.DBD0" />
-          <el-text type="info" size="small" style="margin-top: 4px; display: block">西门子格式: DB1.DBD0 / DB1.DBX10.5 / DB1.DBW4</el-text>
+          <el-text type="info" size="small" style="margin-top: 4px; display: block">DB1.DBD0 / D10 等</el-text>
         </el-form-item>
         <el-form-item label="数据类型">
           <el-select v-model="editFormState.dataType" style="width: 100%">

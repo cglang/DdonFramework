@@ -11,6 +11,11 @@
     { value: 'Mitsubishi', label: '三菱' },
   ];
 
+  function getMcFrameLabel(value: string | number): string {
+    const map: Record<string, string> = { '4': '1E', '11': '3E', '15': '4E' };
+    return map[String(value)] || '3E';
+  }
+
   const mcFrameOptions = [
     { value: 11, label: '3E 帧' },
     { value: 15, label: '4E 帧' },
@@ -99,7 +104,7 @@
     try {
       await plcManager.connectPlc(plc.name);
       ElMessage.success(`PLC "${plc.name}" 已连接`);
-      await loadPlcs();
+      plc.isConnected = true;
     } catch (e: any) {
       ElMessage.error('连接失败: ' + (e.message || e));
     }
@@ -109,7 +114,7 @@
     try {
       await plcManager.disconnectPlc(plc.name);
       ElMessage.success(`PLC "${plc.name}" 已断开`);
-      await loadPlcs();
+      plc.isConnected = false;
     } catch (e: any) {
       ElMessage.error('断开失败: ' + (e.message || e));
     }
@@ -209,11 +214,11 @@
               <el-descriptions-item label="类型">{{ plc.plcType === 'Mitsubishi' ? '三菱' : '西门子' }}</el-descriptions-item>
               <el-descriptions-item label="IP:端口">{{ plc.ip }}:{{ plc.port }}</el-descriptions-item>
               <template v-if="plc.plcType === 'Mitsubishi'">
-                <el-descriptions-item label="协议帧">{{ plc.connectionOptions.mcProtocolFrame || 11 }}E 帧</el-descriptions-item>
+                <el-descriptions-item label="协议帧">{{ getMcFrameLabel(plc.connectionOptions.mcProtocolFrame) }} 帧</el-descriptions-item>
               </template>
               <template v-else>
-                <el-descriptions-item label="CPU 类型">{{ getCpuTypeLabel(Number(plc.connectionOptions.cpuType) || 40) }}</el-descriptions-item>
-                <el-descriptions-item label="机架/槽位">{{ plc.connectionOptions.rack || 0 }}/{{ plc.connectionOptions.slot || 1 }}</el-descriptions-item>
+                <el-descriptions-item label="CPU 类型/机架/槽位">{{ getCpuTypeLabel(Number(plc.connectionOptions.cpuType) || 40) }}/{{ plc.connectionOptions.rack || 0 }}/{{ plc.connectionOptions.slot || 1 }}</el-descriptions-item>
+                <!-- <el-descriptions-item label="">{{ plc.connectionOptions.rack || 0 }}/{{ plc.connectionOptions.slot || 1 }}</el-descriptions-item> -->
               </template>
               <el-descriptions-item label="扫描频率">{{ plc.scanInterval }}ms</el-descriptions-item>
             </el-descriptions>
