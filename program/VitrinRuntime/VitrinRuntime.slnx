@@ -5,6 +5,7 @@
     <Project Path="../../src/Ddon.Desktop.Core/Ddon.Desktop.Core.csproj" />
     <Project Path="../../src/Ddon.EventBus.Memory/Ddon.EventBus.Memory.csproj" />
     <Project Path="../../src/Ddon.EventBus/Ddon.EventBus.csproj" />
+    <Project Path="../../src/Ddon.Lua/Ddon.Lua.csproj" />
     <Project Path="../../src/Ddon.VitrinPLC/Ddon.VitrinPLC.csproj" />
   </Folder>
   <Folder Name="/src/">

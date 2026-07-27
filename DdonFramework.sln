@@ -76,6 +76,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.SimpeSocket", "src\Ddo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ddon.Plugin", "src\Ddon.Plugin\Ddon.Plugin.csproj", "{77C00840-2037-4266-9AD3-57B5C63939E3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ddon.Lua", "src\Ddon.Lua\Ddon.Lua.csproj", "{B8E5F3A2-9D1C-4E7B-8F6A-2C3D5E7A9B1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -210,6 +212,10 @@ Global
 		{77C00840-2037-4266-9AD3-57B5C63939E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77C00840-2037-4266-9AD3-57B5C63939E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77C00840-2037-4266-9AD3-57B5C63939E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8E5F3A2-9D1C-4E7B-8F6A-2C3D5E7A9B1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8E5F3A2-9D1C-4E7B-8F6A-2C3D5E7A9B1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8E5F3A2-9D1C-4E7B-8F6A-2C3D5E7A9B1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8E5F3A2-9D1C-4E7B-8F6A-2C3D5E7A9B1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -247,6 +253,7 @@ Global
 		{AD183329-FB72-490F-99C1-31625CFD2F8B} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{E08C4D55-3AC2-4F73-A670-D77BB33E191C} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 		{77C00840-2037-4266-9AD3-57B5C63939E3} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
+		{B8E5F3A2-9D1C-4E7B-8F6A-2C3D5E7A9B1E} = {85F97144-3F7C-44C7-80A0-3E5C5F232060}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {246F3ACF-C0A2-4053-861F-3C986A0921CE}

@@ -42,5 +42,12 @@ public partial class App : DesktopApplication
         services.AddSingleton<TagSubscriptionManager>();
 
         services.AddHostedService<AutoConnectHostedService>();
+
+        // ── Lua 脚本引擎 ────────────────────────────────────────
+        services.AddLua(options => { options.EnableFileWatcher = true; });
+        services.AddSingleton<ILuaGroupStore, JsonLuaGroupStore>();
+        services.AddSingleton<LuaEventBridgeService>();
+        services.AddSingleton<LuaEngineService>();
+        services.AddHostedService<LuaAutoLoadService>();
     }
 }

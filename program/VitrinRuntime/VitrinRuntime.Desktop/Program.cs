@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Serilog;
+using System.Text;
 
 namespace VitrinRuntime.Desktop;
 
@@ -8,6 +9,8 @@ internal class Program
     [STAThread]
     static void Main(string[] args)
     {
+        Console.OutputEncoding = Encoding.UTF8;
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)

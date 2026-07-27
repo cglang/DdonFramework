@@ -16,10 +16,10 @@
       path: '/plc/list',
     },
     {
-      icon: 'Monitor',
-      name: '西门子PLC管理',
-      description: '管理西门子 PLC 连接、DB 块分组和点位数据',
-      path: '/plc/list',
+      icon: 'Coin',
+      name: 'Lua脚本引擎',
+      description: '加载、管理、执行 Lua 脚本，文件监控自动重载',
+      path: '/lua/engine',
     },
     {
       icon: 'Monitor',
