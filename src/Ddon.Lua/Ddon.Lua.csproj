@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageIcon>icon.nuget.jpg</PackageIcon>
+		<AssemblyName>Ddon.LuaEngine</AssemblyName>
+		<RootNamespace>Ddon.LuaEngine</RootNamespace>
+	</PropertyGroup>
+
+	<Import Project="../../version.props" />
+
+	<ItemGroup>
+		<PackageReference Include="NLua" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Options" />
+	</ItemGroup>
+
+</Project>
