@@ -20,5 +20,7 @@ namespace Ddon.LuaEngine
         void SetVm(string groupName, Lua vm);
 
         void ClearAllVms();
+
+        IReadOnlyList<string> GetFunctionNames(string groupName);
     }
 }

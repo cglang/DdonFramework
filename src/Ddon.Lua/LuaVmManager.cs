@@ -80,5 +80,26 @@ namespace Ddon.LuaEngine
 
             _vms.Clear();
         }
+
+        public IReadOnlyList<string> GetFunctionNames(string groupName)
+        {
+            if (!_vms.TryGetValue(groupName, out var vm))
+                return Array.Empty<string>();
+
+            var result = vm.DoString(@"
+                local names = {}
+                for k, v in pairs(_G) do
+                    if type(v) == 'function' then
+                        table.insert(names, k)
+                    end
+                end
+                return table.concat(names, ',')
+            ");
+
+            if (result.Length > 0 && result[0] is string str && str.Length > 0)
+                return str.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return Array.Empty<string>();
+        }
     }
 }
