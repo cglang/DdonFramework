@@ -3,6 +3,7 @@ using Ddon.Desktop.Core.Annotations;
 using Ddon.VitrinPLC.Abstractions;
 using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.Logging;
+using VitrinRuntime.Desktop.Exceptions;
 using VitrinRuntime.Desktop.Stores;
 
 namespace VitrinRuntime.Desktop.Services;

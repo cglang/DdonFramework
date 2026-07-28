@@ -89,7 +89,7 @@ public sealed class LuaEngineService
     }
 
     [BridgeMethod(Name = "GetGroupDetail")]
-    public object GetGroupDetail(GroupNameRequest req)
+    public object? GetGroupDetail(GroupNameRequest req)
     {
         var group = _scriptManager.GetGroup(req.GroupName);
         if (group is null) return null;

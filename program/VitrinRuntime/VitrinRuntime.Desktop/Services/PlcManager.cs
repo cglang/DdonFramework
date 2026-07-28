@@ -6,6 +6,7 @@ using Ddon.VitrinPLC.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using S7.Net;
+using VitrinRuntime.Desktop.Exceptions;
 using VitrinRuntime.Desktop.Stores;
 
 namespace VitrinRuntime.Desktop.Services;
