@@ -69,6 +69,9 @@
     <PackageVersion Include="MSTest.TestFramework" Version="3.1.1" />
     <PackageVersion Include="NLua" Version="1.7.3" />
     <PackageVersion Include="NUnit" Version="3.13.3" />
+    <PackageVersion Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.5.378.156" />
+    <PackageVersion Include="OPCFoundation.NetStandard.Opc.Ua.Core" Version="1.5.378.156" />
+    <PackageVersion Include="OPCFoundation.NetStandard.Opc.Ua.Server" Version="1.5.378.156" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 </Project>

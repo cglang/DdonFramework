@@ -21,6 +21,12 @@
       description: '加载、管理、执行 Lua 脚本，文件监控自动重载',
       path: '/lua/engine',
     },
+    {
+      icon: 'Connection',
+      name: 'OPC UA Server',
+      description: '管理 OPC UA 服务器、浏览地址空间',
+      path: '/opcua/server',
+    },
   ];
 
   const router = useRouter();

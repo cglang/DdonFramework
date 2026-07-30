@@ -28,6 +28,7 @@
 		<ProjectReference Include="..\..\..\src\Ddon.VitrinPLC\Ddon.VitrinPLC.csproj" />
 		<ProjectReference Include="..\..\..\src\Ddon.EventBus\Ddon.EventBus.csproj" />
 		<ProjectReference Include="..\..\..\src\Ddon.EventBus.Memory\Ddon.EventBus.Memory.csproj" />
+		<ProjectReference Include="..\..\..\src\Ddon.OpcUaServer\Ddon.OpcUaServer.csproj" />
 	</ItemGroup>
 
 	<Target Name="NpmInstall" BeforeTargets="Build" Condition="!Exists('Frontend\node_modules')">
