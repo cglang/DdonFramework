@@ -1,5 +1,4 @@
 using Ddon.Desktop.Avalonia;
-using Ddon.OpcUaServer;
 using Ddon.VitrinPLC;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,15 +49,5 @@ public partial class App : DesktopApplication
         services.AddSingleton<LuaEventBridgeService>();
         services.AddSingleton<LuaEngineService>();
         services.AddHostedService<LuaAutoLoadService>();
-
-        // ── OPC UA Server ──────────────────────────────────────────
-        services.AddVitrinUaServer(options =>
-        {
-            options.ServerName = "VitrinRuntime";
-            options.EndpointUrl = "opc.tcp://localhost:4840";
-            options.AllowAnonymous = true;
-        });
-        services.AddSingleton<OpcUaServerService>();
-        services.AddHostedService<OpcUaHostedService>();
     }
 }
