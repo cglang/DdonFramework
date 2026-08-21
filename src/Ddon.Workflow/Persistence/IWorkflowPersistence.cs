@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Ddon.Workflow.Abstractions;
 
-namespace Ddon.Workflow.Abstractions.Persistence
+namespace Ddon.Workflow.Persistence
 {
     /// <summary>
     /// 表示工作流的持久化检查点
@@ -112,18 +113,5 @@ namespace Ddon.Workflow.Abstractions.Persistence
         /// </summary>
         Task<IWorkflowCheckpoint[]> GetRecoverableCheckpointsAsync(
             CancellationToken cancellationToken = default);
-    }
-
-    /// <summary>
-    /// 支持持久化的工作流标记接口
-    /// </summary>
-    public interface IPersistableWorkflow
-    {
-        /// <summary>
-        /// 创建当前状态的检查点
-        /// </summary>
-        IWorkflowCheckpoint CreateCheckpoint();
-
-        Task ClearCheckpointAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using Ddon.Workflow.Abstractions.Persistence;
 
 namespace Ddon.Workflow.Persistence
 {
