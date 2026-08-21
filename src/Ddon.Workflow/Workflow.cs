@@ -1,58 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Workflow.Abstractions;
-using Ddon.Workflow.Abstractions.Persistence;
-using Ddon.Workflow.Persistence;
 
 namespace Ddon.Workflow
 {
     /// <summary>
     /// 串行执行的工作流引擎 负责按顺序驱动一组 Step
     /// </summary>
-    public class Workflow<TContext> : WorkflowBase, IPersistableWorkflow
+    public class Workflow<TContext> : WorkflowBase
     {
         protected readonly IList<IStep<TContext>> _steps;
         private readonly IList<IStepExtension<TContext>> _extensions = new List<IStepExtension<TContext>>();
-        private IWorkflowPersistenceStrategy _persistenceStrategy;
-        private bool _isPersistenceEnabled;
-        private int _lastPersistedStepIndex = -1;
 
         /// <summary>
         /// 工作流上下文：包含执行该工作流所需的所有数据和状态
         /// </summary>
         public TContext Context { get; private set; }
 
-        [JsonIgnore]
-        public IWorkflowPersistenceStrategy PersistenceStrategy
-        {
-            get => _persistenceStrategy;
-            set => _persistenceStrategy = value;
-        }
-
-        [JsonIgnore]
-        public bool IsPersistenceEnabled
-        {
-            get => _isPersistenceEnabled;
-            set => _isPersistenceEnabled = value;
-        }
-
         /// <summary>
         /// 串行执行的工作流引擎 负责按顺序驱动一组 Step
         /// </summary>
         /// <param name="name">工作流名称</param>
+        /// <param name="context">工作流上下文</param>
         /// <param name="steps">工作流步骤</param>
-        public Workflow(string name, TContext context, IList<IStep<TContext>> steps) : base(steps)
+        /// <param name="startIndex">起始步骤索引（用于从中途恢复，默认从第一个步骤开始）</param>
+        public Workflow(string name, TContext context, IList<IStep<TContext>> steps, int startIndex = 0) : base(steps)
         {
+            if (startIndex < 0 || startIndex > steps.Count)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+
             _steps = steps;
             Name = name;
             Context = context;
             Id = Guid.NewGuid().ToString();
-            _isPersistenceEnabled = false;
+            _index = startIndex;
         }
 
         private IEnumerable<IStepExtension<TContext>> GetExtensionsForStep(IStep<TContext> step)
@@ -74,16 +58,6 @@ namespace Ddon.Workflow
             if (extension == null) throw new ArgumentNullException(nameof(extension));
             _extensions.Add(extension);
             return this;
-        }
-
-        /// <summary>
-        /// 启用此工作流的持久化
-        /// </summary>
-        public void EnablePersistence(IWorkflowPersistenceStrategy persistenceStrategy)
-        {
-            _persistenceStrategy = persistenceStrategy
-                ?? throw new ArgumentNullException(nameof(persistenceStrategy));
-            _isPersistenceEnabled = true;
         }
 
         /// <summary>
@@ -146,93 +120,32 @@ namespace Ddon.Workflow
                     }
                 }
 
-                // 步骤成功转换后创建检查点
-                if (_isPersistenceEnabled)
+                // 生命周期钩子：步骤推进成功后触发（完成时触发完成钩子，否则触发推进钩子）
+                if (IsFinished)
                 {
-                    await CheckpointAsync(cancellationToken);
+                    await OnWorkflowCompletedAsync(cancellationToken);
+                }
+                else
+                {
+                    await OnStepAdvancedAsync(cancellationToken);
                 }
             }
         }
 
         /// <summary>
-        /// 创建当前工作流状态的检查点
+        /// 步骤成功推进后的生命周期钩子（默认空实现，供派生类扩展，如持久化检查点）
         /// </summary>
-        public IWorkflowCheckpoint CreateCheckpoint()
+        protected virtual Task OnStepAdvancedAsync(CancellationToken cancellationToken)
         {
-            var contextJson = JsonSerializer.Serialize(
-                Context,
-                new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-
-            return new WorkflowCheckpoint
-            {
-                WorkflowId = Id,
-                WorkflowName = Name,
-                CurrentStepIndex = _index,
-                ContextJson = contextJson,
-                ContextTypeName = typeof(TContext).FullName,
-                StepTypeNames = _steps.Select(s => s.GetType().FullName).ToArray(),
-                Status = IsFinished ? "Completed" : "Running",
-                CreatedAt = DateTime.UtcNow
-            };
+            return Task.CompletedTask;
         }
 
         /// <summary>
-        /// 将当前状态持久化到存储
+        /// 工作流完成后的生命周期钩子（默认空实现，供派生类扩展，如清理检查点）
         /// </summary>
-        public async Task CheckpointAsync(CancellationToken cancellationToken = default)
+        protected virtual Task OnWorkflowCompletedAsync(CancellationToken cancellationToken)
         {
-            if (!_isPersistenceEnabled || _persistenceStrategy == null)
-                return;
-
-            // 仅在步骤索引发生变化时持久化
-            if (_lastPersistedStepIndex == _index)
-                return;
-
-            try
-            {
-                var checkpoint = CreateCheckpoint();
-                await _persistenceStrategy.SaveCheckpointAsync(checkpoint, cancellationToken);
-                _lastPersistedStepIndex = _index;
-            }
-            catch (Exception ex)
-            {
-                // 记录但不失败 - 持久化是非关键的
-                System.Diagnostics.Debug.WriteLine($"[工作流] 工作流 {Id} 检查点失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 恢复工作流到之前检查点的步骤索引
-        /// </summary>
-        public void RestoreCheckpoint(int stepIndex)
-        {
-            if (stepIndex < 0 || stepIndex >= _steps.Count)
-                throw new ArgumentOutOfRangeException(nameof(stepIndex));
-
-            _index = stepIndex;
-            _lastPersistedStepIndex = stepIndex;
-        }
-
-        /// <summary>
-        /// 工作流完成后清除持久化检查点
-        /// </summary>
-        public async Task ClearCheckpointAsync(CancellationToken cancellationToken = default)
-        {
-            if (!_isPersistenceEnabled || _persistenceStrategy == null)
-                return;
-
-            try
-            {
-                await _persistenceStrategy.DeleteCheckpointAsync(Id, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    $"[工作流] 删除工作流 {Id} 的检查点失败: {ex.Message}");
-            }
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.Workflow.Abstractions;
-using Ddon.Workflow.Abstractions.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Workflow.Persistence
@@ -39,7 +37,7 @@ namespace Ddon.Workflow.Persistence
             try
             {
                 // 反序列化上下文
-                var contextType = Type.GetType(checkpoint.ContextTypeName);
+                var contextType = ResolveType(checkpoint.ContextTypeName);
                 if (contextType == null)
                 {
                     throw new InvalidOperationException(
@@ -55,17 +53,16 @@ namespace Ddon.Workflow.Persistence
                 // 使用提供的工厂重建步骤
                 var steps = stepFactory(checkpoint.StepTypeNames, context);
 
-                // 创建恢复的工作流
-                var workflow = new Workflow<TContext>(
+                // 创建带持久化支持的工作流，并恢复到检查点索引
+                var workflow = new PersistableWorkflow<TContext>(
                     checkpoint.WorkflowName,
                     context,
-                    steps)
+                    steps,
+                    _persistenceStrategy,
+                    checkpoint.CurrentStepIndex)
                 {
                     Id = checkpoint.WorkflowId
                 };
-
-                // 恢复到检查点索引
-                workflow.RestoreCheckpoint(checkpoint.CurrentStepIndex);
 
                 _logger.LogInformation(
                     $"[恢复] 工作流 '{checkpoint.WorkflowName}' " +
@@ -87,6 +84,23 @@ namespace Ddon.Workflow.Persistence
             var checkpoints = await _persistenceStrategy.GetAllCheckpointsAsync(cancellationToken);
             _logger.LogInformation($"[恢复] 找到 {checkpoints.Length} 个可恢复的检查点");
             return checkpoints;
+        }
+
+        /// <summary>
+        /// 解析类型名：支持程序集限定名；纯全名时在当前已加载程序集中查找
+        /// </summary>
+        private static Type ResolveType(string typeName)
+        {
+            var type = Type.GetType(typeName);
+            if (type != null) return type;
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                type = assembly.GetType(typeName);
+                if (type != null) return type;
+            }
+
+            return null;
         }
     }
 }

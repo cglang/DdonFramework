@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Ddon.Workflow.Abstractions.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace Ddon.Workflow.Persistence
@@ -46,7 +45,7 @@ namespace Ddon.Workflow.Persistence
                 var filePath = GetCheckpointFilePath(checkpoint.WorkflowId);
                 var json = JsonSerializer.Serialize(checkpoint, _jsonOptions);
 
-                await Task.Run(() => File.WriteAllText(filePath, json));
+                await Task.Run(() => File.WriteAllText(filePath, json), cancellationToken);
 
                 _logger.LogInformation(
                     $"[持久化] 工作流 '{checkpoint.WorkflowName}' (ID: {checkpoint.WorkflowId}) 的检查点已保存，当前步骤: {checkpoint.CurrentStepIndex}");
@@ -73,7 +72,7 @@ namespace Ddon.Workflow.Persistence
                     return null;
                 }
 
-                var json = await Task.Run(() => File.ReadAllText(filePath));
+                var json = await Task.Run(() => File.ReadAllText(filePath), cancellationToken);
                 var checkpoint = JsonSerializer.Deserialize<WorkflowCheckpoint>(json, _jsonOptions);
 
                 _logger.LogInformation(
@@ -104,7 +103,7 @@ namespace Ddon.Workflow.Persistence
                 {
                     try
                     {
-                        var json = await Task.Run(() => File.ReadAllText(file));
+                        var json = await Task.Run(() => File.ReadAllText(file), cancellationToken);
                         var checkpoint = JsonSerializer.Deserialize<WorkflowCheckpoint>(json, _jsonOptions);
                         checkpoints.Add(checkpoint);
                     }
@@ -146,12 +145,12 @@ namespace Ddon.Workflow.Persistence
             }
         }
 
-        public async Task<bool> CheckpointExistsAsync(
+        public Task<bool> CheckpointExistsAsync(
             string workflowId,
             CancellationToken cancellationToken = default)
         {
             var filePath = GetCheckpointFilePath(workflowId);
-            return await Task.FromResult(File.Exists(filePath));
+            return Task.FromResult(File.Exists(filePath));
         }
 
         private string GetCheckpointFilePath(string workflowId)
