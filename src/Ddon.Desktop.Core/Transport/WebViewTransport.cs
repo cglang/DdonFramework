@@ -6,33 +6,9 @@ namespace Ddon.Desktop.Core.Transport;
 public class WebViewTransport : ITransport
 {
     private readonly Dictionary<string, Delegate> _handlers = new();
-    private readonly Dictionary<string, TaskCompletionSource<string>> _pendingRequests = new();
 
     public Func<string, object?, Task<object?>>? OnInvoke { get; set; }
     public dynamic? ChromeWebView { get; set; }
-
-    public async Task<T> InvokeAsync<T>(string method, object? payload = null)
-    {
-        var request = new BridgeRequest
-        {
-            Id = Guid.NewGuid().ToString(),
-            Method = method,
-            Payload = payload
-        };
-
-        var tcs = new TaskCompletionSource<string>();
-        _pendingRequests[request.Id] = tcs;
-
-        PostMessage("invoke", request);
-
-        var resultJson = await tcs.Task;
-        var response = JsonSerializer.Deserialize<BridgeResponse>(resultJson)!;
-
-        if (!response.Success)
-            throw new InvalidOperationException(response.Error ?? "Bridge invoke failed");
-
-        return DeserializeData<T>(response.Data);
-    }
 
     public async Task PublishAsync(string eventName, object? data = null)
     {
@@ -58,10 +34,6 @@ public class WebViewTransport : ITransport
 
         switch (type)
         {
-            case "response":
-                HandleResponse(root.GetProperty("data").GetRawText());
-                break;
-
             case "invoke" when OnInvoke is not null:
                 await HandleIncomingInvoke(root.GetProperty("data"));
                 break;
@@ -69,16 +41,6 @@ public class WebViewTransport : ITransport
             case "event":
                 HandleIncomingEvent(root.GetProperty("data"));
                 break;
-        }
-    }
-
-    public void HandleResponse(string responseJson)
-    {
-        var response = JsonSerializer.Deserialize<BridgeResponse>(responseJson);
-        if (response is not null && _pendingRequests.TryGetValue(response.Id, out var tcs))
-        {
-            tcs.TrySetResult(responseJson);
-            _pendingRequests.Remove(response.Id);
         }
     }
 
@@ -125,13 +87,6 @@ public class WebViewTransport : ITransport
     {
         var message = JsonSerializer.Serialize(new { type, data });
         ChromeWebView?.PostWebMessageAsString(message);
-    }
-
-    private static T DeserializeData<T>(object? data)
-    {
-        if (data is JsonElement je)
-            return JsonSerializer.Deserialize<T>(je.GetRawText(), _jsonOptions)!;
-        return (T)data!;
     }
 
     private static object? ConvertPayload(object? data, Type targetType)

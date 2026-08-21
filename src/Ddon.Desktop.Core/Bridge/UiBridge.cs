@@ -13,11 +13,6 @@ public class UiBridge : IUiBridge
         _transport = transport;
     }
 
-    public Task<T> InvokeAsync<T>(string method, object? payload = null)
-    {
-        return _transport.InvokeAsync<T>(method, payload);
-    }
-
     public Task PublishAsync<T>(T eventData) where T : class
     {
         var eventName = typeof(T).Name;

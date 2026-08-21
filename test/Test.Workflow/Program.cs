@@ -28,6 +28,7 @@ namespace Test.Workflow
 
             //await TestProgram.Run(args);
 
+            await TestPersistence.Run();
             await WorkflowCoreTest.Run();
             return;
 

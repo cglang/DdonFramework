@@ -13,7 +13,6 @@ public class AvaloniaWebViewTransport : ITransport
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     private readonly Dictionary<string, Delegate> _handlers = new();
-    private readonly Dictionary<string, TaskCompletionSource<string>> _pendingRequests = new();
     private readonly IBridgeDispatcher _bridgeDispatcher;
     private readonly ILogger<AvaloniaWebViewTransport> _logger;
 
@@ -25,24 +24,6 @@ public class AvaloniaWebViewTransport : ITransport
         _logger = logger;
     }
 
-
-    public async Task<T> InvokeAsync<T>(string method, object? payload = null)
-    {
-        var request = new BridgeRequest { Id = Guid.NewGuid().ToString(), Method = method, Payload = payload };
-
-        var tcs = new TaskCompletionSource<string>();
-        _pendingRequests[request.Id] = tcs;
-
-        await PostMessage("invoke", request);
-
-        var resultJson = await tcs.Task;
-        var response = JsonSerializer.Deserialize<BridgeResponse>(resultJson, _jsonOptions)!;
-
-        if (!response.Success)
-            throw new InvalidOperationException(response.Error ?? "Bridge invoke failed");
-
-        return DeserializeData<T>(response.Data);
-    }
 
     public async Task PublishAsync(string eventName, object? data = null)
     {
@@ -69,19 +50,12 @@ public class AvaloniaWebViewTransport : ITransport
 
         switch (type)
         {
-            case "response":
-                HandleResponse(root.GetProperty("data").GetRawText());
-                break;
-
             case "invoke":
                 await HandleIncomingInvoke(root.GetProperty("data"));
                 break;
 
             case "event":
                 HandleIncomingEvent(root.GetProperty("data"));
-                break;
-
-            case "bridgeReady":
                 break;
         }
     }
@@ -96,16 +70,6 @@ public class AvaloniaWebViewTransport : ITransport
         catch (Exception ex)
         {
             _logger.LogError(ex, "WebView 执行脚本错误: {Script}", script);
-        }
-    }
-
-    private void HandleResponse(string responseJson)
-    {
-        var response = JsonSerializer.Deserialize<BridgeResponse>(responseJson, _jsonOptions);
-        if (response is not null && _pendingRequests.TryGetValue(response.Id, out var tcs))
-        {
-            tcs.TrySetResult(responseJson);
-            _pendingRequests.Remove(response.Id);
         }
     }
 
@@ -152,13 +116,6 @@ public class AvaloniaWebViewTransport : ITransport
         {
             _logger.LogError(ex, "PostMessage 错误{Json}", json);
         }
-    }
-
-    private static T DeserializeData<T>(object? data)
-    {
-        if (data is JsonElement je)
-            return JsonSerializer.Deserialize<T>(je.GetRawText(), _jsonOptions)!;
-        return (T)data!;
     }
 
     private static object? ConvertPayload(object? data, Type targetType)

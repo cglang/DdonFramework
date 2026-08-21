@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using System.Text.Json;
 using Ddon.Desktop.Core.Protocol;
 
 namespace Ddon.Desktop.Core.Transport;
@@ -12,25 +11,6 @@ public class BrowserTransport : ITransport
     public BrowserTransport(HttpClient httpClient)
     {
         _httpClient = httpClient;
-    }
-
-    public async Task<T> InvokeAsync<T>(string method, object? payload = null)
-    {
-        var request = new BridgeRequest
-        {
-            Id = Guid.NewGuid().ToString(),
-            Method = method,
-            Payload = payload
-        };
-
-        var response = await _httpClient.PostAsJsonAsync("/api/bridge/invoke", request);
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<BridgeResponse>();
-        if (result is null || !result.Success)
-            throw new InvalidOperationException(result?.Error ?? "Bridge invoke failed");
-
-        return DeserializeData<T>(result.Data);
     }
 
     public async Task PublishAsync(string eventName, object? data = null)
@@ -52,13 +32,6 @@ public class BrowserTransport : ITransport
         _handlers.Remove(eventName);
     }
 
-    private static T DeserializeData<T>(object? data)
-    {
-        if (data is JsonElement je)
-            return JsonSerializer.Deserialize<T>(je.GetRawText(), _jsonOptions)!;
-        return (T)data!;
-    }
-
     public Task InjectBridgeAsync()
     {
         return Task.CompletedTask;
@@ -68,9 +41,4 @@ public class BrowserTransport : ITransport
     {
         return Task.CompletedTask;
     }
-
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
 }
