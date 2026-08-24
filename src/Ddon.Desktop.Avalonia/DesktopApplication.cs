@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Ddon.Desktop.Avalonia.Platform;
 using Ddon.Desktop.Avalonia.Transport;
+using Ddon.Desktop.Core.Bridge;
 using Ddon.Desktop.Core.Host;
+using Ddon.Desktop.Core.Platform;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -72,7 +75,10 @@ public abstract class DesktopApplication : Application
             builder.ConfigureServices(services =>
             {
                 services.AddSingleton(Configuration);
-                services.AddDesktop();                
+                services.AddDesktop();
+                // 窗口能力注册为桥接服务,前端通过 ui.invoke("window.xxx") 调用
+                services.AddSingleton<IWindow>(_ => new AvaloniaWindow(mainWindow));
+                services.AddSingleton<WindowBridgeService>();
                 services.AddDesktopTransport<AvaloniaWebViewTransport>();
                 ConfigureServices(services, Configuration);
             });

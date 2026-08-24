@@ -33,7 +33,10 @@
       return;
     }
 
-    window.ui.seedMessage('windowDrag');
+    // WebView 模式下调用桥接服务 window.drag 实现窗体拖动
+    if (window.platform === 'webview') {
+      void window.ui.invoke('window.drag');
+    }
   };
 </script>
 

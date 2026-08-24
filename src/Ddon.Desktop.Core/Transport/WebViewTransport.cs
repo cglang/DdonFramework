@@ -28,25 +28,27 @@ public class WebViewTransport : ITransport
 
     public async Task HandleMessage(string messageJson)
     {
-        using var doc = JsonDocument.Parse(messageJson);
-        var root = doc.RootElement;
-        var type = root.GetProperty("type").GetString();
+        // 消息一次性反序列化为具体的对象,避免反复用 JsonDocument 取数
+        var envelope = JsonSerializer.Deserialize<WebViewMessage>(messageJson);
+        if (envelope is null || string.IsNullOrEmpty(envelope.Type))
+            return;
 
-        switch (type)
+        switch (envelope.Type)
         {
             case "invoke" when OnInvoke is not null:
-                await HandleIncomingInvoke(root.GetProperty("data"));
+                await HandleIncomingInvoke(envelope.Data);
                 break;
 
             case "event":
-                HandleIncomingEvent(root.GetProperty("data"));
+                HandleIncomingEvent(envelope.Data);
                 break;
         }
     }
 
-    private async Task HandleIncomingInvoke(JsonElement data)
+    private async Task HandleIncomingInvoke(JsonElement? data)
     {
-        var request = JsonSerializer.Deserialize<BridgeRequest>(data.GetRawText());
+        if (data is not { } element) return;
+        var request = JsonSerializer.Deserialize<BridgeRequest>(element);
         if (request is null) return;
 
         try
@@ -70,9 +72,10 @@ public class WebViewTransport : ITransport
         }
     }
 
-    private void HandleIncomingEvent(JsonElement data)
+    private void HandleIncomingEvent(JsonElement? data)
     {
-        var bridgeEvent = JsonSerializer.Deserialize<BridgeEvent>(data.GetRawText());
+        if (data is not { } element) return;
+        var bridgeEvent = JsonSerializer.Deserialize<BridgeEvent>(element);
         if (bridgeEvent is null) return;
 
         if (_handlers.TryGetValue(bridgeEvent.Name, out var handler))

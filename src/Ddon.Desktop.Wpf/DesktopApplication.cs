@@ -1,7 +1,9 @@
 using System.Windows;
 using Ddon.Desktop.Core.Bridge;
 using Ddon.Desktop.Core.Host;
+using Ddon.Desktop.Core.Platform;
 using Ddon.Desktop.Core.Transport;
+using Ddon.Desktop.Wpf.Platform;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -52,6 +54,9 @@ public abstract class DesktopApplication : Application
             {
                 services.AddSingleton(Configuration);
                 services.AddDesktop();
+                // 窗口能力注册为桥接服务,前端通过 ui.invoke("window.xxx") 调用
+                services.AddSingleton<IWindow>(_ => new WpfWindow(_mainWindow!));
+                services.AddSingleton<WindowBridgeService>();
                 services.AddDesktopTransport<WebViewTransport>();
                 ConfigureServices(services, Configuration);
             });

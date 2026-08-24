@@ -42,20 +42,21 @@ public class AvaloniaWebViewTransport : ITransport
 
     public async Task HandleMessage(string message)
     {
-        using var doc = JsonDocument.Parse(message);
-        var root = doc.RootElement;
-        var type = root.GetProperty("type").GetString();
+        // args.Body 一次性反序列化为具体的消息对象,避免反复用 JsonDocument 取数
+        var envelope = JsonSerializer.Deserialize<WebViewMessage>(message, _jsonOptions);
+        if (envelope is null || string.IsNullOrEmpty(envelope.Type))
+            return;
 
         _logger.LogDebug("收到来自WebView的消息: {Message}", message);
 
-        switch (type)
+        switch (envelope.Type)
         {
             case "invoke":
-                await HandleIncomingInvoke(root.GetProperty("data"));
+                await HandleIncomingInvoke(envelope.Data);
                 break;
 
             case "event":
-                HandleIncomingEvent(root.GetProperty("data"));
+                HandleIncomingEvent(envelope.Data);
                 break;
         }
     }
@@ -73,9 +74,10 @@ public class AvaloniaWebViewTransport : ITransport
         }
     }
 
-    private async Task HandleIncomingInvoke(JsonElement data)
+    private async Task HandleIncomingInvoke(JsonElement? data)
     {
-        var request = JsonSerializer.Deserialize<BridgeRequest>(data.GetRawText(), _jsonOptions);
+        if (data is not { } element) return;
+        var request = JsonSerializer.Deserialize<BridgeRequest>(element, _jsonOptions);
         if (request is null) return;
 
         try
@@ -89,9 +91,10 @@ public class AvaloniaWebViewTransport : ITransport
         }
     }
 
-    private void HandleIncomingEvent(JsonElement data)
+    private void HandleIncomingEvent(JsonElement? data)
     {
-        var bridgeEvent = JsonSerializer.Deserialize<BridgeEvent>(data.GetRawText(), _jsonOptions);
+        if (data is not { } element) return;
+        var bridgeEvent = JsonSerializer.Deserialize<BridgeEvent>(element, _jsonOptions);
         if (bridgeEvent is null) return;
 
         if (_handlers.TryGetValue(bridgeEvent.Name, out var handler))
