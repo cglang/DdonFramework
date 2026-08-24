@@ -12,9 +12,6 @@ public class AvaloniaWebViewTransport : ITransport
 {
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    /// <summary>日志中参数/返回值的最大长度,避免大对象刷屏</summary>
-    private const int MaxLogPayloadLength = 200;
-
     private readonly Dictionary<string, Delegate> _handlers = new();
     private readonly IBridgeDispatcher _bridgeDispatcher;
     private readonly ILogger<AvaloniaWebViewTransport> _logger;
@@ -157,32 +154,22 @@ public class AvaloniaWebViewTransport : ITransport
         };
     }
 
-    /// <summary>将参数/返回值格式化为可读文本,超过最大长度时截断</summary>
+    /// <summary>将参数/返回值格式化为可读文本</summary>
     private static string FormatPayload(object? payload)
     {
         if (payload is null)
             return "(空)";
 
-        string text;
         try
         {
-            text = payload is JsonElement je
+            return payload is JsonElement je
                 ? je.GetRawText()
                 : JsonSerializer.Serialize(payload, _jsonOptions);
         }
         catch
         {
-            text = payload.ToString() ?? "(无法序列化)";
+            return payload.ToString() ?? "(无法序列化)";
         }
-
-        if (text.Length <= MaxLogPayloadLength)
-            return text;
-
-        // 截断时避免切坏代理对(emoji 等)
-        var end = MaxLogPayloadLength;
-        if (char.IsHighSurrogate(text[end - 1]))
-            end--;
-        return text[..end] + "...(已截断)";
     }
 
     private static string GetBridgeJavaScript()
