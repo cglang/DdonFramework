@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Avalonia.Controls;
 using Ddon.Desktop.Core.Bridge;
@@ -11,6 +12,14 @@ namespace Ddon.Desktop.Avalonia.Transport;
 public class AvaloniaWebViewTransport : ITransport
 {
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    /// <summary>日志专用序列化选项:中文等非 ASCII 字符不转义,便于阅读排查</summary>
+    private static readonly JsonSerializerOptions _logJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
 
     private readonly Dictionary<string, Delegate> _handlers = new();
     private readonly IBridgeDispatcher _bridgeDispatcher;
@@ -162,9 +171,7 @@ public class AvaloniaWebViewTransport : ITransport
 
         try
         {
-            return payload is JsonElement je
-                ? je.GetRawText()
-                : JsonSerializer.Serialize(payload, _jsonOptions);
+            return JsonSerializer.Serialize(payload, _logJsonOptions);
         }
         catch
         {
