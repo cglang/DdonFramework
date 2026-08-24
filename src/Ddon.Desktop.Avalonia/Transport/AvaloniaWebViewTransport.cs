@@ -12,6 +12,9 @@ public class AvaloniaWebViewTransport : ITransport
 {
     private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
+    /// <summary>日志中参数/返回值的最大长度,避免大对象刷屏</summary>
+    private const int MaxLogPayloadLength = 200;
+
     private readonly Dictionary<string, Delegate> _handlers = new();
     private readonly IBridgeDispatcher _bridgeDispatcher;
     private readonly ILogger<AvaloniaWebViewTransport> _logger;
@@ -27,6 +30,9 @@ public class AvaloniaWebViewTransport : ITransport
 
     public async Task PublishAsync(string eventName, object? data = null)
     {
+        _logger.LogDebug("发送消息: Native → WebView | 操作: event | 事件名: {EventName} | 数据: {Data}",
+            eventName, FormatPayload(data));
+
         await PostMessage("event", new BridgeEvent { Name = eventName, Data = data });
     }
 
@@ -45,9 +51,10 @@ public class AvaloniaWebViewTransport : ITransport
         // args.Body 一次性反序列化为具体的消息对象,避免反复用 JsonDocument 取数
         var envelope = JsonSerializer.Deserialize<WebViewMessage>(message, _jsonOptions);
         if (envelope is null || string.IsNullOrEmpty(envelope.Type))
+        {
+            _logger.LogWarning("收到消息: WebView → Native | 操作: 未知 | 消息无法解析");
             return;
-
-        _logger.LogDebug("收到来自WebView的消息: {Message}", message);
+        }
 
         switch (envelope.Type)
         {
@@ -57,6 +64,10 @@ public class AvaloniaWebViewTransport : ITransport
 
             case "event":
                 HandleIncomingEvent(envelope.Data);
+                break;
+
+            default:
+                _logger.LogWarning("收到消息: WebView → Native | 操作: {Operation} | 未注册的操作类型", envelope.Type);
                 break;
         }
     }
@@ -80,13 +91,20 @@ public class AvaloniaWebViewTransport : ITransport
         var request = JsonSerializer.Deserialize<BridgeRequest>(element, _jsonOptions);
         if (request is null) return;
 
+        _logger.LogDebug("收到消息: WebView → Native | 操作: invoke | 请求ID: {RequestId} | 方法: {Method} | 参数: {Payload}",
+            request.Id, request.Method, FormatPayload(request.Payload));
+
         try
         {
             var result = await _bridgeDispatcher.DispatchAsync(request.Method, request.Payload);
+            _logger.LogDebug("发送消息: Native → WebView | 操作: response | 请求ID: {RequestId} | 方法: {Method} | 结果: 成功 | 返回值: {Data}",
+                request.Id, request.Method, FormatPayload(result));
             await PostMessage("response", new BridgeResponse { Id = request.Id, Success = true, Data = result });
         }
         catch (Exception ex)
         {
+            _logger.LogError("发送消息: Native → WebView | 操作: response | 请求ID: {RequestId} | 方法: {Method} | 结果: 失败 | 错误: {Error}",
+                request.Id, request.Method, ex.Message);
             await PostMessage("response", new BridgeResponse { Id = request.Id, Success = false, Error = ex.Message });
         }
     }
@@ -97,11 +115,18 @@ public class AvaloniaWebViewTransport : ITransport
         var bridgeEvent = JsonSerializer.Deserialize<BridgeEvent>(element, _jsonOptions);
         if (bridgeEvent is null) return;
 
+        _logger.LogDebug("收到消息: WebView → Native | 操作: event | 事件名: {EventName} | 数据: {Data}",
+            bridgeEvent.Name, FormatPayload(bridgeEvent.Data));
+
         if (_handlers.TryGetValue(bridgeEvent.Name, out var handler))
         {
             var targetType = handler.GetType().GetGenericArguments()[1];
             var payload = ConvertPayload(bridgeEvent.Data, targetType);
             handler.DynamicInvoke(payload);
+        }
+        else
+        {
+            _logger.LogWarning("收到消息: WebView → Native | 操作: event | 事件名: {EventName} | 无订阅者", bridgeEvent.Name);
         }
     }
 
@@ -117,7 +142,7 @@ public class AvaloniaWebViewTransport : ITransport
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "PostMessage 错误{Json}", json);
+            _logger.LogError(ex, "发送消息失败: Native → WebView | 类型: {Type}", type);
         }
     }
 
@@ -130,6 +155,34 @@ public class AvaloniaWebViewTransport : ITransport
                 _jsonOptions),
             null => null
         };
+    }
+
+    /// <summary>将参数/返回值格式化为可读文本,超过最大长度时截断</summary>
+    private static string FormatPayload(object? payload)
+    {
+        if (payload is null)
+            return "(空)";
+
+        string text;
+        try
+        {
+            text = payload is JsonElement je
+                ? je.GetRawText()
+                : JsonSerializer.Serialize(payload, _jsonOptions);
+        }
+        catch
+        {
+            text = payload.ToString() ?? "(无法序列化)";
+        }
+
+        if (text.Length <= MaxLogPayloadLength)
+            return text;
+
+        // 截断时避免切坏代理对(emoji 等)
+        var end = MaxLogPayloadLength;
+        if (char.IsHighSurrogate(text[end - 1]))
+            end--;
+        return text[..end] + "...(已截断)";
     }
 
     private static string GetBridgeJavaScript()
