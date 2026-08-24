@@ -2,13 +2,16 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Ddon.Desktop.Avalonia.Platform;
 using Ddon.Desktop.Avalonia.Transport;
+using Ddon.Desktop.Core.Platform;
 
 namespace Ddon.Desktop.Avalonia;
 
 public partial class MainWindow : Window
 {
     private Func<Task>? _onClosing;
+    private readonly IWindow _window;
 
     public MainWindow()
     {
@@ -18,6 +21,8 @@ public partial class MainWindow : Window
             if (_onClosing is not null)
                 await _onClosing();
         };
+
+        _window = new AvaloniaWindow(this);
     }
 
     public void SetOnClosing(Func<Task> onClosing)
@@ -56,7 +61,13 @@ public partial class MainWindow : Window
         WebView.WebMessageReceived += async (sender, args) =>
         {
             if (args.Body is not null)
-                await transport.HandleMessage(args.Body);
+            {
+                _window.WindowDrag();
+                if (args.Body == "windowDrag")
+                    _window.WindowDrag();
+                else
+                    await transport.HandleMessage(args.Body);
+            }
         };
 
         WebView.NavigationCompleted += async (sender, args) =>

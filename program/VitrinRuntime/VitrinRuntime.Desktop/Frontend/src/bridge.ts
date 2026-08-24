@@ -24,6 +24,7 @@ interface Transport {
   on<T>(eventName: string, handler: (data: T) => void): void;
   off(eventName: string): void;
   onMessage(message: string): void;
+  sendMessage(message: string): void;
 }
 
 class BrowserTransport implements Transport {
@@ -49,6 +50,8 @@ class BrowserTransport implements Transport {
   off(_eventName: string): void { }
 
   onMessage(_message: string): void { }
+
+  sendMessage(_message: string): void { }
 }
 
 class WebViewTransport implements Transport {
@@ -87,8 +90,13 @@ class WebViewTransport implements Transport {
   on<T>(eventName: string, handler: (data: T) => void): void {
     this.handlers.set(eventName, handler as (d: unknown) => void);
   }
+
   off(eventName: string): void {
     this.handlers.delete(eventName);
+  }
+
+  sendMessage(_message: string): void {
+    invokeCSharpAction(_message)
   }
 }
 
@@ -98,6 +106,7 @@ export interface UiBridge {
   on<T>(eventName: string, handler: (data: T) => void): void;
   off(eventName: string): void;
   onMessage(message: string): void;
+  seedMessage(message: string): void;
 }
 
 export function createBridge(): UiBridge {
@@ -109,23 +118,19 @@ export function createBridge(): UiBridge {
     on: <T>(e: string, h: (d: T) => void) => transport.on(e, h),
     off: (e: string) => transport.off(e),
     onMessage: (e: string) => transport.onMessage(e),
+    seedMessage: (e: string) => transport.sendMessage(e),
   };
 }
 
 declare global {
   function invokeCSharpAction(data: unknown): void;
   function injectBridge(): void;
-  // function onNativeMessage(message: string): void;
 }
 
 globalThis.injectBridge = () => {
   window.platform = "webview"
   init();
 };
-
-// globalThis.onNativeMessage = (message: string) => {
-//   window.ui.onMessage(message);
-// };
 
 export function init() {
   window.ui = createBridge()

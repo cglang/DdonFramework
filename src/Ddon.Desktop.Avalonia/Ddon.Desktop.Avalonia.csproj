@@ -1,18 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-    <AssemblyVersion>$(Version)</AssemblyVersion>
-    <FileVersion>$(Version)</FileVersion>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageIcon>icon.nuget.jpg</PackageIcon>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-  </PropertyGroup>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageIcon>icon.nuget.jpg</PackageIcon>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 
-  <Import Project="../../version.props"/>
+		<DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+	</PropertyGroup>
+
+	<Import Project="../../version.props"/>
 
 	<ItemGroup>
 		<PackageReference Include="Avalonia" />
@@ -22,8 +24,8 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
 	</ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Ddon.Desktop.Core\Ddon.Desktop.Core.csproj"/>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Ddon.Desktop.Core\Ddon.Desktop.Core.csproj"/>
+	</ItemGroup>
 
 </Project>

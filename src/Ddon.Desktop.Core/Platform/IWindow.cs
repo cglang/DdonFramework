@@ -7,4 +7,5 @@ public interface IWindow
     void Restore();
     void Close();
     void SetTitle(string title);
+    void WindowDrag();
 }
