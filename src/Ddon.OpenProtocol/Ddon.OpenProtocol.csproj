@@ -13,13 +13,10 @@
   <Import Project="../../version.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\Ddon.Pipeline\Ddon.Pipeline.csproj" />
-    <ProjectReference Include="..\Ddon.Socket\Ddon.Socket.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="OpenProtocolInterpreter" />
-    <PackageReference Include="System.Threading.Channels" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
 </Project>

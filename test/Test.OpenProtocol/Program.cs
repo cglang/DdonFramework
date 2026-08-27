@@ -1,241 +1,226 @@
-﻿using Ddon.OpenProtocol.Abstractions;
-using Ddon.OpenProtocol.Core;
-using Ddon.Socket.Abstractions;
-using Ddon.Socket.Core;
+using Ddon.OpenProtocol.Abstractions;
+using Ddon.OpenProtocol.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OpenProtocolInterpreter.Alarm;
 using OpenProtocolInterpreter.Communication;
-using OpenProtocolInterpreter.IOInterface;
-using OpenProtocolInterpreter.Job;
-using OpenProtocolInterpreter.ParameterSet;
+using OpenProtocolInterpreter.KeepAlive;
 using OpenProtocolInterpreter.Tightening;
 using OpenProtocolInterpreter.Tool;
 
-var host = args.Length > 0 ? args[0] : "127.0.0.1";
-var port = args.Length > 1 ? int.Parse(args[1]) : 4545;
+// ============================================================================
+// Test.OpenProtocol —— Ddon.OpenProtocol 简化版客户端功能测试控制台
+//
+// 用法: Test.OpenProtocol [host] [port]
+//   默认 host=127.0.0.1, port=4545
+//
+// 模型: 严格的「发-收-发-收」单线程协议。
+//   连接时自动完成 MID0001 -> MID0002 握手;
+//   SendAsync(mid) 发送一个请求并返回下一个收到的 Mid 根类;
+//   SubscribeAsync<TMid>(订阅请求, handler) 发送订阅请求等确认响应,
+//     之后服务端推送的 TMid 会执行 handler（不作为普通响应）。
+// ============================================================================
 
-Console.WriteLine("=== DdonGardener OpenProtocol 测试 ===");
-Console.WriteLine($"目标: {host}:{port}");
-Console.WriteLine();
-Console.WriteLine("模式选择:");
-Console.WriteLine("  1 - 测试模式 (订阅拧紧结果)");
-Console.WriteLine("  2 - 工具模式 (工具控制)");
-Console.Write("请选择 (1/2): ");
-var mode = Console.ReadLine()?.Trim();
+var host = args.Length > 0 ? args[0] : "127.0.0.1";
+var port = args.Length > 1 && int.TryParse(args[1], out var parsedPort) ? parsedPort : 4545;
 
 var services = new ServiceCollection();
 
-services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
+services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Information));
 
-services.AddSingleton<ISocketFactory>(_ => new SocketFactory());
-services.AddSingleton<IOpenProtocolManager>(sp =>
+services.AddOpenProtocol(builder =>
 {
-    var socketFactory = sp.GetRequiredService<ISocketFactory>();
-    var loggerFactory = sp.GetService<ILoggerFactory>();
-    var manager = new OpenProtocolManager(socketFactory, sp, loggerFactory);
-
-    manager.AddEndpoint("扭紧机", endpoint =>
+    builder.AddEndpoint("openprotocol", endpoint =>
     {
-        endpoint.Configure(o =>
+        endpoint.Configure(options =>
         {
-            o.Host = host;
-            o.Port = port;
-            o.KeepAliveIntervalMs = 10_000;
-            o.RequestTimeoutMs = 5_000;
-            o.AutoReconnect = true;
+            options.Host = host;
+            options.Port = port;
+            options.ConnectTimeoutMs = 5_000;
+            options.RequestTimeoutMs = 10_000;
+            options.KeepAliveIntervalMs = 10_000;
+            options.AutoReconnect = true;
         });
-
-        endpoint.MapResponse<Mid0060, Mid0061>();
-        endpoint.MapResponse<Mid0062, Mid0005>();
-        endpoint.MapResponse<Mid0001, Mid0002>();
-        endpoint.MapResponse<Mid0003, Mid0005>();
-        endpoint.MapResponse<Mid0018, Mid0005>();
-        endpoint.MapResponse<Mid0042, Mid0005>();
-        endpoint.MapResponse<Mid0043, Mid0005>();
-        endpoint.MapResponse<Mid0037, Mid0038>();
-        endpoint.MapResponse<Mid0224, Mid0005>();
     });
-
-    return manager;
 });
 
-var sp = services.BuildServiceProvider();
+await using var sp = services.BuildServiceProvider();
+
 var manager = sp.GetRequiredService<IOpenProtocolManager>();
-var endpoint = manager.GetEndpoint("扭紧机")!;
+var endpoint = manager.GetEndpoint("openprotocol")
+    ?? throw new InvalidOperationException("未找到名为 'openprotocol' 的 endpoint。");
 
-endpoint.SubscribeAll(mid =>
+// ---------- 连接（内部自动完成 MID0001 -> MID0002 握手） ----------
+Console.WriteLine($"正在连接 {host}:{port} ...");
+await endpoint.ConnectAsync();
+Console.WriteLine($"已连接。状态: {endpoint.State}");
+Console.WriteLine();
+
+// 预先注册报警订阅 handler（MID0071，未发送订阅请求，仅注册）
+IDisposable? alarmSubscription = null;
+
+PrintMenu();
+
+while (true)
 {
-    Console.WriteLine($"[{DateTime.Now:HH:mm:ss.fff}] ← MID{mid.Header.Mid:D4}");
-    return Task.CompletedTask;
-});
+    Console.Write("> ");
+    var line = Console.ReadLine();
+    if (line is null)
+        break;
 
-Console.WriteLine($"正在连接 {host}:{port}...");
-await endpoint.StartAsync();
-Console.WriteLine("连接成功.");
+    var input = line.Trim();
+    if (input.Length == 0)
+        continue;
 
-if (mode == "2")
-{
-    await RunToolMode(endpoint);
-}
-else
-{
-    await RunTestMode(endpoint);
-}
+    var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var cmd = parts[0].ToLowerInvariant();
 
-await endpoint.StopAsync();
-Console.WriteLine("已断开连接.");
-
-static async Task RunTestMode(IOpenProtocolEndpoint endpoint)
-{
-    endpoint.Subscribe<Mid0061>(result =>
+    try
     {
-        var status = result.TighteningStatus ? "OK" : "NOK";
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine(
-            $"[{DateTime.Now:HH:mm:ss.fff}] 拧紧结果 | " +
-            $"ID={result.TighteningId} " +
-            $"扭矩={result.Torque:F2}Nm " +
-            $"角度={result.Angle:F0}度 " +
-            $"状态={status} " +
-            $"VIN={result.VinNumber}");
-        Console.ResetColor();
-    });
+        switch (cmd)
+        {
+            case "help":
+                PrintMenu();
+                break;
 
-    Console.WriteLine("正在订阅拧紧结果 (MID0060)...");
-    var firstResult = await endpoint.SubscribeAsync<Mid0061>(new Mid0060());
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine(
-        $"[首个结果] 扭矩={firstResult.Torque:F2}Nm " +
-        $"角度={firstResult.Angle:F0}度 " +
-        $"状态={(firstResult.TighteningStatus ? "OK" : "NOK")}");
-    Console.ResetColor();
+            case "state":
+                Console.WriteLine($"状态: {endpoint.State}, IsConnected: {endpoint.IsConnected}");
+                break;
 
-    Console.WriteLine();
-    Console.WriteLine("=== 测试模式 ===");
-    Console.WriteLine("命令:");
-    Console.WriteLine("  status         - 查看连接状态");
-    Console.WriteLine("  subscribe      - 重新订阅拧紧结果");
-    Console.WriteLine("  select <编号>  - 选择参数组 (Mid0018)");
-    Console.WriteLine("  exit           - 断开并退出");
-    Console.WriteLine();
+            case "tool":
+                var toolNumber = parts.Length > 1 && int.TryParse(parts[1], out var n) ? n : 1;
+                var toolReply = await endpoint.SendAsync(new Mid0040 { ToolNumber = toolNumber });
+                Console.WriteLine($"收到响应: {toolReply.GetType().Name} (MID{toolReply.Header.Mid:D4})");
+                if (toolReply is Mid0041 tool)
+                {
+                    Console.WriteLine($"  工具编号: {tool.ToolNumber}, 序列号: {tool.ToolSerialNumber}");
+                }
+                break;
 
-    while (true)
+            case "sub":
+                // 订阅拧紧结果: 发送 MID0060 订阅请求, 收到 MID0005 确认后执行自定义 ackHandler,
+                // 之后服务端推送的 MID0061 交给 handler, 不会占用普通响应
+                var ack = await endpoint.SubscribeAsync<Mid0061, Mid0062>(
+                    new Mid0060(),
+                    m =>
+                    {
+                        PrintTighteningResult(m);
+                        return Task.CompletedTask;
+                    },
+                    () =>
+                    {
+                        Console.WriteLine("==");
+                        return new Mid0062();
+                    });
+                Console.WriteLine($"订阅确认返回: {ack.GetType().Name} (MID{ack.Header.Mid:D4})");
+                break;
+
+            case "unsub":
+                var res0063 = await endpoint.SendAsync(new Mid0063());
+                Console.WriteLine($"收到响应: {res0063.GetType().Name} (MID{res0063.Header.Mid:D4})");
+                break;
+
+            case "alarm":
+                // 订阅报警: 发送 MID0070 订阅请求 -> 等待确认(请求-响应);
+                // 之后服务端推送 MID0071 -> 执行 handler, 并自动回 MID0072 确认(ackHandler 自定义)
+                if (alarmSubscription == null)
+                {
+                    var alarmAck = await endpoint.SubscribeAsync<Mid0071, Mid0072>(
+                        new Mid0070(),
+                        m =>
+                        {
+                            PrintAlarm(m);
+                            return Task.CompletedTask;
+                        },
+                        () =>
+                        {
+                            Console.WriteLine("  [ackHandler] 生成报警确认 MID0072 回复服务端");
+                            return new Mid0072();
+                        });
+                    Console.WriteLine($"报警订阅请求确认: {alarmAck.GetType().Name} (MID{alarmAck.Header.Mid:D4})");
+                }
+                else
+                {
+                    Console.WriteLine("报警订阅已存在。");
+                }
+                break;
+
+            case "keepalive":
+                Console.WriteLine("发送心跳 (MID9999) ...");
+                var keepAliveReply = await endpoint.SendAsync(new Mid9999());
+                Console.WriteLine($"收到响应: {keepAliveReply.GetType().Name} (MID{keepAliveReply.Header.Mid:D4})");
+                break;
+
+            case "exit":
+            case "quit":
+                goto exit;
+
+            default:
+                Console.WriteLine($"未知命令: {cmd}。输入 help 查看帮助。");
+                break;
+        }
+    }
+    catch (Exception ex)
     {
-        Console.Write("> ");
-        var input = Console.ReadLine();
-        if (input is null || input == "exit") break;
-
-        try
-        {
-            var parts = input.Split(' ', 2);
-            var cmd = parts[0].ToLowerInvariant();
-
-            switch (cmd)
-            {
-                case "status":
-                    Console.WriteLine($"状态: {endpoint.State}");
-                    break;
-
-                case "subscribe":
-                    await endpoint.RegisterSubscriptionAsync(new Mid0060());
-                    Console.WriteLine("已订阅 MID0060.");
-                    break;
-
-                case "select":
-                    if (parts.Length > 1 && int.TryParse(parts[1], out var pset))
-                    {
-                        var mid0018 = new Mid0018 { ParameterSetId = pset };
-                        await endpoint.SendAsync<Mid0005>(mid0018);
-                        Console.WriteLine($"已选择参数组 {pset}.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("用法: select <参数组编号>");
-                    }
-                    break;
-
-                default:
-                    Console.WriteLine($"未知命令: {cmd}");
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"错误: {ex.Message}");
-            Console.ResetColor();
-        }
+        Console.WriteLine($"[错误] {ex.GetType().Name}: {ex.Message}");
     }
 }
 
-static async Task RunToolMode(IOpenProtocolEndpoint endpoint)
+exit:
+
+// ---------- 清理 ----------
+Console.WriteLine("正在断开连接 ...");
+
+try
+{
+    await endpoint.DisconnectAsync();
+}
+catch
+{
+}
+
+await manager.StopAllAsync();
+Console.WriteLine("已退出。");
+
+// ============================================================================
+// 本地辅助函数
+// ============================================================================
+
+void PrintMenu()
+{
+    Console.WriteLine("可用命令:");
+    Console.WriteLine("  state        查看连接状态");
+    Console.WriteLine("  tool [编号]  请求工具数据 (MID0040，默认编号 1)");
+    Console.WriteLine("  sub          订阅拧紧结果 (MID0060 订阅请求 -> 确认, 之后 MID0061 推送)");
+    Console.WriteLine("  unsub        取消订阅拧紧结果 (MID0063 订阅请求 -> 确认)");
+    Console.WriteLine("  alarm        订阅报警 (MID0070 订阅请求 -> 确认, 之后 MID0071 推送)");
+    Console.WriteLine("  keepalive    发送心跳 (MID9999，等待响应)");
+    Console.WriteLine("  help         显示帮助");
+    Console.WriteLine("  exit         断开并退出");
+    Console.WriteLine();
+}
+
+void PrintTighteningResult(Mid0061 m)
 {
     Console.WriteLine();
-    Console.WriteLine("=== 工具模式 ===");
-    Console.WriteLine("命令:");
-    Console.WriteLine("  status         - 查看连接状态");
-    Console.WriteLine("  disable        - 工具断开 (MID0042)");
-    Console.WriteLine("  enable         - 工具使能 (MID0043)");
-    Console.WriteLine("  start          - 启动工具 (MID0037)");
-    Console.WriteLine("  select <编号>  - 选择程序号 (Mid0018)");
-    Console.WriteLine("  exit           - 断开并退出");
+    Console.WriteLine("=== 拧紧结果推送 (MID0061) ===");
+    Console.WriteLine($"  拧紧 ID       : {m.TighteningId}");
+    Console.WriteLine($"  时间          : {m.Timestamp:yyyy-MM-dd HH:mm:ss}");
+    Console.WriteLine($"  VIN           : {m.VinNumber}");
+    Console.WriteLine($"  任务/参数组   : Job {m.JobId} / PSet {m.ParameterSetId} (批次 {m.BatchCounter}/{m.BatchSize})");
+    Console.WriteLine($"  拧紧状态      : {(m.TighteningStatus ? "OK" : "NOK")}");
+    Console.WriteLine($"  扭矩          : {m.Torque} ({m.TorqueStatus})，范围 {m.TorqueMinLimit} ~ {m.TorqueMaxLimit}");
+    Console.WriteLine($"  角度          : {m.Angle} ({m.AngleStatus})，范围 {m.AngleMinLimit} ~ {m.AngleMaxLimit}");
+    Console.WriteLine("=================================");
     Console.WriteLine();
+}
 
-    while (true)
-    {
-        Console.Write("工具> ");
-        var input = Console.ReadLine();
-        if (input is null || input == "exit") break;
-
-        try
-        {
-            var parts = input.Split(' ', 2);
-            var cmd = parts[0].ToLowerInvariant();
-
-            switch (cmd)
-            {
-                case "status":
-                    Console.WriteLine($"状态: {endpoint.State}");
-                    break;
-
-                case "disable":
-                    await endpoint.SendAsync<Mid0005>(new Mid0042());
-                    Console.WriteLine("工具已断开.");
-                    break;
-
-                case "enable":
-                    await endpoint.SendAsync<Mid0005>(new Mid0043());
-                    Console.WriteLine("工具已使能.");
-                    break;
-
-                case "start":
-                    await endpoint.SendAsync<Mid0005>(new Mid0224());
-                    Console.WriteLine("工具已启动.");
-                    break;
-
-                case "select":
-                    if (parts.Length > 1 && int.TryParse(parts[1], out var pset))
-                    {
-                        var mid0018 = new Mid0018 { ParameterSetId = pset };
-                        await endpoint.SendAsync<Mid0005>(mid0018);
-                        Console.WriteLine($"已选择程序号 {pset}.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("用法: select <程序编号>");
-                    }
-                    break;
-
-                default:
-                    Console.WriteLine($"未知命令: {cmd}");
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"错误: {ex.Message}");
-            Console.ResetColor();
-        }
-    }
+void PrintAlarm(Mid0071 m)
+{
+    Console.WriteLine();
+    Console.WriteLine($"=== 报警推送 (MID0071) === 代码: {m.ErrorCode}  时间: {m.Time:yyyy-MM-dd HH:mm:ss}");
+    Console.WriteLine($"  控制器就绪: {m.ControllerReadyStatus}  工具就绪: {m.ToolReadyStatus}");
+    Console.WriteLine($"  报警内容  : {m.AlarmText}");
+    Console.WriteLine("=================================");
+    Console.WriteLine();
 }

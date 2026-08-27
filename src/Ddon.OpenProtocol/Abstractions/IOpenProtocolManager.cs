@@ -6,11 +6,9 @@ using Ddon.OpenProtocol.Builder;
 
 namespace Ddon.OpenProtocol.Abstractions
 {
-    public interface IOpenProtocolManager
+    public interface IOpenProtocolManager : IDisposable
     {
-        void AddEndpoint(string name, Action<OpenProtocolEndpointBuilder> configure);
-
-        void AddEndpoint(string name, IOpenProtocolEndpoint endpoint);
+        IOpenProtocolEndpoint AddEndpoint(string name, Action<OpenProtocolEndpointBuilder> configure);
 
         bool RemoveEndpoint(string name);
 

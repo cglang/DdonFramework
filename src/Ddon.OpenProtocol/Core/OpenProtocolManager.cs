@@ -1,53 +1,45 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Ddon.OpenProtocol.Abstractions;
 using Ddon.OpenProtocol.Builder;
-using Ddon.Socket.Abstractions;
-using Microsoft.Extensions.Logging;
 
 namespace Ddon.OpenProtocol.Core
 {
     public class OpenProtocolManager : IOpenProtocolManager
     {
         private readonly ConcurrentDictionary<string, IOpenProtocolEndpoint> _endpoints = new();
-        private readonly ISocketFactory _socketFactory;
-        private readonly IServiceProvider? _serviceProvider;
-        private readonly ILoggerFactory? _loggerFactory;
+        private int _disposed;
 
-        public OpenProtocolManager(
-            ISocketFactory socketFactory,
-            IServiceProvider? serviceProvider = null,
-            ILoggerFactory? loggerFactory = null)
-        {
-            _socketFactory = socketFactory;
-            _serviceProvider = serviceProvider;
-            _loggerFactory = loggerFactory;
-        }
-
-        public void AddEndpoint(string name, Action<OpenProtocolEndpointBuilder> configure)
+        public IOpenProtocolEndpoint AddEndpoint(string name, Action<OpenProtocolEndpointBuilder> configure)
         {
             if (_endpoints.ContainsKey(name))
-                throw new InvalidOperationException($"Endpoint '{name}' already exists.");
+                throw new InvalidOperationException($"Endpoint '{name}' 已存在。");
 
-            var builder = new OpenProtocolEndpointBuilder(name, _socketFactory, _serviceProvider, _loggerFactory);
+            var builder = new OpenProtocolEndpointBuilder(name);
             configure(builder);
             var endpoint = builder.Build();
-            _endpoints[name] = endpoint;
-        }
 
-        public void AddEndpoint(string name, IOpenProtocolEndpoint endpoint)
-        {
             if (!_endpoints.TryAdd(name, endpoint))
-                throw new InvalidOperationException($"Endpoint '{name}' already exists.");
+            {
+                endpoint.Dispose();
+                throw new InvalidOperationException($"Endpoint '{name}' 已存在。");
+            }
+
+            return endpoint;
         }
 
         public bool RemoveEndpoint(string name)
         {
-            return _endpoints.TryRemove(name, out _);
+            if (_endpoints.TryRemove(name, out var endpoint))
+            {
+                endpoint.Dispose();
+                return true;
+            }
+
+            return false;
         }
 
         public IOpenProtocolEndpoint? GetEndpoint(string name)
@@ -65,7 +57,7 @@ namespace Ddon.OpenProtocol.Core
         {
             foreach (var endpoint in _endpoints.Values)
             {
-                await endpoint.StartAsync(cancellationToken);
+                await endpoint.ConnectAsync(cancellationToken);
             }
         }
 
@@ -73,8 +65,21 @@ namespace Ddon.OpenProtocol.Core
         {
             foreach (var endpoint in _endpoints.Values)
             {
-                await endpoint.StopAsync(cancellationToken);
+                await endpoint.DisconnectAsync(cancellationToken);
             }
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+
+            foreach (var endpoint in _endpoints.Values)
+            {
+                endpoint.Dispose();
+            }
+
+            _endpoints.Clear();
         }
     }
 }
