@@ -91,12 +91,6 @@ namespace Ddon.OpenProtocol.Core
                     DataReceived?.Invoke(this, data);
                 }
             }
-            catch (OperationCanceledException)
-            {
-            }
-            catch
-            {
-            }
             finally
             {
                 Disconnected?.Invoke(this, EventArgs.Empty);

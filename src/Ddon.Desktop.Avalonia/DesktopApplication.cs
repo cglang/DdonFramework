@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Ddon.Desktop.Avalonia.Platform;
 using Ddon.Desktop.Avalonia.Transport;
@@ -55,13 +56,16 @@ public abstract class DesktopApplication : Application
         var windowWidth = Configuration.GetValue<int>("Window:Width");
         var windowHeight = Configuration.GetValue<int>("Window:Height");
 
-        var mainWindow = new MainWindow();
+        var mainWindow = new MainWindow()
+        {
+            WindowDecorations = WindowDecorations.None
+        };
 
         // 这里需要启动一个桌面窗口 用来加载WebView
         mainWindow.ApplyConfig(windowTitle, loadingTitle, loadingText,
-            Enum.TryParse<global::Avalonia.Controls.WindowState>(windowState, true, out var ws)
+            Enum.TryParse<WindowState>(windowState, true, out var ws)
                 ? ws
-                : global::Avalonia.Controls.WindowState.Maximized,
+                : WindowState.Maximized,
             windowWidth > 0 ? windowWidth : 800,
             windowHeight > 0 ? windowHeight : 500);
         mainWindow.SetOnClosing(() => _desktopHost?.StopAsync() ?? Task.CompletedTask);

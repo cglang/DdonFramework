@@ -1,0 +1,29 @@
+/* @import './base.css'; */
+
+html,
+body,
+#app {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  /* 禁止整页滚动，滚动交给内容容器 */
+  overflow: hidden;
+}
+
+/* 这个必须要有 */
+.n-config-provider {
+  height: 100%;
+}
+
+
+
+.page-container {
+  height: 100%;
+  padding: 16px;
+}
+
+.page-card {
+  margin-bottom: 16px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
